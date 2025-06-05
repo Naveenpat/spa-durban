@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --lt-primary-source: #419da8;
+  /* primary */
+  --lt-palette-primary0: #000000;
+  --lt-palette-primary5: #001416;
+  --lt-palette-primary10: #001f23;
+  --lt-palette-primary15: #002b2f;
+  --lt-palette-primary20: #00363c;
+  --lt-palette-primary25: #004249;
+  --lt-palette-primary30: #004f56;
+  --lt-palette-primary35: #005c64;
+  --lt-palette-primary40: #006972;
+  --lt-palette-primary50: #1d838e;
+  --lt-palette-primary60: #419da8;
+  --lt-palette-primary70: #5fb8c3;
+  --lt-palette-primary80: #7cd4df;
+  --lt-palette-primary90: #98f0fc;
+  --lt-palette-primary95: #ccf9ff;
+  --lt-palette-primary98: #ebfdff;
+  --lt-palette-primary99: #f5feff;
+  --lt-palette-primary100: #ffffff;
+  /* secondary */
+  --lt-palette-secondary0: #000000;
+  --lt-palette-secondary5: #1a0f00;
+  --lt-palette-secondary10: #261903;
+  --lt-palette-secondary15: #31230b;
+  --lt-palette-secondary20: #3d2e14;
+  --lt-palette-secondary25: #49391e;
+  --lt-palette-secondary30: #554428;
+  --lt-palette-secondary35: #625033;
+  --lt-palette-secondary40: #6e5b3e;
+  --lt-palette-secondary50: #897455;
+  --lt-palette-secondary60: #a48d6c;
+  --lt-palette-secondary70: #bfa885;
+  --lt-palette-secondary80: #dcc39f;
+  --lt-palette-secondary90: #f9dfb9;
+  --lt-palette-secondary95: #ffeed9;
+  --lt-palette-secondary98: #fff8f3;
+  --lt-palette-secondary99: #fffbff;
+  --lt-palette-secondary100: #ffffff;
+  /* tertiary */
+  --lt-palette-tertiary0: #000000;
+  --lt-palette-tertiary5: #071024;
+  --lt-palette-tertiary10: #121b2f;
+  --lt-palette-tertiary15: #1c253a;
+  --lt-palette-tertiary20: #273045;
+  --lt-palette-tertiary25: #323b51;
+  --lt-palette-tertiary30: #3d475d;
+  --lt-palette-tertiary35: #495269;
+  --lt-palette-tertiary40: #555e75;
+  --lt-palette-tertiary50: #6e778f;
+  --lt-palette-tertiary60: #8790aa;
+  --lt-palette-tertiary70: #a2abc5;
+  --lt-palette-tertiary80: #bdc6e1;
+  --lt-palette-tertiary90: #d9e2fe;
+  --lt-palette-tertiary95: #edf0ff;
+  --lt-palette-tertiary98: #faf9ff;
+  --lt-palette-tertiary99: #fefbff;
+  --lt-palette-tertiary100: #ffffff;
+
+  /* Error */
+  --lt-palette-error0: #000000;
+  --lt-palette-error10: #410002;
+  --lt-palette-error20: #690005;
+  --lt-palette-error25: #7e0007;
+  --lt-palette-error30: #93000a;
+  --lt-palette-error35: #a80710;
+  --lt-palette-error40: #ba1a1a;
+  --lt-palette-error50: #de3730;
+  --lt-palette-error60: #ff5449;
+  --lt-palette-error70: #ff897d;
+  --lt-palette-error80: #ffb4ab;
+  --lt-palette-error90: #ffdad6;
+  --lt-palette-error95: #ffedea;
+  --lt-palette-error98: #fff8f7;
+  --lt-palette-error99: #fffbff;
+  --lt-palette-error100: #ffffff;
+
+  /* Success */
+  --lt-palette-success10: #0d1d2a;
+  --lt-palette-success20: #233240;
+  --lt-palette-success25: #1b4400;
+  --lt-palette-success30: #215100;
+  --lt-palette-success35: #275e00;
+  --lt-palette-success40: #2e6c00;
+  --lt-palette-success50: #3b8800;
+  --lt-palette-success60: #50a31a;
+  --lt-palette-success70: #6abf36;
+  --lt-palette-success80: #85dc50;
+  --lt-palette-success90: #bcfbbd;
+  --lt-palette-success95: #d9fcda;
+  --lt-palette-success98: #dff7dd;
+  --lt-palette-success99: #f8ffec;
+
+  /* Neutral */
+  --lt-palette-neutral0: #000000;
+  --lt-palette-neutral5: #0f1112;
+  --lt-palette-neutral10: #1a1c1c;
+  --lt-palette-neutral15: #242626;
+  --lt-palette-neutral20: #2e3131;
+  --lt-palette-neutral25: #393c3c;
+  --lt-palette-neutral30: #454747;
+  --lt-palette-neutral35: #515353;
+  --lt-palette-neutral40: #5d5f5f;
+  --lt-palette-neutral50: #757778;
+  --lt-palette-neutral60: #8f9191;
+  --lt-palette-neutral70: #aaabab;
+  --lt-palette-neutral80: #c5c7c7;
+  --lt-palette-neutral90: #e2e3e2;
+  --lt-palette-neutral95: #f0f1f1;
+  --lt-palette-neutral98: #f9f9f9;
+  --lt-palette-neutral99: #fcfcfc;
+  --lt-palette-neutral100: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

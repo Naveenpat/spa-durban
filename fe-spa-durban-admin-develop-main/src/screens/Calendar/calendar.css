@@ -1,0 +1,31 @@
+.calendar-cmp .react-datepicker__day-names {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-cmp .react-datepicker__day-name {
+  width: 100% !important;
+}
+
+.calendar-cmp .react-datepicker__month-container {
+  height: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  float: none !important;
+}
+
+.calendar-cmp .react-datepicker__month {
+  display: grid !important;
+  gap: 8px;
+  flex-grow: 1;
+}
+
+.calendar-cmp .react-datepicker__week {
+  display: flex !important;
+  justify-content: space-between !important;
+}
+
+.calendar-cmp .react-datepicker__day {
+  height: 100% !important;
+  width: 100% !important;
+}

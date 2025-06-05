@@ -1,0 +1,488 @@
+{
+  "categories": [
+    {
+      "categoryName": "Hair Oil",
+      "_id": "1"
+    },
+    {
+      "categoryName": "Cream",
+      "_id": "2"
+    },
+    {
+      "categoryName": "Massage",
+      "_id": "3"
+    },
+    {
+      "categoryName": "Therapy",
+      "_id": "4"
+    },
+    {
+      "categoryName": "Shampoo",
+      "_id": "5"
+    },
+    {
+      "categoryName": "Conditioner",
+      "_id": "6"
+    },
+    {
+      "categoryName": "Body Lotion",
+      "_id": "7"
+    },
+    {
+      "categoryName": "Facial Scrub",
+      "_id": "8"
+    },
+    {
+      "categoryName": "Face Mask",
+      "_id": "9"
+    },
+    {
+      "categoryName": "Hand Cream",
+      "_id": "10"
+    },
+    {
+      "categoryName": "Foot Cream",
+      "_id": "11"
+    },
+    {
+      "categoryName": "Bath Oil",
+      "_id": "12"
+    },
+    {
+      "categoryName": "Body Scrub",
+      "_id": "13"
+    },
+    {
+      "categoryName": "Essential Oil",
+      "_id": "14"
+    },
+    {
+      "categoryName": "Bath Salt",
+      "_id": "15"
+    },
+    {
+      "categoryName": "Hair Mask",
+      "_id": "16"
+    },
+    {
+      "categoryName": "Hair Serum",
+      "_id": "17"
+    },
+    {
+      "categoryName": "Anti-Aging Cream",
+      "_id": "18"
+    },
+    {
+      "categoryName": "Eye Cream",
+      "_id": "19"
+    },
+    {
+      "categoryName": "Lip Balm",
+      "_id": "20"
+    },
+    {
+      "categoryName": "Sunscreen",
+      "_id": "21"
+    },
+    {
+      "categoryName": "After Sun Lotion",
+      "_id": "22"
+    },
+    {
+      "categoryName": "Hair Spray",
+      "_id": "23"
+    },
+    {
+      "categoryName": "Perfume",
+      "_id": "24"
+    },
+    {
+      "categoryName": "Body Wash",
+      "_id": "25"
+    }
+  ],
+
+  "products": [
+    {
+      "productName": "Aloe Vera Hair Oil",
+      "_id": "1",
+      "categoryId": "1",
+      "categoryName": "Hair Oil",
+      "productImageUrl": "https://t3.ftcdn.net/jpg/03/84/19/90/360_F_384199057_5eIESZSsVqp6fi3Nk18NKtPrMVx3iKEd.jpg",
+      "price": 700,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Coconut Hair Oil",
+      "_id": "2",
+      "categoryId": "1",
+      "categoryName": "Hair Oil",
+      "productImageUrl": "https://m.media-amazon.com/images/I/71HHfkWoEmL._AC_UF1000,1000_QL80_.jpg",
+      "price": 300,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Argan Oil Hair Treatment",
+      "_id": "3",
+      "categoryId": "1",
+      "categoryName": "Hair Oil",
+      "productImageUrl": "data:image/jpeg;base64,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",
+      "price": 150,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Herbal Face Cream",
+      "_id": "4",
+      "categoryId": "2",
+      "categoryName": "Cream",
+      "productImageUrl": "https://t3.ftcdn.net/jpg/03/84/19/90/360_F_384199057_5eIESZSsVqp6fi3Nk18NKtPrMVx3iKEd.jpg",
+      "price": 500,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Anti-Aging Night Cream",
+      "_id": "5",
+      "categoryId": "2",
+      "categoryName": "Cream",
+      "productImageUrl": "https://m.media-amazon.com/images/I/71HHfkWoEmL._AC_UF1000,1000_QL80_.jpg",
+      "price": 399,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Moisturizing Day Cream",
+      "_id": "6",
+      "categoryId": "2",
+      "categoryName": "Cream",
+      "productImageUrl": "https://images.unsplash.com/photo-1515377905703-c4788e51af15",
+      "price": 210,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Swedish Massage",
+      "_id": "7",
+      "categoryId": "3",
+      "categoryName": "Massage",
+      "productImageUrl": "https://t3.ftcdn.net/jpg/03/84/19/90/360_F_384199057_5eIESZSsVqp6fi3Nk18NKtPrMVx3iKEd.jpg",
+      "price": 699,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Deep Tissue Massage",
+      "_id": "8",
+      "categoryId": "3",
+      "categoryName": "Massage",
+      "productImageUrl": "https://m.media-amazon.com/images/I/71HHfkWoEmL._AC_UF1000,1000_QL80_.jpg",
+      "price": 850,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Hot Stone Massage",
+      "_id": "9",
+      "categoryId": "3",
+      "categoryName": "Massage",
+      "productImageUrl": "data:image/jpeg;base64,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",
+      "price": 720,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Aromatherapy",
+      "_id": "10",
+      "categoryId": "4",
+      "categoryName": "Therapy",
+      "productImageUrl": "https://t3.ftcdn.net/jpg/03/84/19/90/360_F_384199057_5eIESZSsVqp6fi3Nk18NKtPrMVx3iKEd.jpg",
+      "price": 450,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Hydrotherapy",
+      "_id": "11",
+      "categoryId": "4",
+      "categoryName": "Therapy",
+      "productImageUrl": "https://m.media-amazon.com/images/I/71HHfkWoEmL._AC_UF1000,1000_QL80_.jpg",
+      "price": 430,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Light Therapy",
+      "_id": "12",
+      "categoryId": "4",
+      "categoryName": "Therapy",
+      "productImageUrl": "https://images.unsplash.com/photo-1515377905703-c4788e51af15",
+      "price": 320,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Volumizing Shampoo",
+      "_id": "13",
+      "categoryId": "5",
+      "categoryName": "Shampoo",
+      "productImageUrl": "https://t3.ftcdn.net/jpg/03/84/19/90/360_F_384199057_5eIESZSsVqp6fi3Nk18NKtPrMVx3iKEd.jpg",
+      "price": 850,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Clarifying Shampoo",
+      "_id": "14",
+      "categoryId": "5",
+      "categoryName": "Shampoo",
+      "productImageUrl": "https://m.media-amazon.com/images/I/71HHfkWoEmL._AC_UF1000,1000_QL80_.jpg",
+      "price": 890,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Moisturizing Shampoo",
+      "_id": "15",
+      "categoryId": "5",
+      "categoryName": "Shampoo",
+      "productImageUrl": "data:image/jpeg;base64,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",
+      "price": 700,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Repairing Conditioner",
+      "_id": "16",
+      "categoryId": "6",
+      "categoryName": "Conditioner",
+      "productImageUrl": "https://t3.ftcdn.net/jpg/03/84/19/90/360_F_384199057_5eIESZSsVqp6fi3Nk18NKtPrMVx3iKEd.jpg",
+      "price": 730,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Hydrating Conditioner",
+      "_id": "17",
+      "categoryId": "6",
+      "categoryName": "Conditioner",
+      "productImageUrl": "https://m.media-amazon.com/images/I/71HHfkWoEmL._AC_UF1000,1000_QL80_.jpg",
+      "price": 1200,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Smoothing Conditioner",
+      "_id": "18",
+      "categoryId": "6",
+      "categoryName": "Conditioner",
+      "productImageUrl": "https://images.unsplash.com/photo-1515377905703-c4788e51af15",
+      "price": 999,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Coconut Body Lotion",
+      "_id": "19",
+      "categoryId": "7",
+      "categoryName": "Body Lotion",
+      "productImageUrl": "https://images.unsplash.com/photo-1515377905703-c4788e51af15",
+      "price": 250,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    },
+    {
+      "productName": "Shea Butter Body Lotion",
+      "_id": "20",
+      "categoryId": "7",
+      "categoryName": "Body Lotion",
+      "productImageUrl": "https://m.media-amazon.com/images/I/71HHfkWoEmL._AC_UF1000,1000_QL80_.jpg",
+      "price": 690,
+      "taxes": [
+        {
+          "taxType": "CGST",
+          "taxPercent": 9
+        },
+        {
+          "taxType": "IGST",
+          "taxPercent": 9
+        }
+      ]
+    }
+  ],
+
+  "customers": [
+    {
+      "customerName": "John",
+      "mobile": "7889898788",
+      "_id": "1",
+      "balanceDue": 5000
+    },
+    {
+      "customerName": "Joe",
+      "mobile": "7889898788",
+      "_id": "2",
+      "balanceDue": 2000
+    },
+    {
+      "customerName": "Mike",
+      "mobile": "7889898788",
+      "_id": "3",
+      "balanceDue": 1850
+    }
+  ]
+}

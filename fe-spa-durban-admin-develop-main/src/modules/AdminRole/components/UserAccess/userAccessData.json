@@ -1,0 +1,898 @@
+{
+  "accessData": [
+    {
+      "moduleName": "User Role",
+      "moduleId": "NAV_USER_ROLE",
+      "features": [
+        {
+          "featureId": "USER_ROLE_LIST",
+          "featureName": "See User Role List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "USER_ROLE_ADD",
+          "featureName": "Add User Role"
+        },
+        {
+          "featureId": "USER_ROLE_UPDATE",
+          "featureName": "Update User Role",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "USER_ROLE_DELETE",
+          "featureName": "Delete User Role"
+        },
+        {
+          "featureId": "USER_ROLE_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate User Role"
+        }
+      ],
+      "dependencies": [
+        "USER_ROLE_ADD",
+        "USER_ROLE_UPDATE",
+        "USER_ROLE_DELETE",
+        "USER_ROLE_ACTIVE_DEACTIVE",
+        "USER_ROLE_LIST"
+      ],
+      "fields": [
+        {
+          "fieldName": "Category Name",
+          "fieldId": {
+            "READ_LIST": "CATEGORY_READ_LIST_CATEGORY_NAME",
+            "READ_VIEW": "CATEGORY_READ_VIEW_CATEGORY_NAME",
+            "UPDATE": "CATEGORY_UPDATE_CATEGORY_NAME"
+          }
+        },
+        {
+          "fieldName": "Image",
+          "fieldId": {
+            "READ_LIST": "Read(List)",
+            "READ_VIEW": "Read(View)",
+            "UPDATE": "Update"
+          }
+        },
+        {
+          "fieldName": "Category Code",
+          "fieldId": {
+            "READ_LIST": "Read(List)",
+            "READ_VIEW": "Read(View)",
+            "UPDATE": "Update"
+          }
+        }
+      ]
+    },
+    {
+      "moduleName": "Purchase-Order",
+      "moduleId": "NAV_PURCHASE_ORDER",
+      "features": [
+        {
+          "featureId": "PURCHASE_ORDER_LIST",
+          "featureName": "See Purchase-Order List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "PURCHASE_ORDER_ADD",
+          "featureName": "Add Purchase-Order"
+        },
+        {
+          "featureId": "PURCHASE_ORDER_UPDATE",
+          "featureName": "Update Purchase-Order",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "PURCHASE_ORDER_DELETE",
+          "featureName": "Delete Purchase-Order"
+        },
+        {
+          "featureId": "PURCHASE_ORDER_VIEW",
+          "featureName": "View Purchase-Order"
+        },
+        {
+          "featureId": "PURCHASE_ORDER_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Purchase-Order"
+        }
+      ],
+      "dependencies": [
+        "PURCHASE_ORDER_LIST",
+        "PURCHASE_ORDER_ADD",
+        "PURCHASE_ORDER_UPDATE",
+        "PURCHASE_ORDER_DELETE",
+        "PURCHASE_ORDER_VIEW",
+        "PURCHASE_ORDER_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Supplier",
+      "moduleId": "NAV_SUPPLIER",
+      "features": [
+        {
+          "featureId": "SUPPLIER_LIST",
+          "featureName": "See Supplier List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "SUPPLIER_ADD",
+          "featureName": "Add Supplier"
+        },
+        {
+          "featureId": "SUPPLIER_UPDATE",
+          "featureName": "Update Supplier",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "SUPPLIER_DELETE",
+          "featureName": "Delete Supplier"
+        },
+        {
+          "featureId": "SUPPLIER_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Supplier"
+        }
+      ],
+      "dependencies": [
+        "SUPPLIER_LIST",
+        "SUPPLIER_ADD",
+        "SUPPLIER_UPDATE",
+        "SUPPLIER_DELETE",
+        "SUPPLIER_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    }, 
+    {
+      "moduleName": "Customer",
+      "moduleId": "NAV_CUSTOMER",
+      "features": [
+        {
+          "featureId": "CUSTOMER_LIST",
+          "featureName": "See Customer List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "CUSTOMER_ADD",
+          "featureName": "Add Customer"
+        },
+        {
+          "featureId": "CUSTOMER_UPDATE",
+          "featureName": "Update Customer",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "CUSTOMER_DELETE",
+          "featureName": "Delete Customer"
+        },
+        {
+          "featureId": "CUSTOMER_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Customer"
+        }
+      ],
+      "dependencies": [
+        "CUSTOMER_LIST",
+        "CUSTOMER_ADD",
+        "CUSTOMER_UPDATE",
+        "CUSTOMER_DELETE",
+        "CUSTOMER_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Tasks",
+      "moduleId": "NAV_TASK",
+      "features": [
+        {
+          "featureId": "TASK_LIST",
+          "featureName": "See Task List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "TASK_ADD",
+          "featureName": "Add Task"
+        },
+        {
+          "featureId": "TASK_UPDATE",
+          "featureName": "Update Task",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "TASK_DELETE",
+          "featureName": "Delete Task"
+        }
+      ],
+      "dependencies": [
+        "TASK_ADD" ,
+        "TASK_UPDATE",
+        "TASK_DELETE",
+        "TASK_LIST"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Tickets",
+      "moduleId": "NAV_TICKET",
+      "features": [
+        {
+          "featureId": "TICKET_LIST",
+          "featureName": "See Ticket List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "TICKET_ADD",
+          "featureName": "Add Ticket"
+        },
+        {
+          "featureId": "TICKET_UPDATE",
+          "featureName": "Update Ticket",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "TICKET_DELETE",
+          "featureName": "Delete Ticket"
+        }
+      ],
+      "dependencies": [
+        "TICKET_ADD" ,
+        "TICKET_UPDATE",
+        "TICKET_DELETE",
+        "TICKET_LIST"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Top Customers And Products",
+      "moduleId": "NAV_TOP_CUSTOMERS_AND_PRODUCTS",
+      "features": [
+        {
+          "featureId": "TOP_CUSTOMERS_AND_PRODUCTS_LIST",
+          "featureName": "See Top Customer And Products List",
+          "relatedFieldColumn": "READ_LIST"
+        }
+      ],
+      "dependencies": [
+        "TOP_CUSTOMERS_AND_PRODUCTS_LIST"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Sales Comparison",
+      "moduleId": "NAV_SALES_COMPARISON",
+      "features": [
+        {
+          "featureId": "SALES_COMPARISON_LIST",
+          "featureName": "See Sales Comparison List",
+          "relatedFieldColumn": "READ_LIST"
+        }
+      ],
+      "dependencies": [
+        "SALES_COMPARISON_LIST"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Invoice",
+      "moduleId": "NAV_INVOICE",
+      "features": [
+        {
+          "featureId": "INVOICE_LIST",
+          "featureName": "See Invoice List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "INVOICE_ADD",
+          "featureName": "Add Invoice"
+        },
+        {
+          "featureId": "INVOICE_UPDATE",
+          "featureName": "Update Invoice",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "INVOICE_DELETE",
+          "featureName": "Delete Invoice"
+        },
+        {
+          "featureId": "INVOICE_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Invoice"
+        }
+      ],
+      "dependencies": [
+        "INVOICE_LIST",
+        "INVOICE_ADD",
+        "INVOICE_UPDATE",
+        "INVOICE_DELETE",
+        "INVOICE_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+
+
+
+
+    
+    {
+      "moduleName": "Products",
+      "moduleId": "NAV_PRODUCT",
+      "features": [
+        {
+          "featureId": "PRODUCT_LIST",
+          "featureName": "See Product List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "PRODUCT_ADD",
+          "featureName": "Add Product"
+        },
+        {
+          "featureId": "PRODUCT_UPDATE",
+          "featureName": "Update Product",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "PRODUCT_DELETE",
+          "featureName": "Delete Product"
+        },
+        {
+          "featureId": "PRODUCT_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Product"
+        }
+      ],
+      "dependencies": [
+        "PRODUCT_LIST",
+        "PRODUCT_ADD",
+        "PRODUCT_UPDATE",
+        "PRODUCT_DELETE",
+        "PRODUCT_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Service",
+      "moduleId": "NAV_SERVICE",
+      "features": [
+        {
+          "featureId": "SERVICE_LIST",
+          "featureName": "See Service List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "SERVICE_ADD",
+          "featureName": "Add Service"
+        },
+        {
+          "featureId": "SERVICE_UPDATE",
+          "featureName": "Update Service",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "SERVICE_DELETE",
+          "featureName": "Delete Service"
+        },
+        {
+          "featureId": "SERVICE_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Service"
+        }
+      ],
+      "dependencies": [
+        "SERVICE_LIST",
+        "SERVICE_ADD",
+        "SERVICE_UPDATE",
+        "SERVICE_DELETE",
+        "SERVICE_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Inventory",
+      "moduleId": "NAV_INVENTORY",
+      "features": [
+        {
+          "featureId": "INVENTORY_LIST",
+          "featureName": "See Inventory List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "INVENTORY_ADD",
+          "featureName": "Add Inventory"
+        },
+        {
+          "featureId": "INVENTORY_UPDATE",
+          "featureName": "Update Inventory",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "INVENTORY_DELETE",
+          "featureName": "Delete Inventory"
+        },
+        {
+          "featureId": "INVENTORY_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Inventory"
+        }
+      ],
+      "dependencies": [
+        "INVENTORY_LIST",
+        "INVENTORY_ADD",
+        "INVENTORY_UPDATE",
+        "INVENTORY_DELETE",
+        "INVENTORY_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Outlet-Inventory",
+      "moduleId": "NAV_OUTLET_INVENTORY",
+      "features": [
+        {
+          "featureId": "OUTLET_INVENTORY_LIST",
+          "featureName": "See Outlet-Inventory List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "OUTLET_INVENTORY_ADD",
+          "featureName": "Add Outlet-Inventory"
+        },
+        {
+          "featureId": "OUTLET_INVENTORY_UPDATE",
+          "featureName": "Update Outlet-Inventory",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "OUTLET_INVENTORY_DELETE",
+          "featureName": "Delete Outlet-Inventory"
+        },
+        {
+          "featureId": "OUTLET_INVENTORY_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Outlet-Inventory"
+        }
+      ],
+      "dependencies": [
+        "OUTLET_INVENTORY_LIST",
+        "OUTLET_INVENTORY_ADD",
+        "OUTLET_INVENTORY_UPDATE",
+        "OUTLET_INVENTORY_DELETE",
+        "OUTLET_INVENTORY_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Employee",
+      "moduleId": "NAV_EMPLOYEE",
+      "features": [
+        {
+          "featureId": "EMPLOYEE_LIST",
+          "featureName": "See Employee List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "EMPLOYEE_ADD",
+          "featureName": "Add Employee"
+        },
+        {
+          "featureId": "EMPLOYEE_UPDATE",
+          "featureName": "Update Employee",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "EMPLOYEE_DELETE",
+          "featureName": "Delete Employee"
+        },
+        {
+          "featureId": "EMPLOYEE_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Employee"
+        }
+      ],
+      "dependencies": [
+        "EMPLOYEE_LIST",
+        "EMPLOYEE_ADD",
+        "EMPLOYEE_UPDATE",
+        "EMPLOYEE_DELETE",
+        "EMPLOYEE_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+
+
+
+    {
+      "moduleName": "Coupon-Referral",
+      "moduleId": "NAV_COUPONS_REFERRAL",
+      "features": [
+        {
+          "featureId": "COUPONS_REFERRAL_LIST",
+          "featureName": "See Coupon-Referral List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "COUPONS_REFERRAL_ADD",
+          "featureName": "Add Coupon-Referral"
+        },
+        {
+          "featureId": "COUPONS_REFERRAL_UPDATE",
+          "featureName": "Update Coupon-Referral",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "COUPONS_REFERRAL_DELETE",
+          "featureName": "Delete Coupon-Referral"
+        },
+        {
+          "featureId": "COUPONS_REFERRAL_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Coupon-Referral"
+        }
+      ],
+      "dependencies": [
+        "COUPONS_REFERRAL_LIST",
+        "COUPONS_REFERRAL_ADD",
+        "COUPONS_REFERRAL_UPDATE",
+        "COUPONS_REFERRAL_DELETE",
+        "COUPONS_REFERRAL_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Gift-Card",
+      "moduleId": "NAV_GIFT_CARD",
+      "features": [
+        {
+          "featureId": "GIFT_CARD_LIST",
+          "featureName": "See Gift-Card List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "GIFT_CARD_ADD",
+          "featureName": "Add Gift-Card"
+        },
+        {
+          "featureId": "GIFT_CARD_UPDATE",
+          "featureName": "Update Gift-Card",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "GIFT_CARD_DELETE",
+          "featureName": "Delete Gift-Card"
+        },
+        {
+          "featureId": "GIFT_CARD_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Gift-Card"
+        }
+      ],
+      "dependencies": [
+        "GIFT_CARD_LIST",
+        "GIFT_CARD_ADD",
+        "GIFT_CARD_UPDATE",
+        "GIFT_CARD_DELETE",
+        "GIFT_CARD_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Loyalty",
+      "moduleId": "NAV_LOYALTY",
+      "features": [
+        {
+          "featureId": "LOYALTY_LIST",
+          "featureName": "See Loyalty List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "LOYALTY_ADD",
+          "featureName": "Add Loyalty"
+        },
+        {
+          "featureId": "LOYALTY_UPDATE",
+          "featureName": "Update Loyalty",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "LOYALTY_DELETE",
+          "featureName": "Delete Loyalty"
+        },
+        {
+          "featureId": "LOYALTY_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Loyalty"
+        }
+      ],
+      "dependencies": [
+        "LOYALTY_LIST",
+        "LOYALTY_ADD",
+        "LOYALTY_UPDATE",
+        "LOYALTY_DELETE",
+        "LOYALTY_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+
+
+
+
+
+
+    {
+      "moduleName": "Outlets",
+      "moduleId": "NAV_OUTLET",
+      "features": [
+        {
+          "featureId": "OUTLET_LIST",
+          "featureName": "See Outlets List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "OUTLET_ADD",
+          "featureName": "Add Outlets"
+        },
+        {
+          "featureId": "OUTLET_UPDATE",
+          "featureName": "Update Outlets",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "OUTLET_DELETE",
+          "featureName": "Delete Outlets"
+        },
+        {
+          "featureId": "OUTLET_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Outlets"
+        }
+      ],
+      "dependencies": [
+        "OUTLET_LIST",
+        "OUTLET_ADD",
+        "OUTLET_UPDATE",
+        "OUTLET_DELETE",
+        "OUTLET_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Taxes",
+      "moduleId": "NAV_TAXE",
+      "features": [
+        {
+          "featureId": "TAXE_LIST",
+          "featureName": "See Taxes List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "TAXE_ADD",
+          "featureName": "Add Taxes"
+        },
+        {
+          "featureId": "TAXE_UPDATE",
+          "featureName": "Update Taxes",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "TAXE_DELETE",
+          "featureName": "Delete Taxes"
+        },
+        {
+          "featureId": "TAXE_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Taxes"
+        }
+      ],
+      "dependencies": [
+        "TAXE_LIST",
+        "TAXE_ADD",
+        "TAXE_UPDATE",
+        "TAXE_DELETE",
+        "TAXE_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Category",
+      "moduleId": "NAV_CATEGORY",
+      "features": [
+        {
+          "featureId": "CATEGORY_LIST",
+          "featureName": "See Category List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "CATEGORY_ADD",
+          "featureName": "Add Category"
+        },
+        {
+          "featureId": "CATEGORY_UPDATE",
+          "featureName": "Update Category",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "CATEGORY_DELETE",
+          "featureName": "Delete Category"
+        },
+        {
+          "featureId": "CATEGORY_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Category"
+        }
+      ],
+      "dependencies": [
+        "CATEGORY_LIST",
+        "CATEGORY_ADD",
+        "CATEGORY_UPDATE",
+        "CATEGORY_DELETE",
+        "CATEGORY_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Sub-Category",
+      "moduleId": "NAV_SUB_CATEGORY",
+      "features": [
+        {
+          "featureId": "SUB_CATEGORY_LIST",
+          "featureName": "See Sub-Category List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "SUB_CATEGORY_ADD",
+          "featureName": "Add Sub-Category"
+        },
+        {
+          "featureId": "SUB_CATEGORY_UPDATE",
+          "featureName": "Update Sub-Category",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "SUB_CATEGORY_DELETE",
+          "featureName": "Delete Sub-Category"
+        },
+        {
+          "featureId": "SUB_CATEGORY_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Sub-Category"
+        }
+      ],
+      "dependencies": [
+        "SUB_CATEGORY_LIST",
+        "SUB_CATEGORY_ADD",
+        "SUB_CATEGORY_UPDATE",
+        "SUB_CATEGORY_DELETE",
+        "SUB_CATEGORY_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Measurment-Service",
+      "moduleId": "NAV_MEASURMENT_UNIT",
+      "features": [
+        {
+          "featureId": "MEASURMENT_UNIT_LIST",
+          "featureName": "See Measurment-Service List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "MEASURMENT_UNIT_ADD",
+          "featureName": "Add Measurment-Service"
+        },
+        {
+          "featureId": "MEASURMENT_UNIT_UPDATE",
+          "featureName": "Update Measurment-Service",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "MEASURMENT_UNIT_DELETE",
+          "featureName": "Delete Measurment-Service"
+        },
+        {
+          "featureId": "MEASURMENT_UNIT_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Measurment-Service"
+        }
+      ],
+      "dependencies": [
+        "MEASURMENT_UNIT_LIST",
+        "MEASURMENT_UNIT_ADD",
+        "MEASURMENT_UNIT_UPDATE",
+        "MEASURMENT_UNIT_DELETE",
+        "MEASURMENT_UNIT_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Payment-mode",
+      "moduleId": "NAV_PAYMENT_MODE",
+      "features": [
+        {
+          "featureId": "PAYMENT_MODE_LIST",
+          "featureName": "See Payment-mode List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "PAYMENT_MODE_ADD",
+          "featureName": "Add Payment-mode"
+        },
+        {
+          "featureId": "PAYMENT_MODE_UPDATE",
+          "featureName": "Update Payment-mode",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "PAYMENT_MODE_DELETE",
+          "featureName": "Delete Payment-mode"
+        },
+        {
+          "featureId": "PAYMENT_MODEY_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Payment-mode"
+        }
+      ],
+      "dependencies": [
+        "PAYMENT_MODE_LIST",
+        "PAYMENT_MODE_ADD",
+        "PAYMENT_MODE_UPDATE",
+        "PAYMENT_MODE_DELETE",
+        "PAYMENT_MODE_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Brand",
+      "moduleId": "NAV_BRAND",
+      "features": [
+        {
+          "featureId": "BRAND_LIST",
+          "featureName": "See Brand List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "BRAND_ADD",
+          "featureName": "Add Brand"
+        },
+        {
+          "featureId": "BRAND_UPDATE",
+          "featureName": "Update Brand",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "BRAND_DELETE",
+          "featureName": "Delete Brand"
+        },
+        {
+          "featureId": "BRANDY_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Brand"
+        }
+      ],
+      "dependencies": [
+        "BRAND_LIST",
+        "BRAND_ADD",
+        "BRAND_UPDATE",
+        "BRAND_DELETE",
+        "BRAND_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Account",
+      "moduleId": "NAV_ACCOUNT",
+      "features": [
+        {
+          "featureId": "ACCOUNT_LIST",
+          "featureName": "See Account List",
+          "relatedFieldColumn": "READ_LIST"
+        },
+        {
+          "featureId": "ACCOUNT_ADD",
+          "featureName": "Add Account"
+        },
+        {
+          "featureId": "ACCOUNT_UPDATE",
+          "featureName": "Update Account",
+          "relatedFieldColumn": "UPDATE"
+        },
+        {
+          "featureId": "ACCOUNT_DELETE",
+          "featureName": "Delete Account"
+        },
+        {
+          "featureId": "ACCOUNT_ACTIVE_DEACTIVE",
+          "featureName": "Activate/Deactivate Account"
+        }
+      ],
+      "dependencies": [
+        "ACCOUNT_LIST",
+        "ACCOUNT_ADD",
+        "ACCOUNT_UPDATE",
+        "ACCOUNT_DELETE",
+        "ACCOUNT_ACTIVE_DEACTIVE"
+      ],
+      "fields": []
+    }
+ 
+  
+  ]
+}

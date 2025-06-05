@@ -1,0 +1,172 @@
+import JoiBase, { ObjectSchema } from "joi";
+import JoiDate from "@joi/date";
+import JoiObjectId from "joi-objectid";
+import { objectId, dateFormat } from "../../../helper/commonValidation";
+
+// Extend Joi with the date and objectId extensions
+const Joi = JoiBase.extend(JoiDate);
+(Joi as any).joiDate = JoiDate(JoiBase);
+(Joi as any).joiObjectId = JoiObjectId(JoiBase);
+
+/**
+ * create new document
+ */
+export const create: { body: ObjectSchema } = {
+  body: Joi.object().keys({
+    customerId: Joi.string().required().custom(objectId),
+    items: Joi.array().items(
+      Joi.object().keys({
+        itemId: Joi.string().required().custom(objectId),
+        quantity: Joi.number().required(),
+        itemType: Joi.string().required(),
+      })
+    ),
+    couponCode: Joi.string().allow(""),
+    shippingCharges: Joi.number().required(),
+    amountReceived: Joi.array().items(
+      Joi.object().keys({
+        paymentModeId: Joi.string().required().custom(objectId),
+        amount: Joi.number().required(),
+      })
+    ),
+    giftCardCode: Joi.string().allow(""),
+    useLoyaltyPoints: Joi.boolean().required(),
+    referralCode: Joi.string().allow(""),
+    outletId: Joi.string().required().custom(objectId),
+    notes: Joi.string().allow(""),
+    useCashBackAmount: Joi.boolean().required(),
+    usedCashBackAmount: Joi.number().allow(0),
+    bookingId: Joi.string().allow('', null)
+  }),
+};
+
+
+export const updateGivenChangeSchema = {
+  body: Joi.object().keys({
+    invoiceId: Joi.string().required(),     // moved here ✅
+    value: Joi.number().required(),
+  }),
+};
+/**
+ * create new document
+ */
+export const preview: { body: ObjectSchema } = {
+  body: Joi.object().keys({
+    customerId: Joi.string().required().custom(objectId),
+    items: Joi.array().items(
+      Joi.object().keys({
+        itemId: Joi.string().required().custom(objectId),
+        quantity: Joi.number().required(),
+        itemType: Joi.string().required(),
+      })
+    ),
+    couponCode: Joi.string().allow(""),
+    shippingCharges: Joi.number().required(),
+    giftCardCode: Joi.string().allow(""),
+    useLoyaltyPoints: Joi.boolean().required(),
+    referralCode: Joi.string().allow(""),
+    outletId: Joi.string().required().custom(objectId),
+    useCashBackAmount: Joi.boolean().required(),
+    usedCashBackAmount: Joi.number().allow(0),
+  }),
+};
+
+/**
+ * paymentIn existing document
+ */
+export const paymentIn: { params: ObjectSchema; body: ObjectSchema } = {
+  params: Joi.object().keys({
+    invoiceId: Joi.required().custom(objectId),
+  }),
+  body: Joi.object().keys({
+    amountReceived: Joi.array().items(
+      Joi.object().keys({
+        paymentModeId: Joi.string().required().custom(objectId),
+        amount: Joi.number().required(),
+      })
+    ),
+    remark: Joi.string().required(),
+  }),
+};
+
+/**
+ * filter and pagination api
+ */
+export const getAllFilter: { query: ObjectSchema } = {
+  query: Joi.object().keys({
+    searchIn: Joi.array().items(Joi.string().required()),
+    searchValue: Joi.string().allow(""),
+    dateFilter: Joi.object()
+      .keys({
+        startDate: Joi.string().custom(dateFormat).allow(""),
+        endDate: Joi.string().custom(dateFormat).allow(""),
+        dateFilterKey: Joi.string().allow(""),
+      })
+      .default({}),
+    rangeFilterBy: Joi.object()
+      .keys({
+        rangeFilterKey: Joi.string().allow(""),
+        rangeInitial: Joi.string().allow(""),
+        rangeEnd: Joi.string().allow(""),
+      })
+      .default({})
+      .optional(),
+    orderBy: Joi.string().allow(""),
+    orderByValue: Joi.number().valid(1, -1).allow(""),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+    filterBy: Joi.array().items(
+      Joi.object().keys({
+        fieldName: Joi.string().allow(""),
+        value: Joi.alternatives().try(
+          Joi.string().allow(""),
+          Joi.number().allow(""),
+          Joi.boolean().allow(""),
+          Joi.array().items(Joi.string()).default([]),
+          Joi.array().items(Joi.number()).default([]),
+          Joi.array().items(Joi.boolean()).default([]),
+          Joi.array().default([])
+        ),
+      })
+    ),
+    isPaginationRequired: Joi.boolean().default(true).optional(),
+  }),
+};
+
+/**
+ * get either all data or single document
+ */
+export const get: { query: ObjectSchema } = {
+  query: Joi.object()
+    .keys({
+      _id: Joi.string().custom(objectId).optional(),
+    })
+    .optional(),
+};
+
+/**
+ * delete a document
+ */
+export const deleteDocument: { params: ObjectSchema } = {
+  params: Joi.object().keys({
+    invoiceId: Joi.string().custom(objectId),
+  }),
+};
+
+/**
+ * get by id
+ */
+export const getById: { params: ObjectSchema } = {
+  params: Joi.object().keys({
+    invoiceId: Joi.string().custom(objectId),
+  }),
+};
+
+/**
+ * change status of document
+ */
+export const changeStatus: { params: ObjectSchema } = {
+  params: Joi.object().keys({
+    invoiceId: Joi.string().custom(objectId),
+  }),
+};

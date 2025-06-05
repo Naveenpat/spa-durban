@@ -1,0 +1,31 @@
+# Ignore node_modules only in frontend and backend folders
+/fe-spa-durban-admin-develop-main/node_modules/
+/api-spa-durban-develop-main/node_modules/
+
+/fe-spa-durban-admin-develop-main/dist/
+/api-spa-durban-develop-main/dist/
+/fe-spa-durban-admin-develop-main/build/
+/api-spa-durban-develop-main/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# IDE/editor config
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

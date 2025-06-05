@@ -1,0 +1,37 @@
+@keyframes wipeDown {
+  from {
+    max-height: 0px;
+    opacity: 0;
+  }
+  to {
+    max-width: 500px; /* Adjust the final height as needed */
+    opacity: 1;
+  }
+}
+
+.wipe-down {
+  animation: wipeDown 0.5s ease-out forwards;
+  transition: all; /* Adjust the duration and timing function as needed */
+}
+
+.hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.card-login {
+  background-color: #ffffffd9 !important;
+  border-radius: 10px !important;
+}
+.bg-login {
+  background-image: url('../public/loginPage.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100%;
+  height: 100vh;
+}

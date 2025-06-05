@@ -1,0 +1,53 @@
+import JoiBase, { ObjectSchema } from "joi"
+import JoiDate from "@joi/date"
+import JoiObjectId from "joi-objectid"
+import { dateFormat } from "../../../helper/commonValidation"
+
+// Extend Joi with the date and objectId extensions
+const Joi = JoiBase.extend(JoiDate)
+;(Joi as any).joiDate = JoiDate(JoiBase)
+;(Joi as any).joiObjectId = JoiObjectId(JoiBase)
+
+/**
+ * filter and pagination api
+ */
+export const getAllFilter: { query: ObjectSchema } = {
+  query: Joi.object().keys({
+    searchIn: Joi.array().items(Joi.string().required()),
+    searchValue: Joi.string().allow(""),
+    dateFilter: Joi.object()
+      .keys({
+        startDate: Joi.string().custom(dateFormat).allow(""),
+        endDate: Joi.string().custom(dateFormat).allow(""),
+        dateFilterKey: Joi.string().allow(""),
+      })
+      .default({}),
+    rangeFilterBy: Joi.object()
+      .keys({
+        rangeFilterKey: Joi.string().allow(""),
+        rangeInitial: Joi.string().allow(""),
+        rangeEnd: Joi.string().allow(""),
+      })
+      .default({})
+      .optional(),
+    orderBy: Joi.string().allow(""),
+    orderByValue: Joi.number().valid(1, -1).allow(""),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+    filterBy: Joi.array().items(
+      Joi.object().keys({
+        fieldName: Joi.string().allow(""),
+        value: Joi.alternatives().try(
+          Joi.string().allow(""),
+          Joi.number().allow(""),
+          Joi.boolean().allow(""),
+          Joi.array().items(Joi.string()).default([]),
+          Joi.array().items(Joi.number()).default([]),
+          Joi.array().items(Joi.boolean()).default([]),
+          Joi.array().default([])
+        ),
+      })
+    ),
+    isPaginationRequired: Joi.boolean().default(true).optional(),
+  }),
+}
