@@ -43,4 +43,8 @@ app.use(errorConverter)
 // Handle error
 app.use(errorHandler)
 
+app.listen(3002, '0.0.0.0', () => {
+  console.log('Listening on port 3002');
+});
+
 export default app
