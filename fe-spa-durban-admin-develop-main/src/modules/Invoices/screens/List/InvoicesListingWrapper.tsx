@@ -30,7 +30,9 @@ import {
   setIsOpenEditDialog,
 } from '../../slice/InvoicesSlice';
 import EditCategoryFormWrapper from '../Edit/EditInvoiceVoidFormWrapper';
-
+import toast from 'react-hot-toast';
+import { Tooltip } from 'react-tooltip'
+import { showToast } from 'src/utils/showToaster';
 type Props = {};
 
 const InvoicesListingWrapper = (props: Props) => {
@@ -60,6 +62,7 @@ const InvoicesListingWrapper = (props: Props) => {
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const [invoiceId, setInvoiceId] = useState('');
+  const [updateInvoice] = useUpdateInvoiceMutation();
   const { data, isLoading, totalData, totalPages } = useFetchData(
     useGetInvoicesQuery,
     {
@@ -77,19 +80,37 @@ const InvoicesListingWrapper = (props: Props) => {
       },
     },
   );
-  const [updateInvoice] = useUpdateInvoiceMutation();
-  const handleUpdate = async (_id: string) => {
+
+  const handleUpdate = async (item: any) => {
     try {
       await updateInvoice({
-        invoiceId: _id,
-        body: { status: 'refund' },
+        invoiceId: item?._id,
+        body: { status: item?.status === "" ? 'refund' : "" },
       }).unwrap();
-      alert('Invoice updated successfully!');
+      // alert('Invoice updated successfully!');
+
+      showToast('success','Invoice updated successfully!')
     } catch (error) {
       console.error('Error updating invoice:', error);
-      alert('Failed to update invoice.');
+      // alert('Failed to update invoice.');
+
+         showToast('error','Failed to update invoice.')
     }
   };
+
+  const handleCancelVoidWithConfirmation = (invoiceId: any) => {
+        updateInvoice({ body: {status:"",voidNote:""}, invoiceId }).then((res: any) => {
+          if (res?.error) {
+             showToast('error',res?.error?.data?.message)
+          } else {
+            if (res?.data?.status) {
+               showToast('success',res?.data?.message)
+            } else {
+               showToast('error',res?.data?.message)
+            }
+          }
+        });
+  }
   const tableHeaders: TableHeader<Invoices>[] = [
     {
       fieldName: 'createdAt',
@@ -147,6 +168,35 @@ const InvoicesListingWrapper = (props: Props) => {
       ),
     },
     {
+      fieldName: "voidNote",
+      headerName: 'Note',
+      flex: 'flex-[1_1_0%]',
+      renderCell: (item) => {
+        const note = item.voidNote || '';
+        const tooltipId = `note-tooltip-${item._id}`; // Unique ID per row
+
+        return (
+          <>
+            <span
+              data-tooltip-id={tooltipId}
+              data-tooltip-content={note}
+              className="cursor-pointer hover:underline"
+            >
+              {note.length > 20 ? `${note.substring(0, 20)}...` : note}
+            </span>
+            <Tooltip
+              id={tooltipId}
+              delayShow={300}
+              className="z-50 !bg-gray-800 !text-white !text-sm !max-w-[200px] !max-h-[150px] 
+            !overflow-y-auto !whitespace-pre-wrap !px-3 !py-2"
+              place="top"
+              noArrow={true}
+            />
+          </>
+        );
+      }
+    },
+    {
       fieldName: 'action',
       headerName: 'Action',
       flex: 'flex-[1_1_0%]',
@@ -165,20 +215,24 @@ const InvoicesListingWrapper = (props: Props) => {
                 },
               },
               {
-                label: 'Refund',
+                label: item?.status === 'refund' ? 'Cancel Refund' : 'Refund',
                 icon: IconCreditCardRefund,
                 onClick: () => {
-                  handleUpdate(item?._id);
+                  handleUpdate(item);
                 },
               },
               {
-                label: 'Void',
+                label: item?.status === 'void' ? 'Cancel Void' : 'Void',
                 icon: IconCopyX,
                 onClick: () => {
-                  dispatch(setIsOpenEditDialog(true));
-                  setInvoiceId(item?._id);
+                  if (item?.status === 'void') {
+                    handleCancelVoidWithConfirmation(item._id);
+                  } else {
+                    dispatch(setIsOpenEditDialog(true));
+                    setInvoiceId(item._id);
+                  }
                 },
-              },
+              }
             ]}
           />
         </div>

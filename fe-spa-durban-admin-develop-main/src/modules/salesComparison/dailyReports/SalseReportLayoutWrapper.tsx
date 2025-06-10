@@ -72,6 +72,7 @@ const SalseReportLayoutWrapper = ({
               rows={da}
             /> */}
           </div>
+          
         </Authorization>
       </div>
     </MOLFormDialog>

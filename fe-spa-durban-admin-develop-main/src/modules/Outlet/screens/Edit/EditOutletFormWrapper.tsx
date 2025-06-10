@@ -33,6 +33,7 @@ const EditOutletFormWrapper = () => {
     onlinePaymentAccountId: {
       _id: (data as any)?.data?.onlinePaymentAccountId,
     },
+    logo:(data as any)?.data?.logo
   };
 
   const validationSchema = object().shape({

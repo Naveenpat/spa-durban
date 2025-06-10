@@ -90,6 +90,17 @@ const navigation: (params?: {
         },
 
         {
+          title: 'Company',
+          icon: IconUserCog,
+          path: 'company',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'NAV_COMPANY',
+        },
+
+        {
           title: 'Purchase Order',
           icon: IconShoppingCart,
           path: 'purchase-order',

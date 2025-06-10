@@ -216,6 +216,8 @@ export enum Permission {
   REGISTER_LIST = 'REGISTER_LIST',
   REGISTER_UPDATE = 'REGISTER_UPDATE',
   REGISTER_DELETE = 'REGISTER_DELETE',
+
+  NAV_COMPANY = 'NAV_COMPANY'
 }
 
 export type PermissionType = keyof typeof Permission;

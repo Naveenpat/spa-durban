@@ -303,7 +303,8 @@ const getInvoices = catchAsync(
       );
 
       if (datefilterQuery && datefilterQuery.length) {
-        options["dateFilter"] = { $and: datefilterQuery } as any;
+        // options["dateFilter"] = { $and: datefilterQuery } as any;
+        options["dateFilter"] = datefilterQuery[0];
       } else {
         options["dateFilter"] = {} as any;
       }
@@ -448,6 +449,7 @@ const getInvoice = catchAsync(
               $project: {
                 phone: 1,
                 name: 1,
+                logo:1
               },
             },
           ],
@@ -586,6 +588,9 @@ const getInvoice = catchAsync(
           },
           outletPhone: {
             $arrayElemAt: ["$outlet.phone", 0],
+          },
+          Outletlogo: {
+            $arrayElemAt: ["$outlet.logo", 0],
           },
           employeeName: {
             $arrayElemAt: ["$employeeDetails.name", 0],

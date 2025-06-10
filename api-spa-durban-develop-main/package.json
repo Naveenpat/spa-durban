@@ -4,7 +4,7 @@
   "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon dist/app.ts",
+    "start": "nodemon app.ts",
     "build": "tsc && cp package.json dist/",
     "start:prod": "node dist/app.ts"
   },
@@ -47,6 +47,7 @@
     "nodemon": "^3.1.9",
     "npm": "^10.8.1",
     "prom-client": "^15.1.2",
+    "puppeteer": "^24.10.0",
     "redis": "^4.6.14",
     "response-time": "^2.3.2",
     "swagger-jsdoc": "^6.2.8",

@@ -24,6 +24,7 @@ export interface OutletDocument extends Document {
   isDeleted: boolean;
   isActive: boolean;
   bookingStoreId: string;
+  logo:string;
 }
 
 export interface OutletModel extends mongoose.Model<OutletDocument> {
@@ -126,6 +127,10 @@ const OutletSchema = new mongoose.Schema<OutletDocument>(
       default: true,
     },
     bookingStoreId: {
+      type: String,
+      default: "",
+    },
+    logo: {
       type: String,
       default: "",
     },

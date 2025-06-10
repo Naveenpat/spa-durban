@@ -5,6 +5,10 @@ type OtherProp = {
   options?: any;
   isConcateData?: boolean;
   dataType?: 'LIST' | 'VIEW';
+  searchValue?: string;
+  limit?: number | string;
+  page?: number | string;
+  searchIn?: string;
 };
 
 export const useFetchData = (query: any, otherProps?: OtherProp) => {

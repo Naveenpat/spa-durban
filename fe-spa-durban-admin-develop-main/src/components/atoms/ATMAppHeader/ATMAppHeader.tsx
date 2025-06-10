@@ -1,4 +1,5 @@
 import {
+  IconBan,
   IconCopyX,
   IconCreditCardRefund,
   IconDotsVertical,
@@ -34,6 +35,7 @@ import { SalesReport } from 'src/modules/Invoices/models/Invoices.model';
 import ATMMenu from '../ATMMenu/ATMMenu';
 import { setIsOpenEditDialog } from 'src/modules/Product/slice/ProductSlice';
 import { useUpdateInvoiceMutation } from 'src/modules/Invoices/service/InvoicesServices';
+import { showToast } from 'src/utils/showToaster';
 type Props = {
   hideCollapseMenuButton?: boolean;
   showOutletDropdown?: boolean;
@@ -53,11 +55,16 @@ const ATMAppHeader = ({
     (state: RootState) => state.auth,
   );
 
+  const { isOpenEditDialog } = useSelector(
+    (state: RootState) => state?.invoices,
+  );
+
 
 
   const [storeOutletId, setStoreOutletId] = useState<string>();
+  const [invoiceId, setInvoiceId] = useState('');
   const [isSearch, setIsSearch] = useState(true);
-   console.log('--isSearch',isSearch)
+  console.log('--isSearch', isSearch)
   // const [getSalesReportDaily] = useGetSalesReportDailyQuery();
   // const { data, isLoading, totalData, totalPages } = useFetchData(
   //   useGetSalesReportDailyQuery,
@@ -89,7 +96,7 @@ const ATMAppHeader = ({
   const [isOpenChangePasswordDialog, setIsOpenChangePassword] = useState(false);
   const [isOpenSalseReportDialog, setIsOpenSalseReportDialog] = useState(false);
   const [isOpenRegistertDialog, setIsOpenRegistertDialog] = useState(false);
-  const [invoiceId, setInvoiceId] = useState('');
+
   const [dropdownPosition, setDropdownPosition] = useState({
     top: 0,
     right: 0,
@@ -128,33 +135,33 @@ const ATMAppHeader = ({
   // }, [outlet, isSearch]);
 
 
-// Step 1: When location or outlets change, set outlet info
-useEffect(() => {
-  const urlStoreId = searchParams.get('storeId');
-  const localStoreId = localStorage.getItem('store_Id');
-  const finalStoreId = urlStoreId || localStoreId;
+  // Step 1: When location or outlets change, set outlet info
+  useEffect(() => {
+    const urlStoreId = searchParams.get('storeId');
+    const localStoreId = localStorage.getItem('store_Id');
+    const finalStoreId = urlStoreId || localStoreId;
 
-  if (finalStoreId && outlets?.length) {
-    const outlet = outlets.find(
-      (item) => item.bookingStoreId === finalStoreId
-    );
-    if (outlet) {
-      dispatch(setOutlet(outlet));
-      if (urlStoreId) {
-        localStorage.setItem('store_Id', urlStoreId);
+    if (finalStoreId && outlets?.length) {
+      const outlet = outlets.find(
+        (item) => item.bookingStoreId === finalStoreId
+      );
+      if (outlet) {
+        dispatch(setOutlet(outlet));
+        if (urlStoreId) {
+          localStorage.setItem('store_Id', urlStoreId);
+        }
+        setStoreOutletId(outlet?._id); // triggers next effect
+        setIsSearch(true);             // triggers next effect
       }
-      setStoreOutletId(outlet?._id); // triggers next effect
-      setIsSearch(true);             // triggers next effect
     }
-  }
-}, [location.pathname, outlets]);
+  }, [location.pathname, outlets]);
 
-// Step 2: Trigger API when both `storeOutletId` and `isSearch` are valid
-useEffect(() => {
-  if (storeOutletId && isSearch && isOpenSalseReportDialog) {
-    refetch(); // or whatever function you use to fetch
-  }
-}, [storeOutletId, isSearch,isOpenSalseReportDialog]);
+  // Step 2: Trigger API when both `storeOutletId` and `isSearch` are valid
+  useEffect(() => {
+    if (storeOutletId && isSearch && isOpenSalseReportDialog) {
+      refetch(); // or whatever function you use to fetch
+    }
+  }, [storeOutletId, isSearch, isOpenSalseReportDialog]);
 
 
 
@@ -197,22 +204,41 @@ useEffect(() => {
   //   ),
   // );
 
-  const handleUpdate = async (_id: string) => {
+  const handleUpdate = async (item: any) => {
     try {
       await updateInvoice({
-        invoiceId: _id,
-        body: { status: 'refund' },
+        invoiceId: item?._id,
+        body: { status: item?.status === "" ? 'refund' : "" },
       }).unwrap();
-      alert('Invoice updated successfully!');
+      // alert('Invoice updated successfully!');
+      refetch();
+      showToast('success', 'Invoice updated successfully!')
     } catch (error) {
       console.error('Error updating invoice:', error);
-      alert('Failed to update invoice.');
+      // alert('Failed to update invoice.');
+
+      showToast('error', 'Failed to update invoice.')
     }
   };
 
+  const handleCancelVoidWithConfirmation = (invoiceId: any) => {
+    updateInvoice({ body: { status: "", voidNote: "" }, invoiceId }).then((res: any) => {
+      if (res?.error) {
+        showToast('error', res?.error?.data?.message)
+      } else {
+        if (res?.data?.status) {
+          refetch();
+          showToast('success', res?.data?.message)
+        } else {
+          showToast('error', res?.data?.message)
+        }
+      }
+    });
+  }
+
   const toTitleCase = (str: string = '') => {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-};
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
 
 
   const tableHeaders: TableHeader<any>[] = [
@@ -286,25 +312,40 @@ useEffect(() => {
           >
             <IconPrinter size={18} />
           </button>
-          
+
           <button
             type="button"
-            title="Refund"
-            onClick={() => handleUpdate(item?._id)}
+            title={item?.status === 'refund' ? 'Cancel Refund' : 'Refund'}
+            onClick={() => handleUpdate(item)}
             className="text-green-600 hover:text-green-800"
-            disabled={item?.status === "refund"}
+
           >
             <IconCreditCardRefund size={18} />
           </button>
 
-          <button
+          {/* <button
             type="button"
-            title="Void"
-            onClick={() => setInvoiceId(item?._id)}
-            className="text-red-600 hover:text-red-800"
+            title={item?.status === 'void' ? 'Cancel Void' : 'Void'}
+            onClick={() => {
+              if (item?.status === 'void') {
+                handleCancelVoidWithConfirmation(item._id);
+              } else {
+                setIsOpenSalseReportDialog(false)
+                dispatch(setIsOpenEditDialog(true));
+                setInvoiceId(item._id);
+              }
+            }}
+            className={`${item?.status === 'void'
+              ? 'text-green-600 hover:text-green-800'
+              : 'text-red-600 hover:text-red-800'} 
+               transition-colors duration-200`}
           >
-            <IconCopyX size={18} />
-          </button>
+            {item?.status === 'void' ? (
+              <IconBan size={18} /> // Different icon for cancel void
+            ) : (
+              <IconCopyX size={18} />
+            )}
+          </button> */}
         </div>
       ),
     }
@@ -484,6 +525,13 @@ useEffect(() => {
           isLoading={false}
         />
       )}
+
+      {/* {isOpenEditDialog && (
+        <EditInvoicesVoidFormWrapper
+          onClose={() => dispatch(setIsOpenEditDialog(false))}
+          invoiceId={invoiceId}
+        />
+      )} */}
 
       {/* {isOpenAddDialog && (
         <OpenRegisterFormWrapper

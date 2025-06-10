@@ -242,6 +242,52 @@ const OutletFormLayout = ({
                 isLoading={accountsLoading}
               />
             </div>
+
+            <div className="">
+              <label>
+                Upload Logo
+              </label>
+
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="logo-upload"
+                  className="cursor-pointer inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition"
+                >
+                  Choose File
+                  <input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFieldValue('logo', reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+
+                {values.logo && (
+                  <img
+                    src={values.logo}
+                    alt="Logo Preview"
+                    className="h-16 w-16 object-contain border rounded shadow"
+                  />
+                )}
+              </div>
+
+              {values.logo && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Image uploaded successfully.
+                </p>
+              )}
+            </div>
+
           </div>
 
           <div className="grid grid-cols-3 w-[70%] m-auto gap-4">

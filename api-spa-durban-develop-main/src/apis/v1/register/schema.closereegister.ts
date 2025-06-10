@@ -11,6 +11,8 @@ export interface CloseRegisterDocument extends Document {
   outletId: ObjectId;
   createdBy: ObjectId;
   date: Date;
+  bankDeposit: number;
+  carryForwardBalance: number;
   closeRegister: {
     _id: ObjectId;
     totalAmount: number;
@@ -50,6 +52,14 @@ const CloseRegisterSchema = new mongoose.Schema<CloseRegisterDocument>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "User",
+    },
+    bankDeposit: {
+      type: Number,
+      default: 0,
+    },
+    carryForwardBalance: {
+      type: Number,
+      default: 0,
     },
     date: {
       type: Date,

@@ -10,6 +10,7 @@ import config from "../../../../config/config";
 import { AggregatedInvoiceDocument } from "../invoice/schema.invoice";
 import { pdfMimeType } from "../../../helper/mimeTypes";
 import fs from "fs";
+import Outlet from "../outlet/schema.outlet";
 
 const sendInvoice = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { invoiceId } = req.params;
@@ -95,4 +96,64 @@ const sendInvoice = catchAsync(async (req: AuthenticatedRequest, res: Response) 
   });
 });
 
-export { sendInvoice };
+
+const sendEmailBYEmail = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  const { outletId } = req.params;
+  const { emailBody } = req.body;
+  console.log('---------ccc')
+  // ✅ Validate outletId
+  if (!mongoose.Types.ObjectId.isValid(outletId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid outletId.");
+  }
+
+  // ✅ Fetch outlet
+  const outlet = await Outlet.findById(outletId);
+  if (!outlet || !outlet.email) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Outlet or its email not found.");
+  }
+
+  // ✅ Validate file
+  if (!req.files || !Array.isArray(req.files) || !req.files.length) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invoice attachment is required.");
+  }
+
+  const file = req.files[0];
+  if (!pdfMimeType.includes(file.mimetype)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Only PDF files are allowed.");
+  }
+
+  if (!fs.existsSync(file.path)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "File does not exist.");
+  }
+
+  // ✅ Prepare email
+  const buffer = fs.readFileSync(file.path);
+  const emailData = {
+    emailSubject: `Today Close Registe`,
+    emailBody: emailBody,
+    sendTo: 'np.221196.np@gmail.com', // ✅ Send to outlet email
+    sendFrom: config.smtp_mail_email,
+    attachments: [
+      {
+        filename: `close-register.pdf`,
+        content: buffer,
+        path: file.path,
+        encoding: "base64",
+        contentType: file.mimetype,
+      },
+    ],
+  };
+
+  const sendEmailResult = await sendEmail(emailData);
+
+  return res.status(httpStatus.CREATED).send({
+    message: "Invoice sent to outlet email!",
+    data: sendEmailResult,
+    status: true,
+    code: "OK",
+    issue: null,
+  });
+});
+
+
+export { sendInvoice, sendEmailBYEmail };

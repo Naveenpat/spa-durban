@@ -8,7 +8,8 @@ import {
   toggleRegisterStatus,
   getRegisterCurentDate,
   createCloseRegister,
-  getGivenChangeSum
+  getGivenChangeSum,
+  getRegisterPreviousDate
 } from "./controller.register";
 import validate from "../../../middleware/validate";
 import {
@@ -150,6 +151,13 @@ router.get(
   // validate(getById),
   getRegisterCurentDate
 );
+
+router.get(
+  "/previous-date/:outletId",
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  getRegisterPreviousDate
+);
+
 
 router.get(
   "/given-change/:outletId",

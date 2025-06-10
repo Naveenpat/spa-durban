@@ -65,6 +65,9 @@ import TopCustomerAndProductsListingWrapper from './modules/TopCustomerAndProduc
 import SalesComparisonListingWrapper from './modules/salesComparison/screens/List/SalesComparisonListingWrapper';
 import TaskListingWrapper from './modules/Task/screens/List/TaskListingWrapper';
 import TicketListingWrapper from './modules/Ticket/screens/List/TicketListingWrapper';
+import CompanyListingWrapper from './modules/AdminRole copy/screens/List/CompanyWrapper';
+import CompanyFormWrapper from './modules/AdminRole copy/screens/Add/CompanyFormWrapper';
+import EditCompanyFormWrapper from './modules/AdminRole copy/screens/Edit/EditCompanyFormWrapper';
 
 type Props = {};
 
@@ -104,9 +107,18 @@ const PageRoutes = (props: Props) => {
           element: <AdminRoleListingWrapper />,
         },
         {
+          path: '/company',
+          element: <CompanyListingWrapper />,
+        },
+         {
+          path: '/company/add-company',
+          element: <CompanyFormWrapper />,
+        },
+        {
           path: '/admin-role/add-admin-role',
           element: <AddAdminRoleFormWrapper />,
         },
+        { path: '/company/edit/:id', element: <EditCompanyFormWrapper /> },
         { path: '/admin-role/edit/:id', element: <EditAdminRoleFormWrapper /> },
         { path: '/outlets', element: <OutletListingWrapper /> },
         { path: '/outlet/add', element: <AddOutletFormWrapper /> },

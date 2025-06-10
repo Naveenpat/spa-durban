@@ -39,6 +39,7 @@ export type TableHeader<T> = {
   dataCellClasses?: () => string;
   permissions?: PermissionType[];
   loaderElement?: ReactNode;
+  render?: (row: T) => React.ReactNode;
 };
 
 type Props<T> = {
@@ -256,7 +257,8 @@ const MOLTable = <T,>({
                             align={align}
                             wrap={wrap}
                             density={density}
-                            formatRowCell={renderCell}
+                            // formatRowCell={renderCell}
+                            formatRowCell={header.render ?? renderCell}
                             compact={compact}
                             flex={flex}
                             highlight={highlight}
@@ -296,7 +298,8 @@ const MOLTable = <T,>({
                           align={align}
                           wrap={wrap}
                           density={density}
-                          formatRowCell={renderCell}
+                          // formatRowCell={renderCell}
+                           formatRowCell={header.render ?? renderCell}
                           compact={compact}
                           flex={flex}
                           highlight={highlight}

@@ -22,6 +22,7 @@ const AddOutletFormWrapper = () => {
     invoicePrefix: '',
     invoiceNumber: '',
     onlinePaymentAccountId: '',
+    logo:''
   };
 
   const validationSchema = object().shape({

@@ -36,6 +36,7 @@ import cashbackRoute from "./cashback/route.cashback";
 import rewardscouponRoute from "./rewardscoupon/route.rewardscoupon";
 import promotioncouponRoute from "./promotioncoupon/route.promotioncoupon";
 import registerRoute from "./register/route.register";
+import companyRoute from "./company/route.company";
 const router: Router = express.Router();
 const devRoutes: { path: string; route: Router }[] = [
   // routes available only in development mode
@@ -185,6 +186,10 @@ const defaultRoutes: { path: string; route: Router }[] = [
   {
     path: "/register",
     route: registerRoute,
+  },
+   {
+    path: "/company",
+    route: companyRoute,
   },
 ];
 
