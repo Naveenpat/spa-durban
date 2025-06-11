@@ -6,7 +6,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
 import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCircularProgress';
 import { useFetchData } from 'src/hooks/useFetchData';
-import { useGetOutletsQuery } from 'src/modules/Outlet/service/OutletServices';
+import { useGetOutletsByCompanyIdQuery, useGetOutletsQuery } from 'src/modules/Outlet/service/OutletServices';
 import { calculatedAmounts } from 'src/modules/POS/components/CartSummarySection';
 import { showToast } from 'src/utils/showToaster';
 import {
@@ -14,6 +14,7 @@ import {
   useSendPdfViaEmailMutation,
 } from '../../service/InvoicesServices';
 import { useRef } from 'react';
+import { useGetCompanyByIdQuery } from 'src/modules/AdminRole copy/service/CompanyServices';
 
 const Receipt = () => {
   const { id: invoiceId } = useParams();
@@ -25,6 +26,11 @@ const Receipt = () => {
     body: invoiceId,
     dataType: 'VIEW',
   });
+
+ 
+const { data: companyData } = useGetCompanyByIdQuery((data as any)?.data?.companyId)
+ const { data:outletData } = useGetOutletsByCompanyIdQuery((data as any)?.data?.companyId);
+ console.log('----get all outlet by com id',outletData)
   const { data: outletsData } = useFetchData(useGetOutletsQuery, {
     body: {
       isPaginationRequired: false,
@@ -329,11 +335,11 @@ const Receipt = () => {
               </div>
               <div className="mt-2 mb-1 border-t"></div>
               <div className="px-2 font-semibold text-center text-slate-800">
-                Thank you for Choosing Spa-Durban
+                Thank you for Choosing {companyData?.data?.companyName}
                 <br />
                 Kindly Refer Your Friends and Family to us . <br />
                 Come again soon !
-                {outletsData?.map((outlet: any) => {
+                {outletData?.data?.map((outlet: any) => {
                   return (
                     <div className="mt-1 font-normal tracking-wider text-center text-slate-500">
                       <div>{toTitleCase(outlet?.name)}</div>

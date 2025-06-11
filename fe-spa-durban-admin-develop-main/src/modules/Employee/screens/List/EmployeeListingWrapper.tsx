@@ -16,6 +16,7 @@ import {
   useGetEmployiesQuery,
 } from '../../service/EmployeeServices';
 import EmployeeListing from './EmployeeListing';
+import { format } from 'date-fns';
 
 type Props = {};
 
@@ -98,6 +99,25 @@ const EmployeeListingWrapper = (props: Props) => {
         return row?.outletNames?.join(', ') || '-';
       },
     },
+    {
+      fieldName: 'companyName',
+      headerName: 'Company Name',
+      sortKey: 'age',
+      renderCell: (row: any) => {
+        return row?.companyName || '-';
+      },
+    },
+    {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      return date ? format(date, 'dd-MM-yyyy') : '-';
+    },
+  },
     {
       fieldName: 'status',
       headerName: 'Active',

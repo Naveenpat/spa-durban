@@ -11,6 +11,7 @@ import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCir
 import { useFetchData } from 'src/hooks/useFetchData';
 import { useGetAccountsQuery } from 'src/modules/Account/service/AccountServices';
 import { countries } from 'src/modules/Customer/components/CustomerFormLayout';
+import { useGetCompaniesQuery } from 'src/modules/AdminRole copy/service/CompanyServices';
 
 type Props = {
   formikProps: FormikProps<OutletFormValues>;
@@ -27,6 +28,11 @@ const OutletFormLayout = ({
 }: Props) => {
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
+
+  const { data: companyData } = useFetchData(
+    useGetCompaniesQuery
+  )
+
   const { data, isLoading: accountsLoading } = useFetchData(
     useGetAccountsQuery,
     {
@@ -243,55 +249,69 @@ const OutletFormLayout = ({
               />
             </div>
 
+            <div>
+              <ATMSelect
+                required
+                name="companyId"
+                value={values?.companyId}
+                onChange={(newValue) => setFieldValue('companyId', newValue)}
+                label="Company"
+                getOptionLabel={(options) => options?.companyName}
+                options={companyData}
+                valueAccessKey="_id"
+                placeholder="Please Select Company"
+              />
+            </div>
+
             <div className="">
-              <label>
-                Upload Logo
-              </label>
+            
 
-              <div className="flex items-center gap-4">
-                <label
-                  htmlFor="logo-upload"
-                  className="cursor-pointer inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition"
-                >
-                  Choose File
-                  <input
-                    id="logo-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setFieldValue('logo', reader.result);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    className="hidden"
-                  />
-                </label>
+              <div className="relative h-36 w-36 border-2 border-dashed border-gray-400 rounded-md flex items-center justify-center overflow-hidden">
+                <input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFieldValue('logo', reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                />
 
-                {values.logo && (
+                {!values.logo ? (
+                  <span className="text-4xl text-gray-400 z-0">+</span>
+                ) : (
                   <img
                     src={values.logo}
                     alt="Logo Preview"
-                    className="h-16 w-16 object-contain border rounded shadow"
+                    className="h-full w-full object-contain z-0"
                   />
                 )}
               </div>
-
-              {values.logo && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Image uploaded successfully.
-                </p>
-              )}
             </div>
 
-          </div>
 
-          <div className="grid grid-cols-3 w-[70%] m-auto gap-4">
-            {/* <div className="hidden ">
+            {/* <div className="">
+              <ATMFileUploader
+                name="logo"
+                value={values.logo}
+                onChange={(file: string) => {
+                  setFieldValue('logo', file);
+                }}
+                label="Outlet Logo"
+                accept=".jpg, .jpeg, .png, .gif"
+              />
+            </div>
+          </div> */}
+
+            <div className="grid grid-cols-3 w-[70%] m-auto gap-4">
+              {/* <div className="hidden ">
           <ATMFileUploader
             required
             name="companyLogo"
@@ -300,6 +320,7 @@ const OutletFormLayout = ({
             label="Company Logo"
           />
         </div> */}
+            </div>
           </div>
         </div>
       )}

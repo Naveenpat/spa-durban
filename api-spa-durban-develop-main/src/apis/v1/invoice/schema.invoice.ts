@@ -36,6 +36,7 @@ export interface InvoiceDocument extends Document {
   invoiceDate: Date;
   invoiceNumber: string;
   outletId: ObjectId;
+  companyId:ObjectId;
   customerId: ObjectId;
   employeeId: ObjectId;
   items: items[];
@@ -120,6 +121,11 @@ const InvoiceSchema = new mongoose.Schema<InvoiceDocument>(
       type: mongoose.Types.ObjectId,
       ref: "Outlet",
       required: true,
+      trim: true,
+    },
+    companyId:{
+       type: mongoose.Types.ObjectId,
+      ref: "Company",
       trim: true,
     },
     items: {

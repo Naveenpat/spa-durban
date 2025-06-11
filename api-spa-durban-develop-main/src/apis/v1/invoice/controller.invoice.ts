@@ -151,11 +151,15 @@ const createInvoice = catchAsync(
     invoiceData.invoiceDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
     console.log(invoiceData, 12123);
 
+     //update outlet invoice number
+    const getOutletData = await outletService.getOutletById(outletId);
+
     //create invoice
     const invoice = await invoiceService.createInvoice({
       ...invoiceData,
       bookingId,
       loyaltyPointsEarned: pointsToAdd,
+      companyId:getOutletData?.companyId
     });
     // console.log("55555555555")
     if (!invoice) {
@@ -177,6 +181,7 @@ const createInvoice = catchAsync(
     const updatedOutlet = await outletService.updateOutletById(outletId, {
       invoiceNumber: newInvoiceNumber,
     });
+
     if (!updatedOutlet) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
     }

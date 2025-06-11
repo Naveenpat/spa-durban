@@ -64,7 +64,7 @@ const OpenRegisterFormLayout = ({
           {opningData?.carryForwardBalance && (
             <div>
               <h6 className="text-sm text-blue-600 font-medium">
-                Previous Opening Balance: R {opningData.carryForwardBalance}
+                Previous Carry Forword Balance: R {opningData.carryForwardBalance}
               </h6>
             </div>
           )}

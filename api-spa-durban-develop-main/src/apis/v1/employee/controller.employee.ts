@@ -25,33 +25,95 @@ import { searchKeys, allowedDateFilterKeys } from "./schema.employee";
 import { UserEnum } from "../../../utils/enumUtils";
 import mongoose, { ObjectId } from "mongoose";
 
+// const createEmployee = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     /*
+//      * check role exist
+//      */
+//     const role = await roleService.getRoleById(req.body.userRoleId);
+//     if (!role) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "Role not found");
+//     }
+//     /*
+//      * check outlet exist
+//      */
+//     const outletIds = req.body.outletsId; // Assuming this is an array of Object IDs
+
+//     // Fetch all outlets by their IDs
+//     const outlets = await Promise.all(
+//       outletIds.map((id: any) => outletService.getOutletById(id))
+//     );
+
+//     // Check if any outlet is not found
+//     const notFoundOutlets = outlets.filter((outlet) => !outlet);
+
+//     if (notFoundOutlets.length > 0) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "One or more outlets not found");
+//     }
+
+//     const employee = await employeeService.createEmployee(req.body);
+//     return res.status(httpStatus.CREATED).send({
+//       message: "Added successfully!",
+//       data: employee,
+//       status: true,
+//       code: "CREATED",
+//       issue: null,
+//     });
+//   }
+// );
+
 const createEmployee = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    /*
-     * check role exist
-     */
-    const role = await roleService.getRoleById(req.body.userRoleId);
+    const { userRoleId, outletsId, companyId } = req.body;
+
+    console.log('----req body',req.body)
+    // Validate role
+    const role = await roleService.getRoleById(userRoleId);
     if (!role) {
       throw new ApiError(httpStatus.NOT_FOUND, "Role not found");
     }
-    /*
-     * check outlet exist
-     */
-    const outletIds = req.body.outletsId; // Assuming this is an array of Object IDs
 
-    // Fetch all outlets by their IDs
-    const outlets = await Promise.all(
-      outletIds.map((id: any) => outletService.getOutletById(id))
-    );
+    // Normalize inputs
+    const hasOutlets = Array.isArray(outletsId) && outletsId.length > 0;
+    const hasCompany = !!companyId;
 
-    // Check if any outlet is not found
-    const notFoundOutlets = outlets.filter((outlet) => !outlet);
-
-    if (notFoundOutlets.length > 0) {
-      throw new ApiError(httpStatus.NOT_FOUND, "One or more outlets not found");
+    // Clean up empty outletsId so it's not sent further
+    if (!hasOutlets) {
+      delete req.body.outletsId;
     }
 
+    // Enforce only one source
+    if (hasOutlets && hasCompany) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Only one of 'outletsId' or 'companyId' is allowed"
+      );
+    }
+  console.log('----111')
+    if (!hasOutlets && !hasCompany) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "One of 'outletsId' or 'companyId' must be provided"
+      );
+    }
+
+    // If outlets provided, validate them
+    if (hasOutlets) {
+      const outlets = await Promise.all(
+        outletsId.map((id: any) => outletService.getOutletById(id))
+      );
+
+      const notFoundOutlets = outlets.filter((outlet) => !outlet);
+      if (notFoundOutlets.length > 0) {
+        throw new ApiError(
+          httpStatus.NOT_FOUND,
+          "One or more outlets not found"
+        );
+      }
+    }
+  console.log('----222-')
     const employee = await employeeService.createEmployee(req.body);
+ console.log('----333-')
     return res.status(httpStatus.CREATED).send({
       message: "Added successfully!",
       data: employee,
@@ -61,6 +123,8 @@ const createEmployee = catchAsync(
     });
   }
 );
+
+
 
 const createBookingEmployee = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -289,6 +353,28 @@ const getEmployees = catchAsync(
       {
         $unset: ["outletDetails"],
       },
+      // ✅ Lookup for company
+  {
+    $lookup: {
+      from: "companies", // MongoDB collection name
+      localField: "companyId",
+      foreignField: "_id",
+      as: "companyDetails",
+      pipeline: [
+        {
+          $project: {
+            companyName: 1,
+          },
+        },
+      ],
+    },
+  },
+  {
+    $addFields: {
+      companyName: { $arrayElemAt: ["$companyDetails.companyName", 0] },
+    },
+  },
+  { $unset: ["companyDetails"] },
     ];
 
     options["additionalQuery"] = additionalQuery as any;
@@ -398,35 +484,102 @@ const getEmployeeRoles = catchAsync(
   }
 );
 
+// const updateEmployee = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     /*
+//      * check role exist
+//      */
+//     const role = await roleService.getRoleById(req.body.userRoleId);
+//     if (!role) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "Role not found");
+//     }
+//     /*
+//      * check outlet exist
+//      */
+//     const outletIds = req.body.outletsId; // Assuming this is an array of Object IDs
+
+//     // Fetch all outlets by their IDs
+//     const outlets = await Promise.all(
+//       outletIds.map((id: any) => outletService.getOutletById(id))
+//     );
+
+//     // Check if any outlet is not found
+//     const notFoundOutlets = outlets.filter((outlet) => !outlet);
+
+//     if (notFoundOutlets.length > 0) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "One or more outlets not found");
+//     }
+//     const employee = await employeeService.updateEmployeeById(
+//       req.params.employeeId,
+//       req.body
+//     );
+//     return res.status(httpStatus.OK).send({
+//       message: "Updated successfully!",
+//       data: employee,
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     });
+//   }
+// );
+
 const updateEmployee = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
+    const { userRoleId, outletsId, companyId } = req.body;
+
     /*
-     * check role exist
+     * Validate role
      */
-    const role = await roleService.getRoleById(req.body.userRoleId);
+    const role = await roleService.getRoleById(userRoleId);
     if (!role) {
       throw new ApiError(httpStatus.NOT_FOUND, "Role not found");
     }
+
     /*
-     * check outlet exist
+     * Enforce mutual exclusivity
      */
-    const outletIds = req.body.outletsId; // Assuming this is an array of Object IDs
+    const hasOutlets = Array.isArray(outletsId) && outletsId.length > 0;
+    const hasCompany = !!companyId;
 
-    // Fetch all outlets by their IDs
-    const outlets = await Promise.all(
-      outletIds.map((id: any) => outletService.getOutletById(id))
-    );
-
-    // Check if any outlet is not found
-    const notFoundOutlets = outlets.filter((outlet) => !outlet);
-
-    if (notFoundOutlets.length > 0) {
-      throw new ApiError(httpStatus.NOT_FOUND, "One or more outlets not found");
+    // Remove empty arrays or nulls from body
+    if (!hasOutlets) {
+       req.body.outletsId=null;
     }
+
+    if (!hasCompany) {
+      req.body.companyId=null;
+    }
+
+    if (hasOutlets && hasCompany) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Only one of 'outletsId' or 'companyId' is allowed");
+    }
+
+    if (!hasOutlets && !hasCompany) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "One of 'outletsId' or 'companyId' must be provided");
+    }
+
+    /*
+     * If outlets are provided, validate them
+     */
+    if (hasOutlets) {
+      const outlets = await Promise.all(
+        outletsId.map((id: any) => outletService.getOutletById(id))
+      );
+
+      const notFoundOutlets = outlets.filter((outlet) => !outlet);
+      if (notFoundOutlets.length > 0) {
+        throw new ApiError(httpStatus.NOT_FOUND, "One or more outlets not found");
+      }
+    }
+
+    /*
+     * Update employee
+     */
     const employee = await employeeService.updateEmployeeById(
       req.params.employeeId,
       req.body
     );
+
     return res.status(httpStatus.OK).send({
       message: "Updated successfully!",
       data: employee,
@@ -436,6 +589,7 @@ const updateEmployee = catchAsync(
     });
   }
 );
+
 
 const deleteEmployee = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {

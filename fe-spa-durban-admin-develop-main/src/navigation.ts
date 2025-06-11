@@ -88,18 +88,6 @@ const navigation: (params?: {
           },
           permission: 'NAV_USER_ROLE',
         },
-
-        {
-          title: 'Company',
-          icon: IconUserCog,
-          path: 'company',
-          searchParams: {
-            page: '1',
-            limit: '10',
-          },
-          permission: 'NAV_COMPANY',
-        },
-
         {
           title: 'Purchase Order',
           icon: IconShoppingCart,
@@ -309,6 +297,16 @@ const navigation: (params?: {
     {
       groupLable: 'Configuration',
       items: [
+         {
+          title: 'Company',
+          icon: IconUserCog,
+          path: 'company',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'NAV_COMPANY',
+        },
         {
           title: 'Outlets',
           icon: IconLayoutDistributeHorizontal,

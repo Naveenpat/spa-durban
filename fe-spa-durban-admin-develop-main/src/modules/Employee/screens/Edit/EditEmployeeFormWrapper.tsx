@@ -1,5 +1,5 @@
 import { Formik, FormikHelpers, Form } from 'formik';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { EmployeeFormValues } from '../../models/Employee.model';
 import EmployeeFormLayout from '../../components/EmployeeFormLayout';
 import { array, number, object, string } from 'yup';
@@ -18,6 +18,15 @@ const EditEmployeeFormWrapper = () => {
     body: id,
     dataType: 'VIEW',
   });
+
+    useEffect(() => {
+  if ((data as any)?.data?.companyId) {
+    setOutletOrBranchOutlet('company');
+  } else {
+    setOutletOrBranchOutlet('outlet');
+  }
+}, [data])
+
   const initialValues: EmployeeFormValues = {
     userName: (data as any)?.data?.userName,
     email: (data as any)?.data?.email,
@@ -32,6 +41,7 @@ const EditEmployeeFormWrapper = () => {
     region: (data as any)?.data?.region,
     country: { label: (data as any)?.data?.country },
     phone: (data as any)?.data?.phone,
+    companyId: (data as any)?.data?.companyId
   };
 
   const validationSchema = object().shape({
@@ -40,34 +50,53 @@ const EditEmployeeFormWrapper = () => {
       .required('Please enter user name'),
     email: string().required('Please enter email'),
     userRoleId: object().required('Please select user role'),
-    outletsId: array()
-      .min(1, 'Please select outlets')
-      .required('Please select outlets'),
+    // outletsId: array()
+    //   .min(1, 'Please select outlets')
+    //   .required('Please select outlets'),
     name: string().required('Please enter name'),
     address: string().required('Please enter address'),
     city: string().required('Please enter city'),
     region: string().required('Please enter region'),
     country: object().required('Please enter country'),
     phone: string().required('Please enter phone number'),
+    // companyId: object().required('Please select company'),
   });
+
+  const [outletOrBranchOutlet, setOutletOrBranchOutlet] = useState('')
+  
+   
 
   const handleSubmit = (
     values: EmployeeFormValues,
     { resetForm, setSubmitting }: FormikHelpers<EmployeeFormValues>,
   ) => {
-    const formattedValues = {
-      userName: values?.userName,
-      email: values?.email,
-      password: values?.password,
-      userRoleId: values?.userRoleId?._id,
-      outletsId: values?.outletsId?.map((outletsId: any) => outletsId?._id),
-      name: values?.name,
-      address: values?.address,
-      city: values?.city,
-      region: values?.region,
-      country: values?.country?.label,
-      phone: values?.phone,
-    };
+
+    console.log('----values',values)
+     const formattedValues: any = {
+  userName: values?.userName,
+  email: values?.email,
+  password: values?.password,
+  userRoleId: values?.userRoleId?._id,
+  name: values?.name,
+  address: values?.address,
+  city: values?.city,
+  region: values?.region,
+  country: values?.country?.label,
+  phone: values?.phone,
+};
+
+// ✅ Conditionally add either companyId or outletsId based on state
+if (outletOrBranchOutlet === 'company' && values.companyId) {
+  formattedValues.companyId = values.companyId._id || values.companyId;
+} else if (
+  outletOrBranchOutlet === 'outlet' &&
+  Array.isArray(values.outletsId) &&
+  values.outletsId.length > 0
+) {
+  formattedValues.outletsId = values.outletsId.map((x) => x._id || x);
+}
+
+console.log('------formattedValues',formattedValues)
     updateEmployee({ body: formattedValues, employeeId: id }).then(
       (res: any) => {
         if (res?.error) {
@@ -100,6 +129,8 @@ const EditEmployeeFormWrapper = () => {
             onCancel={() => navigate('/employee')}
             formType="UPDATE"
             isLoading={isLoading}
+            setOutletOrBranchOutlet={setOutletOrBranchOutlet}
+            outletOrBranchOutlet={outletOrBranchOutlet}
           />
         </Form>
       )}

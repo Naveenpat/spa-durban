@@ -5,6 +5,8 @@ export type Employee = {
   outletNames: string;
   isActive: boolean;
   status: any;
+  companyName:any;
+  createdAt:Date;
   _id: string;
 };
 
@@ -13,11 +15,12 @@ export type EmployeeFormValues = {
   email: string;
   password: string;
   userRoleId: any;
-  outletsId: any;
+  outletsId?: any;
   name: string;
   address: string;
   city: string;
   region: string;
   country: any;
   phone: string;
+  companyId?:any;
 };

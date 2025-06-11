@@ -21,6 +21,15 @@ export const outletApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    getOutletsByCompanyId: builder.query({
+      providesTags: ['outlets'],
+      query: (companyId) => {
+        return {
+          url: `/outlet/get-componys/${companyId}`,
+          method: 'GET',
+        };
+      },
+    }),
     addOutlet: builder.mutation({
       invalidatesTags: ['outlets'],
       query: (body) => {
@@ -69,4 +78,5 @@ export const {
   useUpdateOutletMutation,
   useDeleteOutletMutation,
   useOutletStatusMutation,
+  useGetOutletsByCompanyIdQuery
 } = outletApi;

@@ -121,6 +121,8 @@ const getOutlets = catchAsync(
         options["filterBy"] = { $and: filterQuery } as any
       }
     }
+
+    
     const result = await outletService.queryOutlets(filter, options)
     return res.status(httpStatus.OK).send(result)
   }
@@ -142,6 +144,23 @@ const getOutlet = catchAsync(
     })
   }
 )
+
+const getOutletsBYCompany = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { companyId } = req.params;
+
+    const outlets = await outletService.getOutletsByCompanyId(companyId);
+
+    return res.status(httpStatus.OK).send({
+      message: 'Fetched outlets successfully',
+      data: outlets,
+      status: true,
+      code: 'OK',
+      issue: null,
+    });
+  }
+);
+
 
 const updateOutlet = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -192,4 +211,5 @@ export {
   updateOutlet,
   deleteOutlet,
   toggleOutletStatus,
+  getOutletsBYCompany
 }

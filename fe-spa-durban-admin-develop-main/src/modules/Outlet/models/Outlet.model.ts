@@ -11,6 +11,8 @@ export type Outlet = {
   status: any;
   isActive: boolean;
   logo:string;
+  companyName:any;
+  createdAt:Date;
 };
 
 export type OutletFormValues = {
@@ -26,4 +28,5 @@ export type OutletFormValues = {
   invoiceNumber: string;
   onlinePaymentAccountId: any;
   logo:string;
+  companyId:any;
 };

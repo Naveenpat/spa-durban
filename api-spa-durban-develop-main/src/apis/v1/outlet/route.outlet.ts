@@ -6,6 +6,7 @@ import {
   updateOutlet,
   deleteOutlet,
   toggleOutletStatus,
+  getOutletsBYCompany,
 } from "./controller.outlet";
 import validate from "../../../middleware/validate";
 import {
@@ -193,6 +194,13 @@ router.get(
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
   validate(getById),
   getOutlet
+);
+
+router.get(
+  "/get-componys/:companyId",
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  // validate(getById),
+  getOutletsBYCompany
 );
 
 /**

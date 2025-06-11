@@ -1,4 +1,4 @@
-import mongoose, { Document, ObjectId } from "mongoose";
+import mongoose, { Document, ObjectId, Types } from "mongoose";
 import timestamp from "../../plugins/timeStamp.plugin";
 import { paginate } from "../../plugins/pagination.plugin";
 import {
@@ -15,13 +15,14 @@ export interface EmployeeDocument extends Document {
   name: string;
   phone: string;
   userRoleId: ObjectId;
-  outletsId: [ObjectId];
+  outletsId?: Types.ObjectId[];
   address: string;
   city: string;
   region: string;
   country: string;
   isDeleted: boolean;
   isActive: boolean;
+  companyId?:ObjectId;
 }
 
 export interface EmployeeModel extends mongoose.Model<EmployeeDocument> {
@@ -85,9 +86,16 @@ const EmployeeSchema = new mongoose.Schema<EmployeeDocument>(
       trim: true,
       default: null,
     },
+     companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      trim: true,
+      default: null,
+    },
     outletsId: {
       type: [mongoose.Schema.Types.ObjectId],
       // required: true,
+      default: null,
       trim: true,
     },
     address: {

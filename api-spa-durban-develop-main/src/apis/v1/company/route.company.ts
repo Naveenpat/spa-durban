@@ -154,4 +154,11 @@ router.put(
   updateByIdCompanys
 );
 
+
+router.delete(
+  "/:id",
+  authenticate([UserEnum.Admin], TokenEnum.Access), // Only admins can delete
+  // validate(deleteCompany), // Optional: validate ObjectId format
+  removeCompanys
+);
 export default router;

@@ -3,6 +3,7 @@ export type Company = {
   email: string;
   phone: string;
   logo?: string;
+  createdAt:Date;
   _id: string;
 };
 
