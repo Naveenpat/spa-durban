@@ -299,7 +299,7 @@ const navigation: (params?: {
       items: [
          {
           title: 'Company',
-          icon: IconUserCog,
+          icon: IconBuildingWarehouse,
           path: 'company',
           searchParams: {
             page: '1',

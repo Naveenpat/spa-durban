@@ -69,9 +69,47 @@ const sendInvoice = catchAsync(async (req: AuthenticatedRequest, res: Response) 
 
   // ✅ Prepare email data
   const buffer = fs.readFileSync(file.path);
+  // const emailData = {
+  //   emailSubject: `Invoice - ${invoice.invoiceNumber}`,
+  //   emailBody: emailBody,
+  //   sendTo: invoice.customer.email,
+  //   sendFrom: config.smtp_mail_email,
+  //   attachments: [
+  //     {
+  //       filename: `${invoice.invoiceNumber}.pdf`,
+  //       content: buffer,
+  //       path: file.path,
+  //       encoding: "base64",
+  //       contentType: file.mimetype,
+  //     },
+  //   ],
+  // };
+
   const emailData = {
-    emailSubject: `Invoice - ${invoice.invoiceNumber}`,
-    emailBody: emailBody,
+    emailSubject: 'Your Payment is Confirmed – Invoice for Your SPA Service',
+    emailBody: `
+Dear ${invoice.customer?.name || 'Customer'},
+
+Thank you for choosing our SPA services.
+
+We’re pleased to inform you that your payment has been successfully received. Please find the invoice attached with this email for your reference.
+
+Details:
+
+Service: ${invoice?.serviceName || 'SPA Service'}
+Date: ${invoice?.date || 'N/A'}
+Invoice No.: ${invoice?.invoiceNumber}
+Amount Paid: ₹${invoice?.amount || '0.00'}
+
+If you have any questions or require further assistance, feel free to reply to this email or contact our support team.
+
+We look forward to serving you again soon!
+
+Warm regards,  
+'Your SPA Name' 
+'Phone: 123-456-7890'
+'www.yourspa.com'
+  `.trim(),
     sendTo: invoice.customer.email,
     sendFrom: config.smtp_mail_email,
     attachments: [
@@ -84,6 +122,7 @@ const sendInvoice = catchAsync(async (req: AuthenticatedRequest, res: Response) 
       },
     ],
   };
+
 
   const sendEmailResult = await sendEmail(emailData);
 
@@ -100,7 +139,6 @@ const sendInvoice = catchAsync(async (req: AuthenticatedRequest, res: Response) 
 const sendEmailBYEmail = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { outletId } = req.params;
   const { emailBody } = req.body;
-  console.log('---------ccc')
   // ✅ Validate outletId
   if (!mongoose.Types.ObjectId.isValid(outletId)) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid outletId.");

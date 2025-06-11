@@ -119,6 +119,20 @@ const OutletListingWrapper = (props: Props) => {
       return date ? format(date, 'dd-MM-yyyy') : '-';
     },
   },
+  {
+    fieldName: 'logo',
+    headerName: 'Logo',
+    flex: 'flex-[0.5_1_0%]',
+    render: (row: any) => (
+      <img
+        src={row.logo || '/images/default-logo.png'}
+        onError={(e) => (e.currentTarget.src = '/images/default-logo.png')}
+        alt="Logo"
+        className="h-12 w-12 object-contain rounded-full border"
+      />
+    ),
+    stopPropagation: true,
+  },
     {
       fieldName: 'status',
       headerName: 'Active',

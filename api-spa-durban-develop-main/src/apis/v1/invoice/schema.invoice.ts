@@ -70,6 +70,12 @@ export interface InvoiceDocument extends Document {
 
 export interface AggregatedInvoiceDocument extends InvoiceDocument {
   customer: UserDocument;
+  amount:any;
+  date:Date;
+  serviceName:any;
+  spa_name:any;
+  contact_info:any;
+  website:any;
 }
 
 export interface InvoiceModel extends mongoose.Model<InvoiceDocument> {
