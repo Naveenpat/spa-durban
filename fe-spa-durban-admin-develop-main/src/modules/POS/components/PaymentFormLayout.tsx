@@ -410,7 +410,7 @@ const PaymentFormLayout = ({
                                     values.amountReceived[index].paymentModeId
                                   }
                                   onChange={(newValue) => {
-                                    console.log(newValue, 'new value');
+                                    // console.log(newValue, 'new value');
 
                                     setFieldValue(
                                       `amountReceived.${index}.paymentModeId`,

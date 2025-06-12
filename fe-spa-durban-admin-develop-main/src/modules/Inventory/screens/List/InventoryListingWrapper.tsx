@@ -10,6 +10,7 @@ import { CURRENCY } from 'src/utils/constants';
 import { Inventory } from '../../models/Inventory.model';
 import { useGetInventoriesQuery } from '../../service/InventoryServices';
 import InventoryListing from './InventoryListing';
+import { format } from 'date-fns';
 
 const tableHeaders: TableHeader<Inventory>[] = [
   {
@@ -34,6 +35,17 @@ const tableHeaders: TableHeader<Inventory>[] = [
       </div>
     ),
   },
+  {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      return date ? format(date, 'dd-MM-yyyy') : '-';
+    },
+  }
 ];
 
 const InventoryListingWrapper = () => {

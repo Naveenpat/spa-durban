@@ -19,13 +19,13 @@ const EditEmployeeFormWrapper = () => {
     dataType: 'VIEW',
   });
 
-    useEffect(() => {
-  if ((data as any)?.data?.companyId) {
-    setOutletOrBranchOutlet('company');
-  } else {
-    setOutletOrBranchOutlet('outlet');
-  }
-}, [data])
+  useEffect(() => {
+    if ((data as any)?.data?.companyId) {
+      setOutletOrBranchOutlet('company');
+    } else {
+      setOutletOrBranchOutlet('outlet');
+    }
+  }, [data])
 
   const initialValues: EmployeeFormValues = {
     userName: (data as any)?.data?.userName,
@@ -44,11 +44,21 @@ const EditEmployeeFormWrapper = () => {
     companyId: (data as any)?.data?.companyId
   };
 
+  const passwordRegex = /^[a-zA-Z0-9@$!]*$/;
+
   const validationSchema = object().shape({
     userName: string()
       .matches(/^[a-z0-9@]+$/, 'Only lowercase letters and numbers are allowed')
       .required('Please enter user name'),
     email: string().required('Please enter email'),
+    password: string()
+      .matches(
+        passwordRegex,
+        'Password can only contain letters, numbers, @, and $',
+      )
+      .min(6, 'Password must be at least 6 characters')
+      .max(20, 'Password must be at most 20 characters')
+      .required('Please enter password'),
     userRoleId: object().required('Please select user role'),
     // outletsId: array()
     //   .min(1, 'Please select outlets')
@@ -63,40 +73,40 @@ const EditEmployeeFormWrapper = () => {
   });
 
   const [outletOrBranchOutlet, setOutletOrBranchOutlet] = useState('')
-  
-   
+
+
 
   const handleSubmit = (
     values: EmployeeFormValues,
     { resetForm, setSubmitting }: FormikHelpers<EmployeeFormValues>,
   ) => {
 
-    console.log('----values',values)
-     const formattedValues: any = {
-  userName: values?.userName,
-  email: values?.email,
-  password: values?.password,
-  userRoleId: values?.userRoleId?._id,
-  name: values?.name,
-  address: values?.address,
-  city: values?.city,
-  region: values?.region,
-  country: values?.country?.label,
-  phone: values?.phone,
-};
+    // console.log('----values',values)
+    const formattedValues: any = {
+      userName: values?.userName,
+      email: values?.email,
+      password: values?.password,
+      userRoleId: values?.userRoleId?._id,
+      name: values?.name,
+      address: values?.address,
+      city: values?.city,
+      region: values?.region,
+      country: values?.country?.label,
+      phone: values?.phone,
+    };
 
-// ✅ Conditionally add either companyId or outletsId based on state
-if (outletOrBranchOutlet === 'company' && values.companyId) {
-  formattedValues.companyId = values.companyId._id || values.companyId;
-} else if (
-  outletOrBranchOutlet === 'outlet' &&
-  Array.isArray(values.outletsId) &&
-  values.outletsId.length > 0
-) {
-  formattedValues.outletsId = values.outletsId.map((x) => x._id || x);
-}
+    // ✅ Conditionally add either companyId or outletsId based on state
+    if (outletOrBranchOutlet === 'company' && values.companyId) {
+      formattedValues.companyId = values.companyId._id || values.companyId;
+    } else if (
+      outletOrBranchOutlet === 'outlet' &&
+      Array.isArray(values.outletsId) &&
+      values.outletsId.length > 0
+    ) {
+      formattedValues.outletsId = values.outletsId.map((x) => x._id || x);
+    }
 
-console.log('------formattedValues',formattedValues)
+    // console.log('------formattedValues',formattedValues)
     updateEmployee({ body: formattedValues, employeeId: id }).then(
       (res: any) => {
         if (res?.error) {

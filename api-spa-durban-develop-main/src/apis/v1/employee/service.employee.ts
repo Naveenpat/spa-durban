@@ -67,10 +67,10 @@ const getEmployeeById = async (
   id: string | number
 ): Promise<EmployeeDocument | null> => {
   if (typeof id === "string" || typeof id === "number") {
-    return Employee.findById({
+    return Employee.findOne({
       _id: new mongoose.Types.ObjectId(id),
       isDeleted: false,
-    });
+    }).select("+password");
   }
   return null;
 };

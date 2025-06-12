@@ -69,7 +69,7 @@ const AuthWrapper = ({ children }: Props) => {
     const sessionAlreadyLoggedIn = localStorage.getItem('isLogin') === 'true';
 
     if (!sessionAlreadyLoggedIn && pathname.startsWith('/pos') && bookingUserId) {
-      console.log('Auto-login with bookingUserId:', bookingUserId);
+      // console.log('Auto-login with bookingUserId:', bookingUserId);
 
       login({ bookingUserId }).then((res: any) => {
         if (res.error) {

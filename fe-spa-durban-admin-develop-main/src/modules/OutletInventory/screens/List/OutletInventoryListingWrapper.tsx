@@ -9,6 +9,7 @@ import { CURRENCY } from 'src/utils/constants';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
 import { useGetProductsQuery } from 'src/modules/Product/service/ProductServices';
+import { format } from 'date-fns';
 
 type Props = {};
 
@@ -34,6 +35,17 @@ const tableHeaders: TableHeader<OutletInventory>[] = [
       </div>
     ),
   },
+  {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      return date ? format(date, 'dd-MM-yyyy') : '-';
+    },
+  }
 ];
 
 const OutletInventoryListingWrapper = (props: Props) => {

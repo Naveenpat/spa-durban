@@ -209,7 +209,7 @@ const updateCustomerById = async (
   userDataToUpdate["userName"] = customerUpdated.email;
   userDataToUpdate["password"] = customerUpdated.phone;
   userDataToUpdate["name"] = customerUpdated.customerName;
-  console.log("update users data==============>",userDataToUpdate)
+  // console.log("update users data==============>",userDataToUpdate)
   // const user = await userService.updateUserById(customerId, {
   //   userDataToUpdate,
   // });

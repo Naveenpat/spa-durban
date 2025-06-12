@@ -22,7 +22,7 @@ const EditRegisterFormWrapper = ({ onClose, registerId }: Props) => {
     dataType: 'VIEW',
   });
 
-  console.log('----',data)
+  // console.log('----',data)
   const initialValues: OpenRegisterFormValues = {
     registerId: (data as any)?.data?.registerId,
     openingBalance: (data as any)?.data?.openingBalance,

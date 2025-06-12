@@ -17,6 +17,7 @@ import {
   useGetMeasurementUnitsQuery,
 } from '../../service/MeasurmentUnitServices';
 import { showToast } from 'src/utils/showToaster';
+import { format } from 'date-fns';
 
 type Props = {};
 
@@ -37,6 +38,17 @@ const tableHeaders: TableHeader<MeasurmentUnit>[] = [
     sortKey: 'code',
     flex: 'flex-[1_0_0%]',
   },
+  {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      return date ? format(date, 'dd-MM-yyyy') : '-';
+    },
+  }
 ];
 
 const MeasurmentUnitListingWrapper = (props: Props) => {

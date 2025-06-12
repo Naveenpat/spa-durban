@@ -12,6 +12,7 @@ import {
 import SupplierListing from './SupplierListing';
 import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
+import { format } from 'date-fns';
 
 const SupplierListingWrapper = () => {
   const navigate = useNavigate();
@@ -107,6 +108,17 @@ const SupplierListingWrapper = () => {
 
       sortKey: 'taxID',
       flex: 'flex-[1_0_0%]',
+    },
+    {
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        return date ? format(date, 'dd-MM-yyyy') : '-';
+      },
     },
     {
       fieldName: 'status',

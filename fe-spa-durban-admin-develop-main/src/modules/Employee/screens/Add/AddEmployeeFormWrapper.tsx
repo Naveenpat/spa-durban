@@ -86,7 +86,7 @@ if (outletOrBranchOutlet === 'company' && values.companyId) {
 
     
 
-    console.log('-----formattedValues', formattedValues)
+    // console.log('-----formattedValues', formattedValues)
     addEmployee(formattedValues).then((res: any) => {
       if (res?.error) {
         showToast('error', res?.error?.data?.message);

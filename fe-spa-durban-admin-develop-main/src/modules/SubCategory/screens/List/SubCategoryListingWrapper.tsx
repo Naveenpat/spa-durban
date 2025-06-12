@@ -17,6 +17,7 @@ import {
   useGetSubCategoriesQuery,
 } from '../../service/SubCategoryServices';
 import { showToast } from 'src/utils/showToaster';
+import { format } from 'date-fns';
 
 type Props = {};
 
@@ -39,6 +40,17 @@ const tableHeaders: TableHeader<SubCategory>[] = [
       return <div title={item?.description}>{item?.description}</div>;
     },
   },
+  {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      return date ? format(date, 'dd-MM-yyyy') : '-';
+    },
+  }
 ];
 
 const SubCategoryListingWrapper = (props: Props) => {

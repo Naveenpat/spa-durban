@@ -35,6 +35,11 @@ const tableHeaders: TableHeader<Category>[] = [
       return <div title={item?.description}>{item?.description}</div>;
     },
   },
+  {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]'
+  }
   // {
   //   fieldName: 'totalProducts',
   //   headerName: 'total Products',

@@ -30,7 +30,7 @@ const Receipt = () => {
  
 const { data: companyData } = useGetCompanyByIdQuery((data as any)?.data?.companyId)
  const { data:outletData } = useGetOutletsByCompanyIdQuery((data as any)?.data?.companyId);
- console.log('----get all outlet by com id',outletData)
+//  console.log('----get all outlet by com id',outletData)
   const { data: outletsData } = useFetchData(useGetOutletsQuery, {
     body: {
       isPaginationRequired: false,

@@ -64,7 +64,7 @@ const ATMAppHeader = ({
   const [storeOutletId, setStoreOutletId] = useState<string>();
   const [invoiceId, setInvoiceId] = useState('');
   const [isSearch, setIsSearch] = useState(true);
-  console.log('--isSearch', isSearch)
+  // console.log('--isSearch', isSearch)
   // const [getSalesReportDaily] = useGetSalesReportDailyQuery();
   // const { data, isLoading, totalData, totalPages } = useFetchData(
   //   useGetSalesReportDailyQuery,

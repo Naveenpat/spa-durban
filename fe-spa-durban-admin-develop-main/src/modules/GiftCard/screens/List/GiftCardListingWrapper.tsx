@@ -112,7 +112,7 @@ const GiftCardListingWrapper = (props: Props) => {
     },
     {
       fieldName: 'createdAt',
-      headerName: 'created By',
+      headerName: 'Date',
       flex: 'flex-[1_0_0%]',
       renderCell(item) {
         return <div>{format(new Date(item?.createdAt), 'dd MMM yyyy')}</div>;

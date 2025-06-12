@@ -76,6 +76,10 @@ export interface AggregatedInvoiceDocument extends InvoiceDocument {
   spa_name:any;
   contact_info:any;
   website:any;
+  paymentMethod:any;
+  outlet:any;
+  paymentMode:any;
+  amountReceived:any;
 }
 
 export interface InvoiceModel extends mongoose.Model<InvoiceDocument> {

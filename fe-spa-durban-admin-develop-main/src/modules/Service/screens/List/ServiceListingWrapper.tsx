@@ -17,6 +17,7 @@ import {
   useServiceStatusMutation,
 } from '../../service/ServiceServices';
 import ServiceListing from './ServiceListing';
+import { format } from 'date-fns';
 
 type Props = {};
 
@@ -151,6 +152,17 @@ const ServiceListingWrapper = (props: Props) => {
           {CURRENCY} {Number(item?.sellingPrice).toFixed(2)}
         </div>
       ),
+    },
+    {
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        return date ? format(date, 'dd-MM-yyyy') : '-';
+      },
     },
     {
       fieldName: 'status',

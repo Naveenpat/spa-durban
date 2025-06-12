@@ -129,7 +129,7 @@ const [sendPdfBYEmail] = useSendPdfBYEmailMutation();
   ) => {
     try {
 
-      console.log('-----------initialValues',(data as any)?.data?.existingRegister?.openingBalance)
+      // console.log('-----------initialValues',(data as any)?.data?.existingRegister?.openingBalance)
       const updatedPaymentModes = (data as any)?.data?.result?.map(
         (item: { _id: string | number }) => ({
           ...item,

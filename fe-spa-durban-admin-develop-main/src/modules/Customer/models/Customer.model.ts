@@ -13,6 +13,7 @@ export type Customer = {
   status: any;
   loyaltyPoints: string;
   isActive: boolean;
+  updatedAt:Date;
 };
 
 export type CustomerFormValues = {

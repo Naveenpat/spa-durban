@@ -5,6 +5,7 @@ export type Category = {
   stockQuantity: number;
   worth: number;
   _id: string;
+  createdAt:Date;
 };
 
 export type CategoryFormValues = {

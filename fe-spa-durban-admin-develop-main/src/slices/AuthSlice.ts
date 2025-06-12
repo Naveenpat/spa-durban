@@ -39,6 +39,9 @@ const authSlice: Slice<AuthSLiceStateType> = createSlice({
     },
     setReturnUrl: (state, action: PayloadAction<string | null>) => {
       state.returnUrl = action.payload;
+      state.userData=null
+      state.accessToken=null
+      state.refreshToken=null
     },
     setUserData: (state, action: PayloadAction<any>) => {
       state.userData = action.payload;

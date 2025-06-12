@@ -15,6 +15,7 @@ import ProductListing from './ProductListing';
 import { CURRENCY } from 'src/utils/constants';
 import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
+import { format } from 'date-fns';
 
 type Props = {};
 
@@ -190,6 +191,17 @@ const ProductListingWrapper = (props: Props) => {
       headerName: 'Description',
       flex: 'flex-[1_0_0%]',
     },
+    {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      return date ? format(date, 'dd-MM-yyyy') : '-';
+    },
+  },
     {
       fieldName: 'status',
       headerName: 'Active',

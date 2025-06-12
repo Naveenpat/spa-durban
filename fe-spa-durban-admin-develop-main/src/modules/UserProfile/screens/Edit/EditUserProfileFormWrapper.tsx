@@ -38,7 +38,7 @@ const EditUserProfileFormWrapper = () => {
     { resetForm, setSubmitting }: FormikHelpers<UserProfileFormValues>,
   ) => {
     setTimeout(() => {
-      console.log(values, 'Submit values');
+      // console.log(values, 'Submit values');
       setSubmitting(false);
       resetForm();
     }, 1000);

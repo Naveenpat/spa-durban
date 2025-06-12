@@ -278,7 +278,7 @@ const sendTaskEmailEmployee = async (taskId: string, userData: any) => {
       attachments: [],
     }
     const sendEmailResult = await sendEmail(emailData)
-    console.log(sendEmailResult, "sendEmailResult")
+    // console.log(sendEmailResult, "sendEmailResult")
   }
   return taskDetail
 }

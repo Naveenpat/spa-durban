@@ -90,11 +90,16 @@ const CloseRegisterFormLayout = ({
                           <tr key={index} className="border hover:bg-gray-50 transition-all">
                             <td className="p-3 border">{row.paymentModeName}</td>
                             <td className="p-3 border text-green-600 font-semibold">
-                              {index === 0 ? `R ${row?.totalAmount?.toFixed(2)}` : ''}
+                              {index === 0 && typeof row?.totalAmount === 'number'
+                                ? `R ${row.totalAmount.toFixed(2)}`
+                                : ''}
                             </td>
                             <td className="p-3 border text-blue-600 font-semibold">
-                              {index > 0 ? `R ${row?.totalAmount?.toFixed(2)}` : ''}
+                              {index > 0 && typeof row?.totalAmount === 'number'
+                                ? `R ${row.totalAmount.toFixed(2)}`
+                                : ''}
                             </td>
+
                             <td className="p-3 border">
                               {index > 0 ? (
                                 <div className="flex flex-col gap-1">

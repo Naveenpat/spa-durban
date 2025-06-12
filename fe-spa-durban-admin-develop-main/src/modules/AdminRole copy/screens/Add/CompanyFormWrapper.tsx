@@ -37,7 +37,7 @@ const CompanyFormWrapper = (props: Props) => {
       logo: values?.logo
     };
 
-    console.log('-------ressss',formattedValues)
+    // console.log('-------ressss',formattedValues)
 
     addCompany(formattedValues).then((res: any) => {
       if (res?.error) {

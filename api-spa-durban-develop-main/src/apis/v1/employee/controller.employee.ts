@@ -66,7 +66,7 @@ const createEmployee = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { userRoleId, outletsId, companyId } = req.body;
 
-    console.log('----req body',req.body)
+    // console.log('----req body',req.body)
     // Validate role
     const role = await roleService.getRoleById(userRoleId);
     if (!role) {
@@ -89,7 +89,7 @@ const createEmployee = catchAsync(
         "Only one of 'outletsId' or 'companyId' is allowed"
       );
     }
-  console.log('----111')
+  // console.log('----111')
     if (!hasOutlets && !hasCompany) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
@@ -111,9 +111,9 @@ const createEmployee = catchAsync(
         );
       }
     }
-  console.log('----222-')
+  // console.log('----222-')
     const employee = await employeeService.createEmployee(req.body);
- console.log('----333-')
+//  console.log('----333-')
     return res.status(httpStatus.CREATED).send({
       message: "Added successfully!",
       data: employee,
@@ -140,17 +140,17 @@ const createBookingEmployee = catchAsync(
     // /*
     //  * check outlet exist
     //  */
-    console.log("helooooo",req)
+    // console.log("helooooo",req)
     const storeIds = req.body.storeIds; // Assuming this is an array of Object IDs
-    console.log(storeIds, "==========storeIds============");
+    // console.log(storeIds, "==========storeIds============");
     // // Fetch all outlets by their IDs
     const outlets = await Promise.all(
       storeIds.map((id: any) => outletService.getOutletByBookingStoreId(id))
     );
-    console.log(outlets, "==========outletsooo============");
+    // console.log(outlets, "==========outletsooo============");
     const filteredOutlets = outlets.filter((outlet) => outlet !== null);
     req.body.outletIds = filteredOutlets.map((outlet) => outlet._id);
-    console.log(req.body, "==========outletIds============");
+    // console.log(req.body, "==========outletIds============");
     // // Check if any outlet is not found
     // const notFoundOutlets = outlets.filter((outlet) => !outlet);
 
@@ -172,10 +172,10 @@ const createBookingEmployee = catchAsync(
  
 
   const employee = await employeeService.createEmployee(data);
-  console.log("Employee created successfully");
+  // console.log("Employee created successfully");
 
    const user = await userService.createUser(data);
-  console.log("User created successfully");
+  // console.log("User created successfully");
 
   return res.status(httpStatus.CREATED).send({
     message: "Added successfully!",
@@ -392,6 +392,7 @@ const getEmployee = catchAsync(
     if (!employee) {
       throw new ApiError(httpStatus.NOT_FOUND, "Employee not found");
     }
+    
     return res.status(httpStatus.OK).send({
       message: "Successfull.",
       data: employee,

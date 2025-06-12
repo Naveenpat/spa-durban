@@ -5,6 +5,7 @@ export type Inventory = {
   totalQuantity: number;
   availableQunatity: number;
   _id: string;
+  createdAt:Date;
 };
 
 export type InventoryFormValues = {

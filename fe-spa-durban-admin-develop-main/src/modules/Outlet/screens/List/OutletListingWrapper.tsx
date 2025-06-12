@@ -102,37 +102,37 @@ const OutletListingWrapper = (props: Props) => {
       headerName: 'Region',
       flex: 'flex-[1_0_0%]',
     },
-    
+
     {
       fieldName: 'companyName',
       headerName: 'Company Name',
       flex: 'flex-[1_0_0%]',
     },
     {
-    fieldName: 'createdAt',
-    headerName: 'Date',
-    flex: 'flex-[1_1_0%]',
-    extraClasses: () => '',
-    stopPropagation: true,
-    render: (row: any) => {
-      const date = row.createdAt ? new Date(row.createdAt) : null;
-      return date ? format(date, 'dd-MM-yyyy') : '-';
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        return date ? format(date, 'dd-MM-yyyy') : '-';
+      },
     },
-  },
-  {
-    fieldName: 'logo',
-    headerName: 'Logo',
-    flex: 'flex-[0.5_1_0%]',
-    render: (row: any) => (
-      <img
-        src={row.logo || '/images/default-logo.png'}
-        onError={(e) => (e.currentTarget.src = '/images/default-logo.png')}
-        alt="Logo"
-        className="h-12 w-12 object-contain rounded-full border"
-      />
-    ),
-    stopPropagation: true,
-  },
+    {
+      fieldName: 'logo',
+      headerName: 'Logo',
+      flex: 'flex-[0.5_1_0%]',
+      render: (row: any) => (
+        <img
+          src={row.logo}
+          onError={(e) => (e.currentTarget.src)}
+          alt="Logo"
+          className="h-12 w-12 object-contain rounded-full border"
+        />
+      ),
+      stopPropagation: true,
+    },
     {
       fieldName: 'status',
       headerName: 'Active',

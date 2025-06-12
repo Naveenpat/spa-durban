@@ -5,6 +5,7 @@ export type Account = {
   _id: string;
   isActive: boolean;
   status: any;
+  createdAt:Date;
 };
 
 export type AccountFormValues = {

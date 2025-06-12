@@ -5,4 +5,5 @@ export type OutletInventory = {
   totalQuantity: number;
   availableQunatity: number;
   _id: string;
+  createdAt:Date;
 };

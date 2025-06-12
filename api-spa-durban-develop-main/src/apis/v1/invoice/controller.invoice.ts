@@ -76,7 +76,7 @@ const createInvoice = catchAsync(
     /**
      * employeeId = req.userData.Id
      */
-    console.log("1111111111111111111111111111")
+    // console.log("1111111111111111111111111111")
     if (!req.userData) {
       throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
     }
@@ -94,7 +94,7 @@ const createInvoice = catchAsync(
       usedCashBackAmount,
       bookingId,
     } = req.body;
-    console.log(req.body, 12313);
+    // console.log(req.body, 12313);
     //get pre invoicing phase
     const previewResult = await getPreview(req);
     if (!previewResult) {
@@ -103,7 +103,7 @@ const createInvoice = catchAsync(
         "Something Went Wrong"
       );
     }
-    console.log("22222222222")
+    // console.log("22222222222")
 
     let { dataToResponse, dataToUpdate, otherData } = previewResult;
     if (!previewResult.status) {
@@ -127,7 +127,7 @@ const createInvoice = catchAsync(
     const paymentMethods = await invoiceHelper.checkPaymentMethods(
       amountReceived
     );
-    console.log("22222222222")
+    // console.log("22222222222")
     if (!paymentMethods) {
       throw new ApiError(httpStatus.NOT_FOUND, "Invalid payment mode.");
     }
@@ -145,11 +145,11 @@ const createInvoice = catchAsync(
     // get invoice number
     const { invoiceNumber, newInvoiceNumber } =
       await invoiceHelper.generateInvoiceNumber(outlet);
-    console.log("44444444444",invoiceNumber)
+    // console.log("44444444444",invoiceNumber)
 
     invoiceData.invoiceNumber = invoiceNumber;
     invoiceData.invoiceDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
-    console.log(invoiceData, 12123);
+    // console.log(invoiceData, 12123);
 
      //update outlet invoice number
     const getOutletData = await outletService.getOutletById(outletId);
@@ -161,6 +161,7 @@ const createInvoice = catchAsync(
       loyaltyPointsEarned: pointsToAdd,
       companyId:getOutletData?.companyId
     });
+    
     // console.log("55555555555")
     if (!invoice) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
@@ -708,7 +709,7 @@ const updateInvoice = catchAsync(
 const getInvoiceByBookingId = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { bookingId } = req.params;
-    console.log(bookingId);
+    // console.log(bookingId);
 
     let additionalQuery = [
       { $match: { bookingId: bookingId } },

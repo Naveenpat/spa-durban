@@ -71,13 +71,13 @@ export const createTransporter = async (): Promise<Transporter> => {
     // })
 
        const transporter = nodemailer.createTransport({
-      host: 'smtp.office365.com',
+      host: config.smtp_mail_host || 'smtp.office365.com',
       port: 587,
       secure: false,
       pool:true,
       auth: {
-        user: 'info4@spadurban.co.za',
-        pass: 'Sp@durban!',
+        user: config.smtp_mail_user || 'info4@spadurban.co.za',
+        pass: config.smtp_mail_password || 'Sp@durban!',
       },
       tls: {ciphers: 'SSLv3'}
     })
@@ -112,7 +112,7 @@ export const createMailOptions = async (emailData: {
     const { emailSubject, emailBody, sendTo, sendFrom, attachments } = emailData
 
     const mailOptions: SendMailOptions = {
-      from: 'info4@spadurban.co.za',
+      from: sendFrom || 'info4@spadurban.co.za',
       to: sendTo,
       subject: emailSubject,
       html: emailBody,

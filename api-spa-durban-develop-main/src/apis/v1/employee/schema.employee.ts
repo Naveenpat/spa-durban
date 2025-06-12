@@ -1,6 +1,7 @@
 import mongoose, { Document, ObjectId, Types } from "mongoose";
 import timestamp from "../../plugins/timeStamp.plugin";
 import { paginate } from "../../plugins/pagination.plugin";
+import { hash, compare } from "bcrypt";
 import {
   DateFilter,
   FilterByItem,
@@ -23,6 +24,7 @@ export interface EmployeeDocument extends Document {
   isDeleted: boolean;
   isActive: boolean;
   companyId?:ObjectId;
+  password:string;
 }
 
 export interface EmployeeModel extends mongoose.Model<EmployeeDocument> {
@@ -98,6 +100,11 @@ const EmployeeSchema = new mongoose.Schema<EmployeeDocument>(
       default: null,
       trim: true,
     },
+    password: {
+      type: String,
+      required: true, // or false if optional
+      select: false,  // optional: don't return in queries unless explicitly selected
+    },
     address: {
       type: String,
       // required: true,
@@ -142,6 +149,29 @@ paginate(EmployeeSchema);
 
 // // Apply the timestamp plugin to the Employee schema
 timestamp(EmployeeSchema);
+
+
+// // Middleware to hash password before saving
+// EmployeeSchema.pre<EmployeeDocument>("save", async function (next) {
+//   const user = this;
+//   if (user.isModified("password")) {
+//     user.password = await hash(user.password, 12);
+//   }
+//   next();
+// });
+
+
+// EmployeeSchema.pre("findOneAndUpdate", async function (next) {
+//   const update: any = this.getUpdate();
+
+//   // Check if the password field is being updated
+//   if (update?.password) {
+//     update.password = await hash(update.password, 12);
+//     this.setUpdate(update); // Ensure the updated password is set
+//   }
+
+//   next();
+// });
 
 export const allowedDateFilterKeys = ["createdAt", "updatedAt"];
 export const searchKeys = ["email", "name"];

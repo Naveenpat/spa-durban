@@ -264,7 +264,7 @@ const OutletFormLayout = ({
             </div>
 
             <div className="">
-            
+
 
               <div className="relative h-36 w-36 border-2 border-dashed border-gray-400 rounded-md flex items-center justify-center overflow-hidden">
                 <input
@@ -285,7 +285,10 @@ const OutletFormLayout = ({
                 />
 
                 {!values.logo ? (
-                  <span className="text-4xl text-gray-400 z-0">+</span>
+                  <div className="relative flex flex-col items-center justify-center">
+                    <div className="text-xs text-gray-500 mb-1">324 Px * 313 Px</div>
+                    <span className="text-4xl text-gray-400 z-0">+</span>
+                  </div>
                 ) : (
                   <img
                     src={values.logo}

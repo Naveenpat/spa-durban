@@ -144,6 +144,17 @@ const CustomerListingWrapper = (props: Props) => {
       },
     },
     {
+    fieldName: 'updatedAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.updatedAt ? new Date(row.updatedAt) : null;
+      return date ? format(date, 'dd-MM-yyyy') : '-';
+    },
+  },
+    {
       fieldName: 'status',
       headerName: 'Active',
       extraClasses: () => 'min-w-[100px]',

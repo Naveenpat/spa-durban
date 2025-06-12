@@ -141,6 +141,7 @@ const POSWrapper = (props: Props) => {
   const [sendPdfViaEmail, { isLoading }] = useSendPdfViaEmailMutation();
 
   const handleSendEmail = async (invoiceId: any) => {
+    // console.log('---- handle send email')
     const receiptElement = document.querySelector('.receipt-print');
 
     if (!receiptElement) return;
@@ -226,7 +227,7 @@ const POSWrapper = (props: Props) => {
     setSubmitting(true);
 
     try {
-      console.log("4444444444444440000000000")
+      // console.log("4444444444444440000000000")
       const res: any = await addInvoice(formattedValues);
 
       if (res?.error) {
@@ -247,7 +248,7 @@ const POSWrapper = (props: Props) => {
             invoiceId: createdInvoiceId,
             value: givenChange,
           };
-          console.log("555555555540000000000")
+          // console.log("555555555540000000000")
           await updateGivenChange(givenChangePayload);
         }
 

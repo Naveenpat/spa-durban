@@ -5,7 +5,6 @@ import mongoose from "mongoose";
 import { RangeFilter } from "../../../utils/interface";
 
 const createCashback = async (cashbackBody: any): Promise<CashbackDocument> => {
-  console.log("cashbackBody========", cashbackBody);
 
   return Cashback.create(cashbackBody);
 };

@@ -49,14 +49,6 @@ const EmployeeFormLayout = ({
     return !isNaN(event) && event >= 0 && event <= 100;
   };
 
-//   useEffect(() => {
-//   if (values?.companyId) {
-//     setOutletOrBranchOutlet('company');
-//   } else {
-//     setOutletOrBranchOutlet('outlet');
-//   }
-// }, [outletOrBranchOutlet])
-
   const { data } = useFetchData(useGetAdminRolesQuery, {
     body: {
       isPaginationRequired: false,
@@ -131,6 +123,23 @@ const EmployeeFormLayout = ({
                 isValid={!errors?.userName}
               />
             </div>
+
+             {/* Name */}
+            <div className="">
+              <ATMTextField
+                required
+                name="name"
+                value={values.name}
+                onChange={(e) => setFieldValue('name', e.target.value)}
+                label="Name"
+                placeholder="Enter Name"
+                onBlur={handleBlur}
+                isValid={!errors?.name}
+                isTouched={touched?.name}
+                errorMessage={errors?.name}
+              />
+            </div>
+            
             {/* Email */}
             <div className="">
               <ATMTextField
@@ -163,19 +172,7 @@ const EmployeeFormLayout = ({
               />
             </div>
 
-            <div>
-              <ATMSelect
-                required
-                name="outletOrBranchOutlet"
-                value={outletOrBranchOutlet}
-                onChange={(newValue) => setOutletOrBranchOutlet(newValue?.value)}
-                label="Select"
-                getOptionLabel={(options) => options?.label}
-                options={selectOption}
-                valueAccessKey="value"
-                placeholder="Please Outlet Or Branch"
-              />
-            </div>
+            
             {/* UserRole  */}
             <div>
               <ATMSelect
@@ -191,6 +188,19 @@ const EmployeeFormLayout = ({
               />
             </div>
 
+<div>
+              <ATMSelect
+                required
+                name="outletOrBranchOutlet"
+                value={outletOrBranchOutlet}
+                onChange={(newValue) => setOutletOrBranchOutlet(newValue?.value)}
+                label="Select"
+                getOptionLabel={(options) => options?.label}
+                options={selectOption}
+                valueAccessKey="value"
+                placeholder="Please Outlet Or Branch"
+              />
+            </div>
             {outletOrBranchOutlet === "company" && (
               <div>
                 <ATMSelect
@@ -223,21 +233,7 @@ const EmployeeFormLayout = ({
               </div>
             )}
 
-            {/* Name */}
-            <div className="">
-              <ATMTextField
-                required
-                name="name"
-                value={values.name}
-                onChange={(e) => setFieldValue('name', e.target.value)}
-                label="Name"
-                placeholder="Enter Name"
-                onBlur={handleBlur}
-                isValid={!errors?.name}
-                isTouched={touched?.name}
-                errorMessage={errors?.name}
-              />
-            </div>
+           
             {/* Address */}
             <div className="">
               <ATMTextField

@@ -10,6 +10,7 @@ export type Supplier = {
   status: any;
   isActive: boolean;
   _id: string;
+  createdAt:Date;
 };
 
 export type SupplierFormValues = {

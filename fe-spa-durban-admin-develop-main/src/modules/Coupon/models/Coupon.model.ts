@@ -10,6 +10,7 @@ export type Coupon = {
   status: any;
   valid: Date | null;
   note: string;
+  createdAt:Date;
 };
 
 export type CouponFormValues = {

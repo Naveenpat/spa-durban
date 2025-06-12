@@ -365,11 +365,11 @@ const getBalanceDue = async (
 
 
 const generateInvoiceNumber = async (outlet: any) => {
-  console.log('-------outlet',outlet)
+  // console.log('-------outlet',outlet)
   const { invoicePrefix, invoiceNumber, _id: outletId } = outlet;
 
   const latestInvoice = await getLatestInvoiceByOutletId(outletId, invoicePrefix);
-  console.log('---latestInvoice',latestInvoice)
+  // console.log('---latestInvoice',latestInvoice)
   let currentNumber = invoiceNumber;
 
   if (latestInvoice) {
@@ -384,7 +384,7 @@ const generateInvoiceNumber = async (outlet: any) => {
 
   const newInvoiceNumber = currentNumber + 1;
   const fullInvoiceNumber = `${invoicePrefix}${newInvoiceNumber}`;
- console.log('---------test',newInvoiceNumber,fullInvoiceNumber)
+//  console.log('---------test',newInvoiceNumber,fullInvoiceNumber)
   // // Update outlet invoiceNumber to keep track
   // await OutletModel.updateOne(
   //   { _id: outletId },

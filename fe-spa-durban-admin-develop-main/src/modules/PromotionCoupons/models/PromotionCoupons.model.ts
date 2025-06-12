@@ -3,6 +3,7 @@ export type PromotionCoupons = {
   status: string;
   _id: string;
   isActive: boolean;
+  createdAt:Date;
 };
 
 export type PromotionCouponsFormValues = {

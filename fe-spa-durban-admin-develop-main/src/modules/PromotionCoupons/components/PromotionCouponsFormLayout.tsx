@@ -254,7 +254,7 @@ const PromotionCouponsFormLayout = ({
                 loadOptions={debouncedLoadOptions}
                 value={values?.customerId || []} // ✅ Set initial value
                 onChange={(newValue) => {
-                  console.log(newValue, 'newValue==============');
+                  // console.log(newValue, 'newValue==============');
 
                   setFieldValue('customerId', newValue);
                 }}

@@ -3,6 +3,7 @@ export type SubCategory = {
   subCategoryName: string;
   description: string;
   _id: string;
+  createdAt:Date;
 };
 
 export type SubCategoryFormValues = {
