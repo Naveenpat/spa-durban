@@ -24,6 +24,15 @@ const AddOutletFormWrapper = () => {
     onlinePaymentAccountId: '',
     logo:'',
     companyId:'',
+    smtp: {
+    host: 'smtp.office365.com',
+    port: '587',
+    username: '',
+    password: '',
+    sendFrom: '',
+    ccEmails: '',
+    bccEmails: ''
+  }
   };
 
   const validationSchema = object().shape({

@@ -17,7 +17,8 @@ const CompanyFormWrapper = (props: Props) => {
     companyName: '',
     email: '',
     phone: '',
-    logo: ''
+    logo: '',
+    websiteUrl:''
   };
 
   const validationSchema = object().shape({
@@ -34,7 +35,8 @@ const CompanyFormWrapper = (props: Props) => {
       companyName: values?.companyName,
       email: values?.email,
       phone: values?.phone,
-      logo: values?.logo
+      logo: values?.logo,
+      websiteUrl:values?.websiteUrl
     };
 
     // console.log('-------ressss',formattedValues)

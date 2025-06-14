@@ -89,7 +89,7 @@ const createEmployee = catchAsync(
         "Only one of 'outletsId' or 'companyId' is allowed"
       );
     }
-  // console.log('----111')
+    // console.log('----111')
     if (!hasOutlets && !hasCompany) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
@@ -111,9 +111,9 @@ const createEmployee = catchAsync(
         );
       }
     }
-  // console.log('----222-')
+    // console.log('----222-')
     const employee = await employeeService.createEmployee(req.body);
-//  console.log('----333-')
+    //  console.log('----333-')
     return res.status(httpStatus.CREATED).send({
       message: "Added successfully!",
       data: employee,
@@ -169,31 +169,31 @@ const createBookingEmployee = catchAsync(
     };
 
     try {
- 
 
-  const employee = await employeeService.createEmployee(data);
-  // console.log("Employee created successfully");
 
-   const user = await userService.createUser(data);
-  // console.log("User created successfully");
+      const employee = await employeeService.createEmployee(data);
+      // console.log("Employee created successfully");
 
-  return res.status(httpStatus.CREATED).send({
-    message: "Added successfully!",
-    data: employee,
-    status: true,
-    code: "CREATED",
-    issue: null,
-  });
-} catch (error) {
-  console.error("Error creating user or employee:", error);
+      const user = await userService.createUser(data);
+      // console.log("User created successfully");
 
-  return res.status(httpStatus.INTERNAL_SERVER_ERROR).send({
-    message: "Failed to create user or employee",
-    status: false,
-    code: "CREATE_FAILED",
-    issue: null,
-  });
-}
+      return res.status(httpStatus.CREATED).send({
+        message: "Added successfully!",
+        data: employee,
+        status: true,
+        code: "CREATED",
+        issue: null,
+      });
+    } catch (error) {
+      console.error("Error creating user or employee:", error);
+
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).send({
+        message: "Failed to create user or employee",
+        status: false,
+        code: "CREATE_FAILED",
+        issue: null,
+      });
+    }
 
     // const user = await userService.createUser(data);
     // console.log("user created successfully")
@@ -354,27 +354,27 @@ const getEmployees = catchAsync(
         $unset: ["outletDetails"],
       },
       // ✅ Lookup for company
-  {
-    $lookup: {
-      from: "companies", // MongoDB collection name
-      localField: "companyId",
-      foreignField: "_id",
-      as: "companyDetails",
-      pipeline: [
-        {
-          $project: {
-            companyName: 1,
-          },
+      {
+        $lookup: {
+          from: "companies", // MongoDB collection name
+          localField: "companyId",
+          foreignField: "_id",
+          as: "companyDetails",
+          pipeline: [
+            {
+              $project: {
+                companyName: 1,
+              },
+            },
+          ],
         },
-      ],
-    },
-  },
-  {
-    $addFields: {
-      companyName: { $arrayElemAt: ["$companyDetails.companyName", 0] },
-    },
-  },
-  { $unset: ["companyDetails"] },
+      },
+      {
+        $addFields: {
+          companyName: { $arrayElemAt: ["$companyDetails.companyName", 0] },
+        },
+      },
+      { $unset: ["companyDetails"] },
     ];
 
     options["additionalQuery"] = additionalQuery as any;
@@ -392,7 +392,7 @@ const getEmployee = catchAsync(
     if (!employee) {
       throw new ApiError(httpStatus.NOT_FOUND, "Employee not found");
     }
-    
+
     return res.status(httpStatus.OK).send({
       message: "Successfull.",
       data: employee,
@@ -403,87 +403,87 @@ const getEmployee = catchAsync(
   }
 );
 
-const getEmployeeRoles = catchAsync(
-  async (req: AuthenticatedRequest, res: Response) => {
-    const employee: any = await employeeService.getEmployeeById(
-      req?.userData?.Id as any
-    );
+// const getEmployeeRoles = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     const employee: any = await employeeService.getEmployeeById(
+//       req?.userData?.Id as any
+//     );
 
-    let isAdmin = false;
-    if (!employee) {
-      isAdmin = true;
-    }
-    const role = await roleService.getRoleById(
-      employee?.userRoleId.toString() as string
-    );
-    let allOutlets = await outletService.getOutletAggrigate([
-      { $match: { isDeleted: false } },
-    ]);
-    let allOutletsIds = allOutlets?.map((ele: any) => {
-      return {
-        _id: ele?._id,
-        name: ele?.name,
-        bookingStoreId: ele?.bookingStoreId,
-      };
-    });
+//     let isAdmin = false;
+//     if (!employee) {
+//       isAdmin = true;
+//     }
+//     const role = await roleService.getRoleById(
+//       employee?.userRoleId.toString() as string
+//     );
+//     let allOutlets = await outletService.getOutletAggrigate([
+//       { $match: { isDeleted: false } },
+//     ]);
+//     let allOutletsIds = allOutlets?.map((ele: any) => {
+//       return {
+//         _id: ele?._id,
+//         name: ele?.name,
+//         bookingStoreId: ele?.bookingStoreId,
+//       };
+//     });
 
-    let outletsData: any = await userService.getUserAggrigate([
-      { $match: { _id: new mongoose.Types.ObjectId(employee?._id) } },
-      {
-        $lookup: {
-          from: "employees",
-          localField: "_id",
-          foreignField: "_id",
-          as: "employeeData",
-          pipeline: [
-            {
-              $project: {
-                outletsId: 1,
-              },
-            },
-            {
-              $lookup: {
-                from: "outlets",
-                localField: "outletsId",
-                foreignField: "_id",
-                as: "outletsData",
-                pipeline: [
-                  {
-                    $project: {
-                      _id: 1,
-                      name: 1,
-                      bookingStoreId: 1,
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        },
-      },
+//     let outletsData: any = await userService.getUserAggrigate([
+//       { $match: { _id: new mongoose.Types.ObjectId(employee?._id) } },
+//       {
+//         $lookup: {
+//           from: "employees",
+//           localField: "_id",
+//           foreignField: "_id",
+//           as: "employeeData",
+//           pipeline: [
+//             {
+//               $project: {
+//                 outletsId: 1,
+//               },
+//             },
+//             {
+//               $lookup: {
+//                 from: "outlets",
+//                 localField: "outletsId",
+//                 foreignField: "_id",
+//                 as: "outletsData",
+//                 pipeline: [
+//                   {
+//                     $project: {
+//                       _id: 1,
+//                       name: 1,
+//                       bookingStoreId: 1,
+//                     },
+//                   },
+//                 ],
+//               },
+//             },
+//           ],
+//         },
+//       },
 
-      {
-        $project: {
-          outlets: {
-            $arrayElemAt: ["$employeeData.outletsData", 0],
-          },
-        },
-      },
-    ]);
-    return res.status(httpStatus.OK).send({
-      message: "Successfull.",
-      data: {
-        roleName: isAdmin ? UserEnum.Admin : role?.roleName,
-        permissions: isAdmin ? allOutletsIds : role?.permissions,
-        userdata: req?.userData,
-        outlets: isAdmin ? allOutletsIds : (outletsData?.outlets as any),
-      },
-      status: true,
-      code: "OK",
-      issue: null,
-    });
-  }
-);
+//       {
+//         $project: {
+//           outlets: {
+//             $arrayElemAt: ["$employeeData.outletsData", 0],
+//           },
+//         },
+//       },
+//     ]);
+//     return res.status(httpStatus.OK).send({
+//       message: "Successfull.",
+//       data: {
+//         roleName: isAdmin ? UserEnum.Admin : role?.roleName,
+//         permissions: isAdmin ? allOutletsIds : role?.permissions,
+//         userdata: req?.userData,
+//         outlets: isAdmin ? allOutletsIds : (outletsData?.outlets as any),
+//       },
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     });
+//   }
+// );
 
 // const updateEmployee = catchAsync(
 //   async (req: AuthenticatedRequest, res: Response) => {
@@ -524,6 +524,93 @@ const getEmployeeRoles = catchAsync(
 //   }
 // );
 
+
+const getEmployeeRoles = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const employee: any = await employeeService.getEmployeeById(
+      req?.userData?.Id as any
+    );
+
+    let isAdmin = false;
+    if (!employee) {
+      isAdmin = true;
+    }
+
+    const role = await roleService.getRoleById(
+      employee?.userRoleId?.toString() as string
+    );
+
+    const allOutlets = await outletService.getOutletAggrigate([
+      { $match: { isDeleted: false } },
+    ]);
+
+    const allOutletsIds = allOutlets?.map((ele: any) => ({
+      _id: ele?._id,
+      name: ele?.name,
+      bookingStoreId: ele?.bookingStoreId,
+    }));
+
+    let outlets;
+
+    if (employee?.outletsId?.length > 0) {
+      // Get outlets based on employee.outletsId
+      const outletData = await outletService.getOutletAggrigate([
+        {
+          $match: {
+            _id: { $in: employee.outletsId },
+            isDeleted: false,
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            bookingStoreId: 1,
+          },
+        },
+      ]);
+      outlets = outletData;
+    } else if (employee?.companyId) {
+      // Get all outlets under the companyId
+      const companyOutlets = await outletService.getOutletAggrigate([
+        {
+          $match: {
+            companyId: new mongoose.Types.ObjectId(employee.companyId),
+            isDeleted: false,
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            bookingStoreId: 1,
+          },
+        },
+      ]);
+      outlets = companyOutlets;
+    }
+
+     // Attach roleName inside userdata
+    const userDataWithRole = {
+      ...req?.userData,
+      roleName: isAdmin ? UserEnum.Admin : role?.roleName,
+    };
+    
+    return res.status(httpStatus.OK).send({
+      message: "Successfull.",
+      data: {
+        roleName: isAdmin ? UserEnum.Admin : role?.roleName,
+        permissions: isAdmin ? allOutletsIds : role?.permissions,
+        userdata: userDataWithRole,
+        outlets: isAdmin ? allOutletsIds : outlets,
+      },
+      status: true,
+      code: "OK",
+      issue: null,
+    });
+  }
+);
+
 const updateEmployee = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { userRoleId, outletsId, companyId } = req.body;
@@ -544,11 +631,11 @@ const updateEmployee = catchAsync(
 
     // Remove empty arrays or nulls from body
     if (!hasOutlets) {
-       req.body.outletsId=null;
+      req.body.outletsId = null;
     }
 
     if (!hasCompany) {
-      req.body.companyId=null;
+      req.body.companyId = null;
     }
 
     if (hasOutlets && hasCompany) {

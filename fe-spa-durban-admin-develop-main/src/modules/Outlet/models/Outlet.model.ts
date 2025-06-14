@@ -29,4 +29,13 @@ export type OutletFormValues = {
   onlinePaymentAccountId: any;
   logo:string;
   companyId:any;
+ smtp: {
+  host: string ,
+  port:string,
+  username:string,
+  password:string,
+  sendFrom:string,
+  ccEmails:string,
+  bccEmails:string
+}
 };

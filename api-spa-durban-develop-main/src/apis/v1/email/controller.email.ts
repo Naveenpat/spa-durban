@@ -216,7 +216,7 @@ const sendInvoice = catchAsync(async (req: AuthenticatedRequest, res: Response) 
         Warm regards,<br/>
         <strong>${invoice?.outlet?.name}</strong><br/>
         Phone: <a href="tel:${invoice?.outlet?.phone}">${invoice?.outlet?.phone}</a><br/>
-        <a href="https://spadurban.co.za/">www.spadurban.co.za</a>
+        <a href=${invoice?.company?.websiteUrl || "http://spadurban.co.za"}>${invoice?.company?.websiteUrl || "http://spadurban.co.za"}</a>
       </p>
     </td>
   </tr>
@@ -237,7 +237,7 @@ const sendInvoice = catchAsync(async (req: AuthenticatedRequest, res: Response) 
 
 
 
-  const sendEmailResult = await sendEmail(emailData);
+  const sendEmailResult = await sendEmail(emailData,invoice?.outlet);
 
   return res.status(httpStatus.CREATED).send({
     message: "Invoice sent!",
@@ -295,7 +295,7 @@ const sendEmailBYEmail = catchAsync(async (req: AuthenticatedRequest, res: Respo
     ],
   };
 
-  const sendEmailResult = await sendEmail(emailData);
+  const sendEmailResult = await sendEmail(emailData,outlet);
 
   return res.status(httpStatus.CREATED).send({
     message: "Invoice sent to outlet email!",

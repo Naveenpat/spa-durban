@@ -34,6 +34,13 @@ const tableHeaders: TableHeader<Company>[] = [
     extraClasses: () => '',
     stopPropagation: true,
   },
+   {
+    fieldName: 'websiteUrl',
+    headerName: 'Website Url',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+  },
   {
     fieldName: 'logo',
     headerName: 'Logo',

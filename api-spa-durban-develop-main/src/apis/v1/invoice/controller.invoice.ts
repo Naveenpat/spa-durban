@@ -96,7 +96,9 @@ const createInvoice = catchAsync(
     } = req.body;
     // console.log(req.body, 12313);
     //get pre invoicing phase
+      console.log('-----calll------1')
     const previewResult = await getPreview(req);
+    console.log('-----calll-----2')
     if (!previewResult) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
@@ -127,7 +129,7 @@ const createInvoice = catchAsync(
     const paymentMethods = await invoiceHelper.checkPaymentMethods(
       amountReceived
     );
-    // console.log("22222222222")
+    console.log("22222222222")
     if (!paymentMethods) {
       throw new ApiError(httpStatus.NOT_FOUND, "Invalid payment mode.");
     }
@@ -138,18 +140,18 @@ const createInvoice = catchAsync(
       amountReceived,
       0 //previouslyPaid
     );
-    // console.log("333333333333")
+    console.log("333333333333")
     invoiceData.balanceDue = balanceDue;
     invoiceData.amountPaid = amountPaid;
 
     // get invoice number
     const { invoiceNumber, newInvoiceNumber } =
       await invoiceHelper.generateInvoiceNumber(outlet);
-    // console.log("44444444444",invoiceNumber)
+    console.log("44444444444",invoiceNumber)
 
     invoiceData.invoiceNumber = invoiceNumber;
     invoiceData.invoiceDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
-    // console.log(invoiceData, 12123);
+    console.log(invoiceData, 12123);
 
      //update outlet invoice number
     const getOutletData = await outletService.getOutletById(outletId);
@@ -157,12 +159,13 @@ const createInvoice = catchAsync(
     //create invoice
     const invoice = await invoiceService.createInvoice({
       ...invoiceData,
+      cashBackEarned:isNaN(Number(invoiceData.cashBackEarned)) ? 0 : Number(invoiceData.cashBackEarned),
       bookingId,
       loyaltyPointsEarned: pointsToAdd,
       companyId:getOutletData?.companyId
     });
     
-    // console.log("55555555555")
+    console.log("55555555555")
     if (!invoice) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
     }
@@ -172,7 +175,7 @@ const createInvoice = catchAsync(
       const inventoryUpdate = await inventoryHelper.updateInventoriesAfterSell(
         inventoryData
       );
-      // console.log("6666666666666")
+      console.log("6666666666666")
       if (!inventoryUpdate) {
         throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
       }
@@ -186,14 +189,14 @@ const createInvoice = catchAsync(
     if (!updatedOutlet) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
     }
-    // console.log("777777777777777")
+    console.log("777777777777777")
     //update logs
     let addedInvoiceLogs = await invoiceLogService.createOrUpdateInvoiceLog(
       invoice,
       true
     );
 
-    // console.log("888888888888")
+    console.log("888888888888")
 
     if (!addedInvoiceLogs) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
@@ -205,7 +208,7 @@ const createInvoice = catchAsync(
         walletDebitLog,
         pointsToDebit
       );
-      // console.log("9999999999999")
+      console.log("9999999999999")
       if (!debitedPoints) {
         throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
       }
@@ -217,14 +220,14 @@ const createInvoice = catchAsync(
         walletCreditLog,
         pointsToAdd
       );
-      // console.log("100000000000")
+      console.log("100000000000")
       if (!creditedPoints) {
         throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
       }
     }
     await updateCashBack(
       invoiceData?.customerId,
-      invoiceData?.cashBackEarned,
+      isNaN(Number(invoiceData?.cashBackEarned)) ? 0 : Number(invoiceData?.cashBackEarned),
       "add"
     );
     if (useCashBackAmount && usedCashBackAmount) {

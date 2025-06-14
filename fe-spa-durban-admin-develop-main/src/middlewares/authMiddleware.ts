@@ -25,6 +25,8 @@ export const authMiddleware = (store: any) => (next: any) => (action: any) => {
       email: res?.user?.email,
     };
 
+    console.log('--------resss',res)
+
     store?.dispatch(setUserData(userData));
     store?.dispatch(setOutlets(res?.outlets));
     store?.dispatch(setOutlet(res?.outlets?.[0]));

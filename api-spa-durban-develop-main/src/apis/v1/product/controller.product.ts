@@ -355,6 +355,11 @@ const getProducts = catchAsync(
 
 const searchInProductAndService = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
+
+    const page = parseInt(req.query.page as string) || 1;
+const limit = parseInt(req.query.limit as string) || 15;
+const skip = (page - 1) * limit;
+
     // Extract searchValue from req.query
     const productOptions = pick(req.query, ["searchValue"]);
     const serviceOptions = pick(req.query, ["searchValue"]);
@@ -687,13 +692,35 @@ const searchInProductAndService = catchAsync(
       }
     }
 
-    return res.status(httpStatus.OK).send({
-      message: "Successfull",
-      data: dataToSend,
-      status: true,
-      code: "OK",
-      issue: null,
-    });
+// Sort combined results if needed
+dataToSend.sort((a, b) => {
+  // Sort pinned items first, then by priority (customizable)
+  const pinCompare = (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+  if (pinCompare !== 0) return pinCompare;
+  return (a.priority || 0) - (b.priority || 0);
+});
+
+const totalItems = dataToSend.length;
+const totalPages = Math.ceil(totalItems / limit);
+const paginatedData = dataToSend.slice(skip, skip + limit);
+
+
+return res.status(httpStatus.OK).send({
+  message: "Successful",
+  data: {
+    data: paginatedData,
+    pagination: {
+      totalItems,
+      totalPages,
+      page,
+      limit,
+    }
+  },
+  status: true,
+  code: "OK",
+  issue: null,
+});
+
   }
 );
 

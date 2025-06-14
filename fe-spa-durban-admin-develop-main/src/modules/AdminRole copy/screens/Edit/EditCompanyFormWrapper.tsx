@@ -23,6 +23,7 @@ const EditCompanyFormWrapper = (props: Props) => {
     email: (data as any)?.data?.email || '',
     phone: (data as any)?.data?.phone || '',
     logo: (data as any)?.data?.logo || '',
+    websiteUrl: (data as any)?.data?.websiteUrl || '',
   };
 
 
@@ -40,7 +41,8 @@ const EditCompanyFormWrapper = (props: Props) => {
       companyName: values?.companyName,
       email: values?.email,
       phone: values?.phone,
-      logo: values?.logo
+      logo: values?.logo,
+      websiteUrl: values?.websiteUrl
     };
 
     updateAdminRole({ companyId: id, body: formattedValues }).then(

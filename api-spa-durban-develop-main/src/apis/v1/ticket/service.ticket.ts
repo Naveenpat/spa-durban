@@ -250,7 +250,8 @@ const sendTicketEmailEmployee = async (ticketId: string, userData: any) => {
       attachments: [],
     }
 
-    const sendEmailResult = await sendEmail(emailData)
+    const outletData = {};
+    const sendEmailResult = await sendEmail(emailData,outletData)
     // console.log(sendEmailResult, "sendEmailResult")
   }
   return ticketDetail

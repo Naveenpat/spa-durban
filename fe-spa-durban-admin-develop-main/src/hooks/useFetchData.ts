@@ -54,5 +54,6 @@ export const useFetchData = (query: any, otherProps?: OtherProp) => {
     totalData,
     isLoading: isDataLoading,
     refetch: refetch,
+    isFetching: isFetching
   };
 };

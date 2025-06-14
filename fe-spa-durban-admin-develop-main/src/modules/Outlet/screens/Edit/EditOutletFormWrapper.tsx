@@ -34,7 +34,16 @@ const EditOutletFormWrapper = () => {
       _id: (data as any)?.data?.onlinePaymentAccountId,
     },
     logo:(data as any)?.data?.logo,
-    companyId:(data as any)?.data?.companyId
+    companyId:(data as any)?.data?.companyId,
+    smtp: {
+    host: (data as any)?.data?.smtp?.host || '',
+    port: (data as any)?.data?.smtp?.port || '',
+    username: (data as any)?.data?.smtp?.username || '',
+    password: (data as any)?.data?.smtp?.password || '',
+    sendFrom: (data as any)?.data?.smtp?.sendFrom || '',
+    ccEmails: (data as any)?.data?.smtp?.ccEmails || '',
+    bccEmails: (data as any)?.data?.smtp?.bccEmails || ''
+  }
   };
 
   const validationSchema = object().shape({

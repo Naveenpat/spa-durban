@@ -3,7 +3,8 @@ export type Company = {
   email: string;
   phone: string;
   logo?: string;
-  createdAt:Date;
+  websiteUrl: string;
+  createdAt: Date;
   _id: string;
 };
 
@@ -12,4 +13,5 @@ export type CompanyFormValues = {
   email: string;
   phone: string;
   logo?: string;
+  websiteUrl: string;
 };

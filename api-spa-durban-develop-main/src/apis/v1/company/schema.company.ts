@@ -10,6 +10,7 @@ export interface CompanyDocument extends Document {
   email: string;
   phone: string;
   logo?: string; // URL or file path
+  websiteUrl:string;
   isDeleted: boolean;
   isActive: boolean;
 }
@@ -60,6 +61,12 @@ const CompanySchema = new mongoose.Schema<CompanyDocument>(
       unique:true
     },
     logo: {
+      type: String,
+      unique:true,
+      trim: true,
+      default: null,
+    },
+     websiteUrl: {
       type: String,
       unique:true,
       trim: true,

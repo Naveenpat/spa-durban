@@ -4,7 +4,7 @@ export enum Permission {
   NAV_DASHBOARD = 'NAV_DASHBOARD',
   NAV_USER_ROLE = 'NAV_USER_ROLE',
   NAV_TAX = 'NAV_TAX',
-  // NAV_POS = 'NAV_POS',
+  NAV_POS = 'NAV_POS',
   NAV_TASK = 'NAV_TASK',
   NAV_BRAND = 'NAV_BRAND',
   NAV_OUTLET = 'NAV_OUTLET',

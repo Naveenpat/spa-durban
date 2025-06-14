@@ -137,7 +137,7 @@
         "SUPPLIER_ACTIVE_DEACTIVE"
       ],
       "fields": []
-    }, 
+    },
     {
       "moduleName": "Customer",
       "moduleId": "NAV_CUSTOMER",
@@ -198,7 +198,7 @@
         }
       ],
       "dependencies": [
-        "TASK_ADD" ,
+        "TASK_ADD",
         "TASK_UPDATE",
         "TASK_DELETE",
         "TASK_LIST"
@@ -229,7 +229,7 @@
         }
       ],
       "dependencies": [
-        "TICKET_ADD" ,
+        "TICKET_ADD",
         "TICKET_UPDATE",
         "TICKET_DELETE",
         "TICKET_LIST"
@@ -302,11 +302,6 @@
       ],
       "fields": []
     },
-
-
-
-
-    
     {
       "moduleName": "Products",
       "moduleId": "NAV_PRODUCT",
@@ -487,9 +482,6 @@
       ],
       "fields": []
     },
-
-
-
     {
       "moduleName": "Coupon-Referral",
       "moduleId": "NAV_COUPONS_REFERRAL",
@@ -598,12 +590,6 @@
       ],
       "fields": []
     },
-
-
-
-
-
-
     {
       "moduleName": "Outlets",
       "moduleId": "NAV_OUTLET",
@@ -891,8 +877,36 @@
         "ACCOUNT_ACTIVE_DEACTIVE"
       ],
       "fields": []
+    },
+    {
+      "moduleName": "Dashboard",
+      "moduleId": "NAV_DASHBOARD",
+      "features": [
+        {
+          "featureId": "NAV_DASHBOARD",
+          "featureName": "See Dashboard",
+          "relatedFieldColumn": "NAV_DASHBOARD"
+        }
+      ],
+      "dependencies": [
+        "NAV_DASHBOARD"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "POS",
+      "moduleId": "NAV_POS",
+      "features": [
+        {
+          "featureId": "NAV_POS",
+          "featureName": "See POS",
+          "relatedFieldColumn": "NAV_POS"
+        }
+      ],
+      "dependencies": [
+        "NAV_POS"
+      ],
+      "fields": []
     }
- 
-  
   ]
 }

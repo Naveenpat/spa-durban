@@ -27,6 +27,16 @@ export interface OutletDocument extends Document {
   logo:string;
   companyId:any;
   companyName:any;
+  smtp: {
+  host: { type: String },
+  port: { type: String },
+  username: { type: String },
+  password: { type: String },
+  sendFrom: { type: String },
+  ccEmails: { type: String },
+  bccEmails: { type: String }
+}
+
 }
 
 export interface OutletModel extends mongoose.Model<OutletDocument> {
@@ -139,6 +149,15 @@ const OutletSchema = new mongoose.Schema<OutletDocument>(
     logo: {
       type: String,
       default: "",
+    },
+    smtp: {
+      host: { type: String },
+      port: { type: String },
+      username: { type: String },
+      password: { type: String },
+      sendFrom: { type: String },
+      ccEmails: { type: String },
+      bccEmails: { type: String },
     },
   },
   {

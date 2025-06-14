@@ -330,7 +330,9 @@ const forgotPassword = async (email: string) => {
     sendFrom: config.smtp_mail_email,
     attachments: [],
   };
-  const sendEmailResult = await sendEmail(emailData);
+
+  const outletData ={};
+  const sendEmailResult = await sendEmail(emailData,outletData);
 
   //create otp and store in respective database
   //send email

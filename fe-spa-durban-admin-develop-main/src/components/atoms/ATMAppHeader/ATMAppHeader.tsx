@@ -36,6 +36,8 @@ import ATMMenu from '../ATMMenu/ATMMenu';
 import { setIsOpenEditDialog } from 'src/modules/Product/slice/ProductSlice';
 import { useUpdateInvoiceMutation } from 'src/modules/Invoices/service/InvoicesServices';
 import { showToast } from 'src/utils/showToaster';
+import { IconArrowRight } from '@tabler/icons-react';
+import { isAuthorized } from 'src/utils/authorization';
 type Props = {
   hideCollapseMenuButton?: boolean;
   showOutletDropdown?: boolean;
@@ -51,7 +53,7 @@ const ATMAppHeader = ({
   const { isNavBarExpanded } = useSelector(
     (state: RootState) => state.sideNavLayout,
   );
-  const { userData, outlet, outlets } = useSelector(
+  const { userData, outlet, outlets, permissions } = useSelector(
     (state: RootState) => state.auth,
   );
 
@@ -59,6 +61,8 @@ const ATMAppHeader = ({
     (state: RootState) => state?.invoices,
   );
 
+
+  console.log('-----userData', userData)
 
 
   const [storeOutletId, setStoreOutletId] = useState<string>();
@@ -375,6 +379,9 @@ const ATMAppHeader = ({
   //     },
   //   })),
   // ];
+
+  const isPOS = location.pathname === '/pos'
+
   return (
     <div className="flex items-center justify-between h-full px-4 border-b bg-gray-50">
       <div className="flex items-center gap-4">
@@ -393,6 +400,9 @@ const ATMAppHeader = ({
           className="w-[165px] h-[48px] text-center"
         />
       </div>
+
+
+
       {showRegisterbutton && (
         <div className="flex items-center gap-4">
           <button
@@ -434,6 +444,33 @@ const ATMAppHeader = ({
         </div>
       )}
       <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => {
+              // navigate(isPOS ? '/dashboard' : '/pos');
+              const canNavigate = isPOS
+                ? isAuthorized('NAV_DASHBOARD')
+                : isAuthorized('NAV_POS');
+
+              if (canNavigate) {
+                navigate(isPOS ? '/dashboard' : '/pos');
+              } else {
+                showToast("success", 'You are not authorized to access this page.');
+              }
+            }}
+            type="button"
+            style={{
+              height: '35px',
+              fontSize: '12px',
+              width: '125px',
+            }}
+            className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
+          >
+            <IconArrowRight size={16} className="mr-1" />
+            {isPOS ? 'Dashboard' : 'POS'}
+          </button>
+
+        </div>
         {(userData?.userType === 'EMPLOYEE' || showOutletDropdown) && (
           <div className="w-[300px]">
             <ATMSelect

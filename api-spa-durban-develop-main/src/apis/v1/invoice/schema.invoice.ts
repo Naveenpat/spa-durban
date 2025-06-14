@@ -80,6 +80,8 @@ export interface AggregatedInvoiceDocument extends InvoiceDocument {
   outlet:any;
   paymentMode:any;
   amountReceived:any;
+  websiteUrl:string;
+  company:any;
 }
 
 export interface InvoiceModel extends mongoose.Model<InvoiceDocument> {

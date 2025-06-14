@@ -200,7 +200,7 @@ const createCloseRegister = catchAsync(
     const htmlContent = generateCloseRegisterHTML(closeRegister,bankDeposit,carryForwardBalance, outletData,req.body.openingBalance);
     const pdfBuffer = await generatePDFBuffer(htmlContent);
 
-    await sendEmail({
+    const emailData = {
       emailSubject: 'Close Register Report',
       emailBody: '<p>Attached is your daily close register report.</p>',
       sendTo: 'np.221196.np@gmail.com', // or dynamic
@@ -211,7 +211,8 @@ const createCloseRegister = catchAsync(
           content: pdfBuffer,
         },
       ],
-    });
+    }
+    await sendEmail(emailData,outletData);
 
 
 

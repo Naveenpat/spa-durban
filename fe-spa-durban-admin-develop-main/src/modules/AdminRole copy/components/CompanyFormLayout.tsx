@@ -143,6 +143,20 @@ const CompanyFormLayout = ({
               />
             </div>
 
+             <div>
+              <ATMTextField
+                name="websiteUrl"
+                value={values.websiteUrl}
+                onChange={(e) => setFieldValue('websiteUrl', e.target.value)}
+                label="Website Url"
+                placeholder="Enter Website Url"
+                onBlur={handleBlur}
+                isTouched={touched?.websiteUrl}
+                errorMessage={errors?.websiteUrl}
+                isValid={!errors?.websiteUrl}
+              />
+            </div>
+
             <div className="relative h-36 w-36 border-2 border-dashed border-gray-400 rounded-md flex items-center justify-center overflow-hidden">
               <input
                 id="logo-upload"
