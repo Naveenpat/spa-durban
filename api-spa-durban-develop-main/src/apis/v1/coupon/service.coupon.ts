@@ -184,6 +184,18 @@ const getCouponById = async (
   }
   return null;
 };
+
+// coupon.service.ts
+export const getCouponByFilter = async (filter: any): Promise<CouponDocument | null> => {
+  return await Coupon.findOne({
+    ...filter,
+    isDeleted: false,
+    valid: { $gte: new Date() }, // ✅ Still valid (future)
+  });
+};
+
+
+
 /**
  * Get Coupon by id
  * @param {object} matchObject

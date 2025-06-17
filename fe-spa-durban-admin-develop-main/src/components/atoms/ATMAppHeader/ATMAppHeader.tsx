@@ -1,8 +1,10 @@
 import {
   IconBan,
+  IconCashBanknote,
   IconCopyX,
   IconCreditCardRefund,
   IconDotsVertical,
+  IconHome,
   IconKey,
   IconLogout,
   IconMenu2,
@@ -466,7 +468,7 @@ const ATMAppHeader = ({
             }}
             className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
           >
-            <IconArrowRight size={16} className="mr-1" />
+            {isPOS ? <IconHome size={16} className="mr-1" /> : <IconCashBanknote size={16} className="mr-1" />}
             {isPOS ? 'Dashboard' : 'POS'}
           </button>
 

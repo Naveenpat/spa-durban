@@ -8,6 +8,8 @@ import {
   deleteEmployee,
   toggleEmployeeStatus,
   createBookingEmployee,
+  importEmployeeExcelSheet,
+  exportEmployeeExcelSheet,
 } from "./controller.employee";
 import validate from "../../../middleware/validate";
 import {
@@ -21,7 +23,11 @@ import {
 import { authenticate } from "../../../middleware/authentication";
 import { parseBodyAndQuery } from "../../../middleware/parseBodyAndQuery";
 import { UserEnum, TokenEnum } from "../../../utils/enumUtils";
+import { fileUpload } from "../../../middleware/multerFileUpload";
+import multer, { FileFilterCallback } from "multer"
 
+
+const upload = multer();
 const router = Router();
 
 /**
@@ -368,5 +374,19 @@ router.put(
   validate(toggleStatusDocument),
   toggleEmployeeStatus
 );
+
+router.post(
+  '/new/import-excel',
+  authenticate([UserEnum.Admin], TokenEnum.Access),
+  upload.single('file'), // ⬅️ file input name should be 'file'
+  importEmployeeExcelSheet
+);
+
+router.get(
+  '/new/export-excel',
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  exportEmployeeExcelSheet
+);
+
 
 export default router;

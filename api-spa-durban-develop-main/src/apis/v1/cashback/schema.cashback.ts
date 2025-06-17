@@ -10,9 +10,13 @@ export interface CashbackDocument extends Document {
   cashBackRulesName: string;
   howMuchCashback: number;
   cashBackDate: Date;
+  cashBackEndDate: Date;
   serviceId: [ObjectId];
   isDeleted: boolean;
   isActive: boolean;
+  activeDays: string[];
+  startTime: string;
+  endTime: string;
 }
 
 export interface CashbackModel extends mongoose.Model<CashbackDocument> {
@@ -46,11 +50,41 @@ const CashbackSchema = new mongoose.Schema<CashbackDocument>(
     },
     cashBackDate: {
       type: Date,
-      required: true,
+      // required: true,
+      default: null
+    },
+    cashBackEndDate: {
+      type: Date,
+      // required: true,
+      default: null
     },
     serviceId: {
       type: [mongoose.Schema.Types.ObjectId],
       required: true,
+    },
+    activeDays: [
+      {
+        type: String,
+        enum: [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ],
+        default: []
+      },
+
+    ],
+    startTime: {
+      type: String,
+      default: null
+    },
+    endTime: {
+      type: String,
+      default: null
     },
     isDeleted: {
       type: Boolean,

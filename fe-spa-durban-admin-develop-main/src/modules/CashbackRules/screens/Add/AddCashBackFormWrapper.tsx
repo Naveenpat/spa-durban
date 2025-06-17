@@ -1,5 +1,5 @@
 import { Formik, FormikHelpers, Form } from 'formik';
-import React from 'react';
+import React, { useState } from 'react';
 import { CashBackFormValues } from '../../models/CashBack.model';
 import CashBackFormLayout from '../../components/CashBackFormLayout';
 import { object, string } from 'yup';
@@ -15,12 +15,17 @@ const AddCashBackFormWrapper = (props: Props) => {
   const navigate = useNavigate();
   const { data } = useFetchData(useGetOutletsQuery, {});
   const [addCashBack] = useAddCashBackMutation();
+
   const initialValues: CashBackFormValues = {
     cashBackRulesName: '',
     howMuchCashback: '',
-    cashBackDate: '',
-    cashBackEndDate: '',
+    cashBackDate: new Date(),
+    cashBackEndDate: new Date(),
     serviceId: '',
+    startTime: '',
+    endTime: '',
+    activeDays: [],
+    selectDateOrDays:''
   };
 
   const validationSchema = object().shape({
@@ -37,7 +42,40 @@ const AddCashBackFormWrapper = (props: Props) => {
       cashBackDate: values?.cashBackDate,
       cashBackEndDate: values?.cashBackEndDate,
       serviceId: values?.serviceId?.map((serviceId: any) => serviceId?._id),
+      startTime:values?.startTime,
+      endTime:values?.endTime,
+      activeDays:values?.activeDays
     };
+
+    // let formattedValues: any = {
+    //   cashBackRulesName: values?.cashBackRulesName,
+    //   howMuchCashback: values?.howMuchCashback?.value,
+    //   serviceId: values?.serviceId?.map((serviceId: any) => serviceId?._id),
+    //   selectDateOrDays: selectDateOrDays
+    // };
+
+    // // Conditionally include fields based on selection
+    // if (selectDateOrDays === 'days') {
+    //   formattedValues = {
+    //     ...formattedValues,
+    //     activeDays: values?.activeDays,
+    //     startTime: values?.startTime,
+    //     endTime: values?.endTime,
+    //     cashBackDate: null,
+    //     cashBackEndDate: null
+    //   };
+    // } else if (selectDateOrDays === 'date') {
+    //   formattedValues = {
+    //     ...formattedValues,
+    //     cashBackDate: values?.cashBackDate,
+    //     cashBackEndDate: values?.cashBackEndDate,
+    //     activeDays: [],
+    //     startTime: null,
+    //     endTime: null
+    //   };
+    // }
+
+    console.log('------formattedValues', formattedValues)
     addCashBack(formattedValues).then((res: any) => {
       if (res?.error) {
         showToast('error', res?.error?.data?.message);
@@ -66,7 +104,7 @@ const AddCashBackFormWrapper = (props: Props) => {
           <CashBackFormLayout
             formikProps={formikProps}
             formType="ADD"
-            onCancel={() => navigate('/cashback')}
+            onCancel={() => navigate('/cashback-rules')}
           />
         </Form>
       )}

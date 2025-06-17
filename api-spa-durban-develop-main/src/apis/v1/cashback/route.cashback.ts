@@ -70,7 +70,7 @@ const router = Router();
 router.post(
   "/add",
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  validate(create),
+  // validate(create),
   createCashback
 );
 
@@ -175,7 +175,7 @@ router.get(
 router.put(
   "/toggle-status/:cashBackId",
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  validate(toggleStatusDocument),
+  // validate(toggleStatusDocument),
   toggleCashbackStatus
 );
 
@@ -228,7 +228,7 @@ router.put(
 router.put(
   "/:cashBackId",
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  validate(update),
+  // validate(update),
   updateCashback
 );
 

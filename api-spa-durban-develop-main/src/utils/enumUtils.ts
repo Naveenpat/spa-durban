@@ -36,7 +36,7 @@ export enum PaymentStatusTypeEnum {
 //Coupon types
 export enum CouponTypeEnum {
   couponCode = "COUPON_CODE",
-  referralCode = "REFERRAL_CODE",
+  referralCode = "REFERRAL_CODE"
 }
 //GiftCard types
 export enum GiftCardTypeEnum {

@@ -15,31 +15,70 @@ export const create: { body: ObjectSchema } = {
   body: Joi.object().keys({
     cashBackRulesName: Joi.string().trim().min(3).max(100).required(),
     howMuchCashback: Joi.number().min(1).max(100).required(),
-    cashBackDate: Joi.string().lowercase().required(),
+    cashBackDate: Joi.string().allow(null, '').optional(),
+    cashBackEndDate: Joi.string().allow(null, '').optional(),
+
+    activeDays: Joi.array()
+      .items(
+        Joi.string().valid(
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday'
+        )
+      )
+      .optional(),
+
+    startTime: Joi.string().allow(null, '').optional(),
+    endTime: Joi.string().allow(null, '').optional(),
+
     serviceId: Joi.array()
       .items(Joi.string().custom(objectId))
       .min(1)
       .required(),
-  }),
+  })
 };
+
+
 
 /**
  * Update CashBack Validation Schema
  */
-export const update: { params: ObjectSchema; body: ObjectSchema } = {
-  params: Joi.object().keys({
-    cashBackId: Joi.string().custom(objectId).required(),
-  }),
+export const update: { body: ObjectSchema } = {
   body: Joi.object().keys({
-    cashBackRulesName: Joi.string().trim().min(1).max(100).optional(),
-    howMuchCashback: Joi.number().min(1).max(100).optional(),
-    cashBackDate: Joi.string().lowercase().required(),
+    cashBackRulesName: Joi.string().trim().min(3).max(100).required(),
+    howMuchCashback: Joi.number().min(1).max(100).required(),
+
+    cashBackDate: Joi.string().allow(null, '').optional(),
+    cashBackEndDate: Joi.string().allow(null, '').optional(),
+
+    activeDays: Joi.array()
+      .items(
+        Joi.string().valid(
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday'
+        )
+      )
+      .optional(),
+
+    startTime: Joi.string().allow(null, '').optional(),
+    endTime: Joi.string().allow(null, '').optional(),
+
     serviceId: Joi.array()
       .items(Joi.string().custom(objectId))
       .min(1)
-      .optional(),
-  }),
-};
+      .required(),
+  })};
+
+
 
 /**
  * Filter and Pagination API Validation

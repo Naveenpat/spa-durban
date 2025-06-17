@@ -43,6 +43,7 @@
     "mongoose-mongodb-errors": "^0.0.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "node-cron": "^4.1.0",
     "nodemailer": "^6.9.14",
     "nodemon": "^3.1.9",
     "npm": "^10.8.1",
@@ -54,7 +55,8 @@
     "swagger-ui-express": "^5.0.1",
     "uuid": "^10.0.0",
     "winston": "^3.13.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",

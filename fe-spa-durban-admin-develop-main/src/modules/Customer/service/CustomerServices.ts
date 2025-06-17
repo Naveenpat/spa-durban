@@ -59,6 +59,29 @@ export const customerApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    exportCustomerExcel: builder.query<Blob, void>({
+      query: () => ({
+        url: '/customer/new/export-excel',
+        method: 'GET',
+        responseHandler: (response) => response.blob(), // this is key
+        responseType: 'blob',
+      }),
+    }),
+
+
+    importCustomerExcel: builder.mutation({
+      invalidatesTags: ['customer'],
+      query: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return {
+          url: 'customer/new/import-excel',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    })
   }),
 });
 
@@ -69,4 +92,6 @@ export const {
   useDeleteCustomerMutation,
   useAddCustomerMutation,
   useCustomerStatusMutation,
+  useExportCustomerExcelQuery,
+  useImportCustomerExcelMutation
 } = customerApi;

@@ -74,8 +74,32 @@ export const employeeApi = apiSlice.injectEndpoints({
         };
       },
     }),
+
+    exportEmployeeExcel: builder.query<Blob, void>({
+      query: () => ({
+        url: '/employee/new/export-excel',
+        method: 'GET',
+        responseHandler: (response) => response.blob(), // this is key
+        responseType: 'blob',
+      }),
+    }),
+
+
+    importEmployeeExcel: builder.mutation({
+      invalidatesTags: ['employee'],
+      query: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return {
+          url: 'employee/new/import-excel',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    })
   }),
-});
+})
 
 export const {
   useGetEmployiesQuery,
@@ -84,4 +108,6 @@ export const {
   useGetEmployeeByIdQuery,
   useDeleteEmployeeMutation,
   useEmployeeStatusMutation,
+  useExportEmployeeExcelQuery,
+  useImportEmployeeExcelMutation
 } = employeeApi;

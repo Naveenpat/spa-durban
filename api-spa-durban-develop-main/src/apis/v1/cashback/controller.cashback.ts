@@ -25,6 +25,16 @@ const createCashback = catchAsync(
     if (!req.userData) {
       throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
     }
+
+    if (req.body.activeDays && req.body.activeDays.length > 0) {
+      req.body.cashBackDate = null;
+      req.body.cashBackEndDate = null;
+    } else {
+      req.body.activeDays = [];
+      req.body.startTime = null;
+      req.body.endTime = null;
+    }
+
     const cashback = await cashbackService.createCashback(req.body);
 
     return res.status(httpStatus.CREATED).send({
@@ -108,6 +118,16 @@ const updateCashback = catchAsync(
     if (!req.userData) {
       throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
     }
+
+    if (req.body.activeDays && req.body.activeDays.length > 0) {
+      req.body.cashBackDate = null;
+      req.body.cashBackEndDate = null;
+    } else {
+      req.body.activeDays = [];
+      req.body.startTime = null;
+      req.body.endTime = null;
+    }
+
     const cashback = await cashbackService.updateCashbackById(
       req.params.cashBackId,
       req.body

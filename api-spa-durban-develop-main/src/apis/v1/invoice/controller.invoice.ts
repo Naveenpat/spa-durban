@@ -36,6 +36,8 @@ import {
 } from "../loyaltyWallet/helper.loyaltyWallet";
 import { getPreview } from "./helper.preinvoice";
 import mongoose from "mongoose";
+import Cashback from "../cashback/schema.cashback";
+import { sendEmail } from "../../../../src/helper/sendEmail";
 
 const previewInvoice = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -96,7 +98,7 @@ const createInvoice = catchAsync(
     } = req.body;
     // console.log(req.body, 12313);
     //get pre invoicing phase
-      console.log('-----calll------1')
+    console.log('-----calll------1')
     const previewResult = await getPreview(req);
     console.log('-----calll-----2')
     if (!previewResult) {
@@ -125,11 +127,101 @@ const createInvoice = catchAsync(
     } = dataToUpdate;
     let { outlet } = otherData;
 
+
+
+
+    const now = new Date();
+    const itemIds = invoiceData?.items.map((item: any) => item.itemId);
+
+    const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+    const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+
+    // const potentialRules = await Cashback.find({
+    //   isActive: true,
+    //   serviceId: { $in: itemIds },
+    //   $or: [
+    //     {
+    //       $and: [
+    //         {
+    //           cashBackDate: { $exists: true }
+    //         },
+    //         {
+    //           cashBackDate: { $lte: now }
+    //         },
+    //         { cashBackEndDate: { $exists: true } },
+    //         { cashBackEndDate: { $gte: now } }
+    //       ]
+    //     },
+    //     {
+    //       activeDays: { $in: [currentDay] }
+    //     }
+    //   ]
+    // });
+
+    const potentialRules = await Cashback.find({
+  isActive: true,
+  serviceId: { $in: itemIds },
+  $or: [
+    {
+      // Date-based cashback rule
+      cashBackDate: { $lte: now },
+      cashBackEndDate: { $gte: now }
+    },
+    {
+      // Day-based cashback rule
+      activeDays: { $in: [currentDay] }
+    }
+  ]
+});
+
+
+
+
+    console.log('-----potentialRules', potentialRules)
+    // Step 2: Filter valid rules
+    const validRules = potentialRules.filter((rule: any) => {
+      const isDayRule =
+        Array.isArray(rule.activeDays) &&
+        rule.activeDays.includes(currentDay) &&
+        rule.startTime &&
+        rule.endTime;
+
+      if (isDayRule) {
+        const [sh, sm] = rule.startTime.split(':').map(Number); // 17, 52
+        const [eh, em] = rule.endTime.split(':').map(Number);   // 18, 29
+        const startMins = sh * 60 + sm;
+        const endMins = eh * 60 + em;
+
+        return currentTimeMinutes >= startMins && currentTimeMinutes <= endMins;
+      }
+
+      return (
+        (!rule.cashBackDate || now >= new Date(rule.cashBackDate)) &&
+        (!rule.cashBackEndDate || now <= new Date(rule.cashBackEndDate))
+      );
+    });
+
+
+
+
+    console.log('-----validBonusRules', validRules)
+
+    // Step 3: Calculate cashback
+    let cashbackMultiplier = 1;
+    if (validRules.length) {
+      cashbackMultiplier = Math.max(...validRules.map((r: any) => r.howMuchCashback || 1));
+    }
+
+    const finalCashback = (invoiceData?.cashBackEarned || 0) * cashbackMultiplier;
+    console.log('Final Cashback:', finalCashback);
+
+
     //check payment methods
     const paymentMethods = await invoiceHelper.checkPaymentMethods(
       amountReceived
     );
-    console.log("22222222222")
+    console.log("22222222222 -- invoiceData", invoiceData)
+
     if (!paymentMethods) {
       throw new ApiError(httpStatus.NOT_FOUND, "Invalid payment mode.");
     }
@@ -147,24 +239,24 @@ const createInvoice = catchAsync(
     // get invoice number
     const { invoiceNumber, newInvoiceNumber } =
       await invoiceHelper.generateInvoiceNumber(outlet);
-    console.log("44444444444",invoiceNumber)
+    console.log("44444444444", invoiceNumber)
 
     invoiceData.invoiceNumber = invoiceNumber;
     invoiceData.invoiceDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
     console.log(invoiceData, 12123);
 
-     //update outlet invoice number
+    //update outlet invoice number
     const getOutletData = await outletService.getOutletById(outletId);
 
     //create invoice
     const invoice = await invoiceService.createInvoice({
       ...invoiceData,
-      cashBackEarned:isNaN(Number(invoiceData.cashBackEarned)) ? 0 : Number(invoiceData.cashBackEarned),
+      cashBackEarned: isNaN(Number(finalCashback)) ? 0 : Number(finalCashback),
       bookingId,
       loyaltyPointsEarned: pointsToAdd,
-      companyId:getOutletData?.companyId
+      companyId: getOutletData?.companyId
     });
-    
+
     console.log("55555555555")
     if (!invoice) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
@@ -225,9 +317,14 @@ const createInvoice = catchAsync(
         throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
       }
     }
+
+
+
+
+
     await updateCashBack(
       invoiceData?.customerId,
-      isNaN(Number(invoiceData?.cashBackEarned)) ? 0 : Number(invoiceData?.cashBackEarned),
+      isNaN(Number(finalCashback)) ? 0 : Number(finalCashback),
       "add"
     );
     if (useCashBackAmount && usedCashBackAmount) {
@@ -237,6 +334,26 @@ const createInvoice = catchAsync(
         "remove"
       );
     }
+
+    const customerData = await customerService.getCustomerById(invoiceData?.customer_id)
+    const emailData = {
+      sendTo: 'np.221196.np@gmail.com',
+      emailSubject: `💰 You've Earned Bonus Cashback!`,
+      emailBody: `
+    <p>Dear ${customerData?.customerName || 'Customer'},</p>
+    <p>Great news! You’ve earned <strong>${cashbackMultiplier}X</strong> cashback on your recent purchase 🎉</p>
+    <p>🪙 <strong>Cashback Earned:</strong> ₹${invoiceData.cashBackEarned * cashbackMultiplier}</p>
+    <p>This bonus was applied automatically based on our special cashback rules.</p>
+    <br/>
+    <p>Keep an eye out for more offers and save big on every visit!</p>
+    <br/>
+    <p>Cheers,</p>
+    <p><em>The Spa Durban Team</em></p>
+  `,
+    };
+
+    // await sendEmail(emailData, outlet);
+
 
     return res.status(httpStatus.CREATED).send({
       message: "Added successfully!",
@@ -458,7 +575,7 @@ const getInvoice = catchAsync(
               $project: {
                 phone: 1,
                 name: 1,
-                logo:1
+                logo: 1
               },
             },
           ],

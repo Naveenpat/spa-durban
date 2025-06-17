@@ -8,6 +8,7 @@ import MOLTable, {
 import { Customer } from '../../models/Customer.model';
 import { isAuthorized } from 'src/utils/authorization';
 import Authorization from 'src/components/Authorization/Authorization';
+import GlobalImportExport from 'src/utils/GlobalImportExport';
 
 type Props = {
   onAddNew: () => void;
@@ -20,6 +21,8 @@ type Props = {
     totalPages: number;
   };
   isLoading: boolean;
+  exportEmployeeExcelSheet:any;
+  importEmployeeExcelSheet:any;
 };
 
 const CustomerListing = ({
@@ -30,6 +33,8 @@ const CustomerListing = ({
   rowData,
   filterPaginationData: { totalCount, totalPages },
   isLoading = false,
+  importEmployeeExcelSheet,
+  exportEmployeeExcelSheet
 }: Props) => {
   return (
     <>
@@ -42,6 +47,12 @@ const CustomerListing = ({
             onClick: onAddNew,
           }}
           hideButton={!isAuthorized('CUSTOMER_ADD')}
+        />
+         <GlobalImportExport
+          onImport={(file:any) => importEmployeeExcelSheet(file)}
+          onExport={() => exportEmployeeExcelSheet()}
+          showImport={true}
+          showExport={true}
         />
         <Authorization permission="CUSTOMER_LIST">
           <div className="flex flex-col overflow-auto border rounded border-slate-300">

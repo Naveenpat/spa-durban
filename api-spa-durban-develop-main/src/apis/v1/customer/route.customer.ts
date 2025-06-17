@@ -7,6 +7,8 @@ import {
   deleteCustomer,
   toggleCustomerStatus,
   createCustomerByBooking,
+  importCustomerExcelSheet,
+  exportCustomerExcelSheet,
 } from "./controller.customer";
 import validate from "../../../middleware/validate";
 import {
@@ -20,9 +22,10 @@ import {
 import { authenticate } from "../../../middleware/authentication";
 import { parseBodyAndQuery } from "../../../middleware/parseBodyAndQuery";
 import { UserEnum, TokenEnum } from "../../../utils/enumUtils";
+import multer, { FileFilterCallback } from "multer"
 
 const router = Router();
-
+const upload = multer();
 /**
  * @swagger
  * tags:
@@ -327,4 +330,16 @@ router.put(
   toggleCustomerStatus
 );
 
+router.post(
+  '/new/import-excel',
+  authenticate([UserEnum.Admin], TokenEnum.Access),
+  upload.single('file'), // ⬅️ file input name should be 'file'
+  importCustomerExcelSheet
+);
+
+router.get(
+  '/new/export-excel',
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  exportCustomerExcelSheet
+);
 export default router;

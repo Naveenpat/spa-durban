@@ -7,12 +7,17 @@ import { Customer } from '../../models/Customer.model';
 import {
   useCustomerStatusMutation,
   useDeleteCustomerMutation,
+  useExportCustomerExcelQuery,
   useGetCustomersQuery,
+  useImportCustomerExcelMutation,
 } from '../../service/CustomerServices';
 import CustomerListing from './CustomerListing';
 import { format } from 'date-fns';
 import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
+import { useEffect, useState } from 'react';
+import { EmptyPointSettings } from '@syncfusion/ej2-react-charts';
+import toast from 'react-hot-toast';
 
 type Props = {};
 
@@ -53,6 +58,40 @@ const CustomerListingWrapper = (props: Props) => {
       setIsLoading(false);
     });
   };
+
+  const [startExport, setStartExport] = useState(false)
+  const { data: exportData, isLoading: isExporting } = useExportCustomerExcelQuery(undefined, {
+    skip: !startExport, // trigger only when needed
+  });
+
+  const [importEmployeeExcel, { isLoading: isImporting }] = useImportCustomerExcelMutation();
+
+  const exportEmployeeExcelSheet = () => {
+    setStartExport(true); // This will trigger the API call to fetch exportData
+  };
+
+  // ⬇️ When exportData is updated by the API call, download the file
+  useEffect(() => {
+    if (exportData) {
+      const url = window.URL.createObjectURL(new Blob([exportData]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'Customer.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url); // Clean up
+    }
+  }, [exportData]);
+
+  const importEmployeeExcelSheet = async (file: any) => {
+    try {
+      await importEmployeeExcel(file).unwrap();
+      toast.success('Employees imported successfully!');
+    } catch (err) {
+      toast.error('Failed to import employees');
+    }
+  }
 
   const tableHeaders: TableHeader<Customer>[] = [
     {
@@ -144,16 +183,16 @@ const CustomerListingWrapper = (props: Props) => {
       },
     },
     {
-    fieldName: 'updatedAt',
-    headerName: 'Date',
-    flex: 'flex-[1_1_0%]',
-    extraClasses: () => '',
-    stopPropagation: true,
-    render: (row: any) => {
-      const date = row.updatedAt ? new Date(row.updatedAt) : null;
-      return date ? format(date, 'dd-MM-yyyy') : '-';
+      fieldName: 'updatedAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.updatedAt ? new Date(row.updatedAt) : null;
+        return date ? format(date, 'dd-MM-yyyy') : '-';
+      },
     },
-  },
     {
       fieldName: 'status',
       headerName: 'Active',
@@ -210,6 +249,8 @@ const CustomerListingWrapper = (props: Props) => {
           totalPages: totalPages,
         }}
         isLoading={isLoading}
+        importEmployeeExcelSheet={importEmployeeExcelSheet}
+        exportEmployeeExcelSheet={exportEmployeeExcelSheet}
       />
     </>
   );

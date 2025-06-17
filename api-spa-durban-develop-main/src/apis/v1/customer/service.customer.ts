@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import { RangeFilter } from "../../../utils/interface";
 import { userService } from "./../service.index";
 import { UserEnum, CustomerTypeEnum } from "../../../utils/enumUtils";
-
+import XLSX from 'xlsx';
 /**
  * Create a customer
  * @param {Object} customerBody
@@ -312,6 +312,66 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
   return false;
 }
 
+const importExcel = async (file: Express.Multer.File): Promise<void> => {
+  if (!file) throw new Error('No file uploaded');
+
+  const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const data: any[] = XLSX.utils.sheet_to_json(sheet);
+
+  for (const customer of data) {
+    const {
+      email,
+      ...restFields
+    } = customer;
+
+    if (!email) continue;
+
+    const customerObj = {
+      ...restFields,
+      email,
+    };
+
+    await Customer.findOneAndUpdate(
+      { email },
+      { $set: customerObj },
+      { upsert: true, new: true }
+    );
+  }
+};
+
+
+// =================== EXPORT CUSTOMER EXCEL =====================
+const exportExcel = async () => {
+  const customers = await Customer.find({ isDeleted: false }).limit(10);
+
+  const formattedData = customers.map((cust) => ({
+    CustomerName: cust.customerName,
+    Phone: cust.phone,
+    Email: cust.email,
+    Address: cust.address,
+    City: cust.city,
+    Region: cust.region,
+    Country: cust.country,
+    TaxNo: cust.taxNo,
+    DateOfBirth: cust.dateOfBirth ? new Date(cust.dateOfBirth).toLocaleDateString() : '',
+    Gender: cust.gender,
+    LoyaltyPoints: cust.loyaltyPoints || 0,
+    CustomerType: cust.customerType,
+    IsActive: cust.isActive ? 'Active' : 'Inactive',
+    BookingCustomerId: cust.bookingCustomerId || '',
+    CashBackAmount: cust.cashBackAmount || 0
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers');
+
+  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+};
+
+
 export {
   createCustomer,
   queryCustomers,
@@ -322,4 +382,6 @@ export {
   isExists,
   toggleCustomerStatusById,
   findCustomerByBookingId,
+  importExcel,
+  exportExcel
 };

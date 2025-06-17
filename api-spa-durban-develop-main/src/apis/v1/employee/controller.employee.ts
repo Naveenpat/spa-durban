@@ -707,6 +707,35 @@ const toggleEmployeeStatus = catchAsync(
   }
 );
 
+const importEmployeeExcelSheet = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    const result = await employeeService.importExcel(file); // ✅ Now it's safe
+    res.status(200).json({ success: true, message: 'Employees imported', result });
+  } catch (error) {
+    console.error('Import Error:', error);
+    res.status(500).json({ success: false, message: 'Import failed', error });
+  }
+};
+
+
+const exportEmployeeExcelSheet = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    console.log('------------ccc'); // this should now print if the API is hit
+    const buffer = await employeeService.exportExcel();
+    res.setHeader('Content-Disposition', 'attachment; filename=employees.xlsx');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
+  }
+);
+
+
+
 export {
   createEmployee,
   getEmployees,
@@ -716,4 +745,6 @@ export {
   toggleEmployeeStatus,
   getEmployeeRoles,
   createBookingEmployee,
+  importEmployeeExcelSheet,
+  exportEmployeeExcelSheet
 };

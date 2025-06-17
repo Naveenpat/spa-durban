@@ -9,6 +9,7 @@ import { Employee } from '../../models/Employee.model';
 import { Dispatch, SetStateAction } from 'react';
 import { isAuthorized } from 'src/utils/authorization';
 import Authorization from 'src/components/Authorization/Authorization';
+import GlobalImportExport from 'src/utils/GlobalImportExport';
 
 type Props = {
   onAddNew: () => void;
@@ -26,6 +27,8 @@ type Props = {
   ) => void;
   isTableLoading: boolean;
   filter: any;
+  importEmployeeExcelSheet:any;
+  exportEmployeeExcelSheet:any;
 };
 
 const EmployeeListing = ({
@@ -37,10 +40,13 @@ const EmployeeListing = ({
   isTableLoading,
   filter,
   onDelete,
+  importEmployeeExcelSheet,
+  exportEmployeeExcelSheet
 }: Props) => {
   return (
     <>
       <div className="flex flex-col h-full gap-2 p-4">
+         
         <ATMPageHeader
           heading="Employee"
           buttonProps={{
@@ -49,6 +55,12 @@ const EmployeeListing = ({
             onClick: onAddNew,
           }}
           hideButton={!isAuthorized('EMPLOYEE_ADD')}
+        />
+         <GlobalImportExport
+          onImport={(file:any) => importEmployeeExcelSheet(file)}
+          onExport={() => exportEmployeeExcelSheet()}
+          showImport={true}
+          showExport={true}
         />
         <Authorization permission="EMPLOYEE_LIST">
           <div className="flex flex-col overflow-auto border rounded border-slate-300">

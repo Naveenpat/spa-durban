@@ -5,6 +5,10 @@ import mongoose from "mongoose";
 import { RangeFilter } from "../../../utils/interface";
 import { userService } from "./../service.index";
 import { UserEnum } from "../../../utils/enumUtils";
+import XLSX from 'xlsx';
+import Outlet from "../outlet/schema.outlet";
+import Company from "../company/schema.company";
+import Role from "../role/schema.role";
 
 /**
  * Create a employee
@@ -224,6 +228,170 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
   return false;
 }
 
+
+ const importExcel = async (file: Express.Multer.File): Promise<void> => {
+  if (!file) throw new Error('No file uploaded');
+
+  const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const data: any[] = XLSX.utils.sheet_to_json(sheet);
+
+  for (const emp of data) {
+    const {
+      userName,
+      roleName,
+      companyName,
+      outletNames,
+      ...restFields
+    } = emp;
+
+    if (!userName) continue;
+
+    // ✅ Find roleId
+    const role = await Role.findOne({ roleName: roleName?.trim() || '' });
+    const userRoleId = role?._id;
+
+    // ✅ Find companyId (if companyName exists)
+    let companyId = null;
+    if (companyName) {
+      const company = await Company.findOne({ companyName: companyName.trim() });
+      companyId = company?._id || null;
+    }
+
+    // ✅ Find outlet IDs
+    const outletsArray = outletNames
+      ? outletNames.split(',').map((name:any) => name.trim())
+      : [];
+
+    const outlets = await Outlet.find({ name: { $in: outletsArray } });
+    const outletsId = outlets.map(o => o._id);
+
+    // ✅ Prepare employee object
+    const employeeObj = {
+      ...restFields,
+      userName,
+      userRoleId,
+      companyId,
+      outletsId
+    };
+
+    console.log('------employeeObj',employeeObj)
+    // ✅ Create or update employee by userName
+    await Employee.findOneAndUpdate(
+      { userName },
+      { $set: employeeObj },
+      { upsert: true, new: true }
+    );
+  }
+};
+
+const exportExcel = async () => {
+  console.log('-----callling')
+  const employeeData = await Employee.aggregate([
+    // Match non-deleted employees
+    { $match: { isDeleted: false } },
+
+    // Lookup Role Name
+    {
+      $lookup: {
+        from: 'roles',
+        localField: 'userRoleId',
+        foreignField: '_id',
+        as: 'role'
+      }
+    },
+    { $unwind: { path: '$role', preserveNullAndEmptyArrays: true } },
+
+    // Lookup Company Name
+    {
+      $lookup: {
+        from: 'companies',
+        localField: 'companyId',
+        foreignField: '_id',
+        as: 'company'
+      }
+    },
+    { $unwind: { path: '$company', preserveNullAndEmptyArrays: true } },
+
+    // Lookup Outlet Names
+    {
+      $lookup: {
+        from: 'outlets',
+        localField: 'outletsId',
+        foreignField: '_id',
+        as: 'outlets'
+      }
+    },
+
+    // Final projection
+    {
+      $project: {
+        name: 1,
+        userName: 1,
+        email: 1,
+        phone: 1,
+        address: 1,
+        city: 1,
+        region: 1,
+        country: 1,
+        isActive: 1,
+        createdAt: 1,
+        companyName: '$company.companyName',    // <-- updated field
+        roleName: '$role.roleName',          // <-- updated field
+        outletNames: {
+          $reduce: {
+            input: {
+              $map: {
+                input: '$outlets',
+                as: 'outlet',
+                in: '$$outlet.name'
+              }
+            },
+            initialValue: '',
+            in: {
+              $cond: [
+                { $eq: ['$$value', ''] },
+                '$$this',
+                { $concat: ['$$value', ', ', '$$this'] }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]);
+
+
+
+
+
+  console.log('-----employeeData', employeeData)
+
+  // const formatted = employees.map((emp) => ({
+  //   Name: emp.name,
+  //   Username: emp.userName,
+  //   Email: emp.email,
+  //   Phone: emp.phone,
+  //   Role: emp.userRoleId || '', // populated role name
+  //   Outlets: emp.outletsId?.map((outlet: any) => outlet.name).join(', ') || '',
+  //   Address: emp.address,
+  //   City: emp.city,
+  //   Region: emp.region,
+  //   Country: emp.country,
+  //   Status: emp.isActive ? 'Active' : 'Inactive',
+  //   CompanyId: emp.companyId?.toString() || ''
+  // }));
+
+
+
+  const worksheet = XLSX.utils.json_to_sheet(employeeData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+
+  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+};
+
 export {
   createEmployee,
   queryEmployees,
@@ -233,4 +401,6 @@ export {
   getEmployeesByIds,
   isExists,
   toggleEmployeeStatusById,
+  importExcel,
+  exportExcel
 };
