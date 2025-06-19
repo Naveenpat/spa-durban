@@ -6,6 +6,7 @@ import {
   updatePromotionCoupon,
   deletePromotionCoupon,
   togglePromotionCouponStatus,
+  getAllTypeCoupons,
 } from "./controller.promotioncoupon";
 import validate from "../../../middleware/validate";
 import {
@@ -238,5 +239,12 @@ router.delete(
   validate(deleteDocument),
   deletePromotionCoupon
 );
+
+router.get(
+  '/new/all-type-coupon',
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  getAllTypeCoupons
+);
+
 
 export default router;

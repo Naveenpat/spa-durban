@@ -18,6 +18,11 @@ import {
   invoiceService,
 } from "../service.index";
 import { getLatestInvoiceByOutletId } from "./service.invoice";
+import { isAfter, isBefore } from "date-fns";
+import PromotionCoupon from "../promotioncoupon/schema.promotioncoupon";
+import Service from "../service/schema.service";
+import RewardsCoupon from "../rewardscoupon/schema.rewardscoupon";
+import Customer from "../customer/schema.customer";
 
 //
 const getLoyaltyPointsDiscount = async (
@@ -31,7 +36,7 @@ const getLoyaltyPointsDiscount = async (
   }
   let pointsToDeduct =
     totalWithoutDiscount > loyaltyPoints ||
-    totalWithoutDiscount === loyaltyPoints
+      totalWithoutDiscount === loyaltyPoints
       ? loyaltyPoints
       : loyaltyPoints - totalWithoutDiscount;
 
@@ -121,6 +126,115 @@ const getGiftCardDiscount = async (
     amountToCalculate > giftCardAmount ? giftCardAmount : amountToCalculate;
 
   return giftCardDiscount;
+};
+
+export const getPromotionalCouponDiscount = async (
+  items: { itemId: string; quantity: number; itemType: string }[],
+  couponCode: string,
+  customerId: string
+) => {
+  const today = new Date();
+
+  const coupon = await PromotionCoupon.findOne({
+    couponCode,
+    isActive: true,
+    startDate: { $lte: today },
+    endDate: { $gte: today },
+    customerId: { $in: [customerId] }
+    // $or: [
+    //   { groupTarget: { $size: 0 } }, // if no group targeting
+    //   { groupTarget: 'new-user' },   // optionally check if user is eligible
+    // ],
+  });
+
+  if (!coupon) {
+    throw new ApiError(404, 'Invalid or expired promotional coupon.');
+  }
+
+  // 💡 Calculate discount only for applicable serviceIds
+  const eligibleServiceIds = coupon.serviceId.map((id) => id.toString());
+
+  let totalDiscount = 0;
+
+  for (const item of items) {
+    if (
+      item.itemType === 'SERVICE' &&
+      eligibleServiceIds.includes(item.itemId.toString())
+    ) {
+      // Get price (replace with actual fetch if needed)
+      const service = await Service.findById(item.itemId);
+      const itemPrice = service?.sellingPrice || 0;
+
+      const discountPerUnit = (itemPrice * coupon.discountByPercentage) / 100;
+      totalDiscount += discountPerUnit * item.quantity;
+    }
+  }
+
+  return totalDiscount;
+};
+
+export const getRewardCouponDiscount = async (
+  items: { itemId: string; quantity: number; itemType: string }[],
+  couponCode: string,
+  customerId: string
+): Promise<number> => {
+  const today = new Date();
+
+  // Try reward coupon first
+  const rewardCoupon = await RewardsCoupon.findOne({
+    couponCode,
+    isDeleted: false,
+    isActive: true,
+  });
+
+  if (rewardCoupon) {
+    const customer = await Customer.findById(customerId);
+    if (!customer) throw new ApiError(404, 'Customer not found');
+
+    const customerCashback = customer.cashBackAmount || 0;
+
+    if (customerCashback < rewardCoupon.rewardsPoint) {
+      throw new ApiError(400, 'Insufficient cashback balance to use this reward coupon.');
+    }
+
+    // Optional cashback deduction logic
+    // customer.cashBackAmount -= rewardCoupon.rewardsPoint;
+    // await customer.save();
+
+    return rewardCoupon.rewardsPoint;
+  }
+
+  // Try promotional coupon
+  const promoCoupon = await PromotionCoupon.findOne({
+    couponCode,
+    isActive: true,
+    isDeleted: false,
+    startDate: { $lte: today },
+    endDate: { $gte: today },
+    customerId: { $in: [customerId] },
+  });
+
+  if (!promoCoupon) {
+    throw new ApiError(404, 'Invalid or expired coupon.');
+  }
+
+  const eligibleServiceIds = promoCoupon.serviceId.map((id) => id.toString());
+  let totalDiscount = 0;
+
+  for (const item of items) {
+    if (
+      item.itemType === 'SERVICE' &&
+      eligibleServiceIds.includes(item.itemId.toString())
+    ) {
+      const service = await Service.findById(item.itemId);
+      const itemPrice = service?.sellingPrice || 0;
+
+      const discountPerUnit = (itemPrice * promoCoupon.discountByPercentage) / 100;
+      totalDiscount += discountPerUnit * item.quantity;
+    }
+  }
+
+  return Math.round(totalDiscount);
 };
 
 //
@@ -283,10 +397,13 @@ const getDiscounts = async (
   totalWithoutDiscount: number,
   couponCode: string,
   giftCardCode: string,
+  promotionCoupanCode: string,
+  rewardCoupan: string,
   referralCode: string,
   loyaltyPointsDiscount: number,
   customerId: string,
-  usedCashBackAmountData: number
+  usedCashBackAmountData: number,
+  items: any
 ) => {
   let amountToCalculate =
     totalWithoutDiscount - loyaltyPointsDiscount - usedCashBackAmountData;
@@ -310,6 +427,8 @@ const getDiscounts = async (
   amountToCalculate = amountToCalculate - referralDiscount;
   //giftCardDiscount
   let giftCardDiscount = 0;
+  let promotionCoupanCodeDiscount = 0;
+  let rewardCoupanCodeDiscount = 0
   if (giftCardCode) {
     giftCardDiscount = await getGiftCardDiscount(
       amountToCalculate,
@@ -318,9 +437,29 @@ const getDiscounts = async (
     );
   }
 
+  if (promotionCoupanCode) {
+    promotionCoupanCodeDiscount = await getPromotionalCouponDiscount(
+      items,
+      promotionCoupanCode,
+      customerId
+    );
+  }
+
+  if (rewardCoupan) {
+    rewardCoupanCodeDiscount = await getRewardCouponDiscount(
+      items,
+      rewardCoupan,
+      customerId
+    );
+  }
+
+
+  console.log('-----promotionCoupanCodeDiscount', promotionCoupanCodeDiscount)
+
   let totalDiscount =
     couponDiscount +
     giftCardDiscount +
+    promotionCoupanCodeDiscount +
     referralDiscount +
     loyaltyPointsDiscount +
     usedCashBackAmountData;
@@ -328,6 +467,8 @@ const getDiscounts = async (
   return {
     couponDiscount,
     giftCardDiscount,
+    promotionCoupanCodeDiscount,
+    rewardCoupanCodeDiscount,
     referralDiscount,
     totalDiscount,
   };
@@ -384,7 +525,7 @@ const generateInvoiceNumber = async (outlet: any) => {
 
   const newInvoiceNumber = currentNumber + 1;
   const fullInvoiceNumber = `${invoicePrefix}${newInvoiceNumber}`;
-//  console.log('---------test',newInvoiceNumber,fullInvoiceNumber)
+  //  console.log('---------test',newInvoiceNumber,fullInvoiceNumber)
   // // Update outlet invoiceNumber to keep track
   // await OutletModel.updateOne(
   //   { _id: outletId },
@@ -578,5 +719,5 @@ export {
   getInventoryOutwardData,
   getLoyaltyPointsDiscount,
   getTotalCashBack,
-  getCashBackDiscount,
+  getCashBackDiscount
 };

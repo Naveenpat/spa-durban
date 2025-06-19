@@ -7,6 +7,7 @@ import { setupMiddleware } from "./middleware/setupMiddleware"
 import { setupMonitoring } from "./middleware/monitoringSetup"
 import { rootHandler } from "./handlers/rootHandler" // Import the root handler
 import { startBirthdayCouponCron } from "./src/cron/birthdayCoupons"
+import { runRewardCheck } from "./src/cron/rewardCheckCron"
 
 // Initialize express app
 const app = express()
@@ -24,7 +25,8 @@ setupMiddleware(app)
 
 // Setup monitoring
 setupMonitoring(app)
-startBirthdayCouponCron(); 
+startBirthdayCouponCron();
+runRewardCheck()
 /**
  * Routes setup
  */

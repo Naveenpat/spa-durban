@@ -12,8 +12,11 @@ export interface PromotionCouponDocument extends Document {
   couponCode: string;
   serviceId: [ObjectId];
   customerId: [ObjectId];
+  startDate: Date;
+  endDate: Date;
   isDeleted: boolean;
   isActive: boolean;
+  groupTarget: [String]
 }
 
 export interface PromotionCouponModel
@@ -53,6 +56,18 @@ const PromotionCouponSchema = new mongoose.Schema<PromotionCouponDocument>(
     customerId: {
       type: [mongoose.Schema.Types.ObjectId],
       required: true,
+    },
+    startDate: {
+      type: Date,
+      default: null
+    },
+    endDate: {
+      type: Date,
+      default: null
+    },
+    groupTarget: {
+      type: [String], // Use [String] instead of Array for clarity
+      default: [],
     },
     isDeleted: {
       type: Boolean,

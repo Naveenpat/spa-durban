@@ -22,6 +22,9 @@ import { UserEnum } from "../../../utils/enumUtils";
 
 import crypto from "crypto";
 import PromotionCoupon from "./schema.promotioncoupon"; // Adjust the import path if needed
+import Customer from "../customer/schema.customer";
+import Service from "../service/schema.service";
+import { sendEmail } from "../../../helper/sendEmail";
 
 const generateUniqueCouponCode = async (): Promise<string> => {
   let isUnique = false;
@@ -54,6 +57,51 @@ const createPromotionCoupon = catchAsync(
       req.body
     );
 
+    const { customerId, serviceId } = req.body;
+    const customers = await Customer.find({ _id: { $in: customerId } });
+    const services = await Service.find({ _id: { $in: serviceId } });
+    const serviceListHTML = services.map(s => `<li>${s.serviceName}</li>`).join('');
+
+    for (const user of customers) {
+      const emailData = {
+        sendTo: user.email,
+        emailSubject: `🎉 You're Eligible for Spa Rewards!`,
+        emailBody: `
+  <p>Hi ${user.customerName || 'Customer'},</p>
+
+  <p>We're excited to offer you an exclusive <strong>${req.body.discountByPercentage}% OFF</strong> on the following premium services:</p>
+
+  <ul>${serviceListHTML}</ul>
+
+  <p>Use the coupon code below during checkout to claim your discount:</p>
+
+  <div style="margin: 16px 0; font-size: 20px; font-weight: bold; color: #d63384;">
+    ${promotionCoupon.couponCode}
+  </div>
+
+  <p>Click the button below to copy the coupon code:</p>
+
+  <button 
+    onclick="navigator.clipboard.writeText('${promotionCoupon.couponCode}')"
+    style="padding: 10px 20px; background: #d63384; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;"
+  >
+    Copy Coupon Code
+  </button>
+
+  <br/><br/>
+
+  <p>This offer is valid for a limited time only, so don't miss out!</p>
+
+  <p>Cheers,</p>
+  <p><em>The Spa Durban Team</em></p>
+`,
+      };
+
+      const outlet = {}; // or fetch outlet info if required
+      // await sendEmail(emailData, outlet);
+    }
+
+    console.log('-----customers', customers)
     return res.status(httpStatus.CREATED).send({
       message: "Added successfully!",
       data: promotionCoupon,
@@ -209,6 +257,19 @@ const getPromotionCoupon = catchAsync(
   }
 );
 
+const getAllTypeCoupons = async (req: Request, res: Response) => {
+  try {
+    const customerId = req.query.customerId as string;
+    const items = req.query.items as string[];
+    const coupons = await promotionCouponService.aggregateAllCoupons(customerId, items);
+    return res.status(httpStatus.OK).json({ success: true, data: coupons });
+  } catch (error) {
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false
+    });
+  }
+};
+
 export {
   createPromotionCoupon,
   getPromotionCoupons,
@@ -216,4 +277,5 @@ export {
   deletePromotionCoupon,
   togglePromotionCouponStatus,
   getPromotionCoupon,
+  getAllTypeCoupons
 };

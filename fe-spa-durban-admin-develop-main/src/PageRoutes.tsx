@@ -68,6 +68,7 @@ import TicketListingWrapper from './modules/Ticket/screens/List/TicketListingWra
 import CompanyListingWrapper from './modules/AdminRole copy/screens/List/CompanyWrapper';
 import CompanyFormWrapper from './modules/AdminRole copy/screens/Add/CompanyFormWrapper';
 import EditCompanyFormWrapper from './modules/AdminRole copy/screens/Edit/EditCompanyFormWrapper';
+import ClaimPage from './utils/ClaimPage';
 
 type Props = {};
 
@@ -76,6 +77,10 @@ const PageRoutes = (props: Props) => {
     {
       path: '/login',
       element: <LoginFormWrapper />,
+    },
+    {
+      path: '/rewards/claim',
+      element: <ClaimPage  />,
     },
     {
       path: '/invoice/receipt/:id',

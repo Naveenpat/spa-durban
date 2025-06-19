@@ -87,6 +87,7 @@ const Receipt = () => {
     : 0 || 0;
   const couponDiscount = invoiceData?.couponDiscount || 0;
   const giftCardDiscount = invoiceData?.giftCardDiscount || 0;
+  const promotionCoupanCodeDiscount = invoiceData?.promotionCoupanCodeDiscount || 0;
   const referralDiscount = invoiceData?.referralDiscount || 0;
   const grandTotal = invoiceData?.totalAmount || 0;
   const youPay = invoiceData?.amountPaid || 0;
@@ -248,6 +249,12 @@ const Receipt = () => {
               <div className="flex justify-between px-2">
                 <div>GiftCard Discount</div>
                 <div>- {giftCardDiscount.toFixed(2)}</div>
+              </div>
+            ) : null}
+            {promotionCoupanCodeDiscount ? (
+              <div className="flex justify-between px-2">
+                <div>Promotion Discount</div>
+                <div>- {promotionCoupanCodeDiscount.toFixed(2)}</div>
               </div>
             ) : null}
             {referralDiscount ? (

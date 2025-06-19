@@ -6,7 +6,7 @@ import { sendEmail } from '../../src/helper/sendEmail';
 
 export const startBirthdayCouponCron = () => {
     // ⏰ Run once a day at 12:01 AM
-    cron.schedule('* * * * *', async () => {
+    cron.schedule('1 0 * * *', async () => {
         const today = new Date();
         const oneMonthLater = new Date(today);
         oneMonthLater.setMonth(today.getMonth() + 1);
@@ -62,7 +62,8 @@ export const startBirthdayCouponCron = () => {
             // ✅ Check if already created coupon for this user and type
             const existing = await couponService.getCouponByFilter({
                 user: customer._id,
-                type: 'BIRTHDAY_DISCOUNT',
+                type: 'COUPON_CODE',
+                referralCode: { $regex: `^BDAY-${customer._id.toString().slice(-5)}` },
             });
 
 
@@ -85,19 +86,10 @@ export const startBirthdayCouponCron = () => {
                 type: 'COUPON_CODE',
             });
 
-            // const mailchimpPayload = {
-            //     event: 'birthday_discount',
-            //     customer_id: customer._id,
-            //     discount: '25% off',
-            //     coupon_code:couponCode,
-            //     expiry_date: validTill.toISOString().split('T')[0], // Format: 'YYYY-MM-DD'
-            // };
-
-
             const emailData = {
-                to: customer.email,
-                subject: `🎉 Happy Early Birthday! Here's 25% Off Just for You`,
-                html: `
+                sendTo: "np.221196.np@gmail.com",
+                emailSubject: `🎉 Happy Early Birthday! Here's 25% Off Just for You`,
+                emailBody: `
     <p>Dear ${customer.name || 'Customer'},</p>
     <p>Your birthday is coming up, and we’ve got a gift for you 🎁</p>
     <p>Enjoy <strong>25% off</strong> with your exclusive birthday coupon:</p>
@@ -110,7 +102,7 @@ export const startBirthdayCouponCron = () => {
   `,
             };
             const outlet = {};
-            await sendEmail(emailData, outlet)
+            // await sendEmail(emailData, outlet)
 
             // console.log(`🎉 Coupon created for ${customer._id}`);
         }

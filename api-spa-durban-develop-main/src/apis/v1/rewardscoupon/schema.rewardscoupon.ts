@@ -13,6 +13,7 @@ export interface RewardsCouponDocument extends Document {
   serviceId: [ObjectId];
   isDeleted: boolean;
   isActive: boolean;
+  createdAt:Date;
 }
 
 export interface RewardsCouponModel

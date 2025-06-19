@@ -2,6 +2,7 @@ import JoiBase, { ObjectSchema } from "joi";
 import JoiDate from "@joi/date";
 import JoiObjectId from "joi-objectid";
 import { objectId, dateFormat } from "../../../helper/commonValidation";
+import PromotionCoupon from "../promotioncoupon/schema.promotioncoupon";
 
 // Extend Joi with the date and objectId extensions
 const Joi = JoiBase.extend(JoiDate);
@@ -30,6 +31,7 @@ export const create: { body: ObjectSchema } = {
       })
     ),
     giftCardCode: Joi.string().allow(""),
+    promotionCoupanCode: Joi.string().allow(""),
     useLoyaltyPoints: Joi.boolean().required(),
     referralCode: Joi.string().allow(""),
     outletId: Joi.string().required().custom(objectId),
@@ -63,6 +65,8 @@ export const preview: { body: ObjectSchema } = {
     couponCode: Joi.string().allow(""),
     shippingCharges: Joi.number().required(),
     giftCardCode: Joi.string().allow(""),
+    promotionCoupanCode: Joi.string().allow(""),
+    rewardCoupan: Joi.string().allow(""),
     useLoyaltyPoints: Joi.boolean().required(),
     referralCode: Joi.string().allow(""),
     outletId: Joi.string().required().custom(objectId),

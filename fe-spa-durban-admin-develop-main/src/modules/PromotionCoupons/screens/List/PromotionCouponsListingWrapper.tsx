@@ -64,17 +64,60 @@ const PromotionCouponsListingWrapper = (props: Props) => {
         return <div>{item?.discountByPercentage}%</div>;
       },
     },
-{
-    fieldName: 'createdAt',
-    headerName: 'Date',
-    flex: 'flex-[1_1_0%]',
-    extraClasses: () => '',
-    stopPropagation: true,
-    render: (row: any) => {
-      const date = row.createdAt ? new Date(row.createdAt) : null;
-      return date ? format(date, 'dd-MM-yyyy') : '-';
+    // {
+    //     fieldName: 'createdAt',
+    //     headerName: 'Date',
+    //     flex: 'flex-[1_1_0%]',
+    //     extraClasses: () => '',
+    //     stopPropagation: true,
+    //     render: (row: any) => {
+    //       const date = row.createdAt ? new Date(row.createdAt) : null;
+    //       return date ? format(date, 'dd-MM-yyyy') : '-';
+    //     },
+    //   },
+    {
+      fieldName: 'startDate',
+      headerName: 'Start Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        return date ? format(date, 'dd-MM-yyyy') : '-';
+      },
     },
-  },
+    {
+      fieldName: 'endDate',
+      headerName: 'End Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        return date ? format(date, 'dd-MM-yyyy') : '-';
+      },
+    },
+    {
+      fieldName: 'groupTarget',
+      headerName: 'Customer Groups',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const groups: { itemName: string }[] = row.groupTarget || [];
+
+        // If your stored value is just string IDs like ['golden-member'], you’ll need to map manually.
+        const groupNameMap: Record<string, string> = {
+          'golden-member': 'Golden Member',
+          'silver-member': 'Silver Member',
+          'new-user': 'New Users',
+        };
+
+        return groups.length
+          ? groups.map((g: any) => groupNameMap[g._id || g] || g).join(', ')
+          : '-';
+      },
+    },
     {
       fieldName: 'status',
       headerName: 'status',

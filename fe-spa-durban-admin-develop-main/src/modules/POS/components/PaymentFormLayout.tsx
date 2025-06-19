@@ -1,6 +1,6 @@
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
 import { FieldArray, FormikProps } from 'formik';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
 import ATMCheckbox from 'src/components/atoms/FormElements/ATMCheckbox/ATMCheckbox';
 import ATMNumberField from 'src/components/atoms/FormElements/ATMNumberField/ATMNumberField';
@@ -9,6 +9,7 @@ import ATMTextField from 'src/components/atoms/FormElements/ATMTextField/ATMText
 import MOLFormDialog from 'src/components/molecules/MOLFormDialog/MOLFormDialog';
 import { useFetchData } from 'src/hooks/useFetchData';
 import { useGetPaymntModesQuery } from 'src/modules/PaymentMode/service/PaymentModeServices';
+import { useGetAllTypeCouponsQuery } from 'src/modules/PromotionCoupons/service/PromotionCouponsServices';
 import { CURRENCY } from 'src/utils/constants';
 
 type Props = {
@@ -26,6 +27,15 @@ type Props = {
   cashBackAmount: number;
 };
 
+type Coupon = {
+  type: 'GiftCard' | 'Promotional' | 'Birthday' | 'Reward'
+  code: string
+  discount?: number
+  discountPercent?: number
+  validTill: string
+}
+
+
 const PaymentFormLayout = ({
   formikProps,
   onClose,
@@ -41,9 +51,9 @@ const PaymentFormLayout = ({
   cashBackAmount,
 }: Props) => {
   const { values, setFieldValue, isSubmitting } = formikProps;
-  // console.log('values=====', values);
-
-
+  const customerId = values?.customer?._id;
+  const serviceIds = values?.items.map((item: any) => item._id);
+  const { data: allCoupans, isLoading, refetch } = useGetAllTypeCouponsQuery({ customerId, items: serviceIds });
 
   const { data: paymentData, isLoading: paymentLoading } = useFetchData(
     useGetPaymntModesQuery,
@@ -61,11 +71,11 @@ const PaymentFormLayout = ({
   );
 
   const calculateGivenChange = () => {
-  const total = previewData?.invoiceData?.totalAmount || 0;
-  const received = calculateTotalReceived();
-  const change = received - total;
-  return change > 0 ? change : 0;
-};
+    const total = previewData?.invoiceData?.totalAmount || 0;
+    const received = calculateTotalReceived();
+    const change = received - total;
+    return change > 0 ? change : 0;
+  };
 
 
   const calculateTotalReceived = useCallback(() => {
@@ -111,6 +121,12 @@ const PaymentFormLayout = ({
     return nonCashTotal > totalAmount;
   };
 
+  const [selectedCode, setSelectedCode] = useState<string>('')
+
+  useEffect(() => {
+    refetch()
+  }, [])
+
   return (
     <>
       <MOLFormDialog
@@ -123,7 +139,7 @@ const PaymentFormLayout = ({
         onDraft={() => onDraft(values)}
       >
         <div className="flex gap-4">
-          <div className="border rounded-lg  w-[300px] h-[400px] flex flex-col justify-between ">
+          <div className="border rounded-lg  w-[300px] h-[400px] flex flex-col justify-between overflow-x-auto">
             <div className="flex flex-col gap-2">
               {/* payAbleAmount */}
               <div className="flex items-center justify-between p-2 text-sm font-medium tracking-wide border-b">
@@ -243,7 +259,36 @@ const PaymentFormLayout = ({
                     />
                   )}
                 </div>
-
+                <div className="">
+                  {isPreviewed ? (
+                    previewData?.invoiceData?.promotionCoupanCodeDiscount ? (
+                      <div className="flex justify-between p-1 text-xs font-regular">
+                        <div className="flex flex-col gap-1 text-neutral-40">
+                          Promotion Coupon Code Amount{' '}
+                          <div className="px-2 py-[2px] text-green-800 bg-green-100 rounded-md w-fit text-[10px]">
+                            {values?.promotionCoupanCode}
+                          </div>
+                        </div>
+                        <span className="font-medium text-green-600">
+                          - {CURRENCY}{' '}
+                          {previewData?.invoiceData?.promotionCoupanCodeDiscount.toFixed(
+                            2,
+                          )}
+                        </span>
+                      </div>
+                    ) : null
+                  ) : (
+                    <ATMTextField
+                      name="promotionCoupanCode"
+                      value={values?.promotionCoupanCode}
+                      onChange={(e) =>
+                        setFieldValue('promotionCoupanCode', e.target.value)
+                      }
+                      placeholder="Enter Promotion Coupon Code"
+                      label="Promotion Coupon Code"
+                    />
+                  )}
+                </div>
                 {/* Loyalty Point */}
                 <div className="">
                   {isPreviewed ? (
@@ -278,6 +323,108 @@ const PaymentFormLayout = ({
                     </div>
                   )}
                 </div>
+                {!isPreviewed && (<div className="mt-1">
+                  <div className="flex flex-row-reverse overflow-x-auto max-w-full space-x-2 space-x-reverse pb-2">
+                    {allCoupans?.data?.map((coupon: any, index: any) => (
+                      <label
+                        key={index}
+                        className={`min-w-[240px] border p-3 rounded-md shadow-sm text-xs cursor-pointer transition duration-200 ease-in-out ${selectedCode === coupon.code
+                          ? 'border-[#006972] bg-[#e6f5f4]'
+                          : 'border-gray-200 bg-white'
+                          } hover:shadow-md`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <input
+                            type="radio"
+                            name="coupon"
+                            value={coupon.code}
+                            checked={selectedCode === coupon.code}
+                            // onChange={() => {
+                            //   if (coupon.type === 'Promotional') {
+                            //     setFieldValue('promotionCoupanCode', coupon.code);
+                            //     setFieldValue('couponCode', '');
+                            //     setFieldValue('giftCardCode', '');
+                            //   } else if (coupon.type === 'GiftCard') {
+                            //     setFieldValue('giftCardCode', coupon.code);
+                            //     setFieldValue('couponCode', '');
+                            //     setFieldValue('promotionCoupanCode', '');
+                            //   } else {
+                            //     setFieldValue('couponCode', coupon.code);
+                            //     setFieldValue('giftCardCode', '');
+                            //     setFieldValue('promotionCoupanCode', '');
+                            //   }
+                            //   setSelectedCode(coupon.code);
+                            // }}
+                            onChange={() => {
+                              if (coupon.type === 'Promotional') {
+                                setFieldValue('promotionCoupanCode', coupon.code);
+                                setFieldValue('couponCode', '');
+                                setFieldValue('giftCardCode', '');
+                                setFieldValue('rewardCoupan', '');
+                              } else if (coupon.type === 'GiftCard') {
+                                setFieldValue('giftCardCode', coupon.code);
+                                setFieldValue('couponCode', '');
+                                setFieldValue('promotionCoupanCode', '');
+                                setFieldValue('rewardCoupan', '');
+                              } else if (coupon.type === 'Reward') {
+                                setFieldValue('rewardCoupan', coupon.code);
+                                setFieldValue('couponCode', '');
+                                setFieldValue('promotionCoupanCode', '');
+                                setFieldValue('giftCardCode', '');
+                              } else {
+                                // Assuming all other types fall under regular coupon
+                                setFieldValue('couponCode', coupon.code);
+                                setFieldValue('giftCardCode', '');
+                                setFieldValue('promotionCoupanCode', '');
+                                setFieldValue('rewardCoupan', '');
+                              }
+
+                              setSelectedCode(coupon.code);
+                            }}
+
+                            className="accent-[#006972] mt-1"
+                          />
+
+                          <div className="flex flex-col gap-1">
+                            <div className="font-medium text-sm">
+                              {coupon.type === 'GiftCard' && '🎁 Gift Card'}
+                              {coupon.type === 'Promotional' && '💥 Promo Coupon'}
+                              {coupon.type === 'Birthday' && '🎂 Birthday Coupon'}
+                              {coupon.type === 'Reward' && '🏅 Reward Coupon'}
+                            </div>
+
+                            <div className="flex items-center justify-between text-sm font-medium text-gray-700">
+                              <span className="text-gray-600">Discount</span>
+                              {coupon.type === 'Reward' ? (
+                                <span className="ml-2 text-[10px] font-semibold text-white bg-[#006972] px-2 py-[2px] rounded-full">
+                                  🎯 {coupon.discount} Points
+                                </span>
+                              ) : (
+                                <span className="ml-2 text-[10px] font-semibold text-white bg-[#006972] px-2 py-[2px] rounded-full">
+                                  {coupon.discountPercent
+                                    ? `${coupon.discountPercent}% Off`
+                                    : `R${coupon.discount} Off`}
+                                </span>
+                              )}
+                            </div>
+
+
+
+                            <div className="text-[11px] text-gray-500">
+                              Valid Till: {new Date(coupon.validTill).toDateString()}
+                            </div>
+
+                            <div className="text-[10px] text-white bg-[#006972] px-2 py-[2px] rounded w-fit">
+                              Code: {coupon.code}
+                            </div>
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>)}
+
+
 
                 <div className="">
                   {isPreviewed ? (
@@ -339,6 +486,7 @@ const PaymentFormLayout = ({
                 </div>
               </div>
             </div>
+
 
             <div>
               {/* Loyalty Points Earned */}
@@ -477,11 +625,10 @@ const PaymentFormLayout = ({
                       </div>
 
                       <div
-                        className={`flex items-center justify-center gap-1 py-2 border border-dashed rounded cursor-pointer bg-gray-50  ${
-                          !isLastPaymentModeFilled()
-                            ? 'opacity-50 cursor-not-allowed'
-                            : ''
-                        }`}
+                        className={`flex items-center justify-center gap-1 py-2 border border-dashed rounded cursor-pointer bg-gray-50  ${!isLastPaymentModeFilled()
+                          ? 'opacity-50 cursor-not-allowed'
+                          : ''
+                          }`}
                         onClick={() => {
                           if (isLastPaymentModeFilled()) {
                             push({ paymentModeId: '', amount: '' });
@@ -539,7 +686,7 @@ const PaymentFormLayout = ({
                   {CURRENCY}{' '}
                   {Math.abs(
                     previewData?.invoiceData?.totalAmount -
-                      calculateTotalReceived() || 0,
+                    calculateTotalReceived() || 0,
                   ).toFixed(2)}
                 </div>
               </div>

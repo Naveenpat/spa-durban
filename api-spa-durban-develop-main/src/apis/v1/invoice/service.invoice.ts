@@ -207,6 +207,7 @@ const getInvoiceAggrigate = async (
   aggregateQuery: any[]
 ): Promise<InvoiceDocument[] | null> => {
   const result = await Invoice.aggregate(aggregateQuery).exec();
+  console.log('-----result',result)
   return result.length > 0 ? result : null;
 };
 

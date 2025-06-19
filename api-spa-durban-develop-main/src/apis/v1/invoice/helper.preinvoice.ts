@@ -43,6 +43,8 @@ const getPreview = async (req: AuthenticatedRequest) => {
     shippingCharges,
     amountReceived,
     giftCardCode,
+    promotionCoupanCode,
+    rewardCoupan,
     useLoyaltyPoints,
     referralCode,
     outletId,
@@ -51,6 +53,8 @@ const getPreview = async (req: AuthenticatedRequest) => {
     bookingId
   } = req.body;
 
+
+  console.log('--------req.body', req.body)
   /**
    * employeeId = req.userData.Id
    */
@@ -155,21 +159,25 @@ const getPreview = async (req: AuthenticatedRequest) => {
     amountWithShipping,
     couponCode,
     giftCardCode,
+    promotionCoupanCode,
+    rewardCoupan,
     referralCode,
     loyaltyPointsDiscount,
     customerId,
-    usedCashBackAmountData
+    usedCashBackAmountData,
+    req.body.items
   );
 
-  let { couponDiscount, giftCardDiscount, referralDiscount, totalDiscount } =
+  let { couponDiscount, giftCardDiscount, promotionCoupanCodeDiscount, rewardCoupanCodeDiscount, referralDiscount, totalDiscount } =
     allDiscounts;
   req.body.totalDiscount = totalDiscount;
   req.body.couponDiscount = couponDiscount;
   req.body.giftCardDiscount = giftCardDiscount;
+  req.body.promotionCoupanCodeDiscount = promotionCoupanCodeDiscount;
   req.body.loyaltyPointsDiscount = loyaltyPointsDiscount;
   req.body.referralDiscount = referralDiscount;
   req.body.cashBackDiscount = usedCashBackAmountData;
-
+  req.body.rewardCoupanCodeDiscount = rewardCoupanCodeDiscount;
   let totalAmount = amountWithShipping - totalDiscount;
   req.body.totalAmount = parseFloat(totalAmount.toFixed(2));
 

@@ -98,9 +98,9 @@ const createInvoice = catchAsync(
     } = req.body;
     // console.log(req.body, 12313);
     //get pre invoicing phase
-    console.log('-----calll------1')
+    console.log('-----calll------1',customerId)
     const previewResult = await getPreview(req);
-    console.log('-----calll-----2')
+    console.log('-----calll-----2',previewResult)
     if (!previewResult) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,

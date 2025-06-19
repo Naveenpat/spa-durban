@@ -49,6 +49,7 @@ const POSWrapper = (props: Props) => {
       },
     ],
     giftCardCode: '',
+    promotionCoupanCode:'',
     useLoyaltyPoints: false,
     useCashBackAmount: false,
     usedCashBackAmount: 0,
@@ -200,7 +201,6 @@ const POSWrapper = (props: Props) => {
     values: any,
     { resetForm, setSubmitting }: FormikHelpers<any>,
   ) => {
-
     let formattedValues = {
       customerId: values?.customer?._id,
       items: values?.items?.map((item: any) => ({
@@ -215,6 +215,7 @@ const POSWrapper = (props: Props) => {
         amount: el?.amount,
       })),
       giftCardCode: values?.giftCardCode,
+      promotionCoupanCode: values?.promotionCoupanCode,
       useLoyaltyPoints: values?.useLoyaltyPoints,
       referralCode: '',
       outletId: (outlet as any)?._id,

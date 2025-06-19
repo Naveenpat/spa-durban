@@ -29,6 +29,9 @@ const AddPromotionCouponsFormWrapper = (props: Props) => {
     discountByPercentage: '',
     serviceId: '',
     customerId: '',
+    startDate: new Date(),
+    endDate: new Date(),
+    groupTarget: []
   };
 
   const validationSchema = object().shape({
@@ -49,6 +52,9 @@ const AddPromotionCouponsFormWrapper = (props: Props) => {
       customerId: values?.customerId?.map(
         (customerId: any) => customerId?.data?._id,
       ),
+      startDate: values?.startDate,
+      endDate: values?.endDate,
+      groupTarget: (values?.groupTarget as any[]).map((group) => group._id),
     };
     addPromotionCoupons(formattedValues).then((res: any) => {
       if (res?.error) {

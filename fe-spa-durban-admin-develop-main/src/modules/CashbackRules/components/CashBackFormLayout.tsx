@@ -75,10 +75,11 @@ const CashBackFormLayout = ({
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
 
+    
   const [visibleoutletes, setVisibleoutletes] = useState<{
     [key: number]: boolean;
   }>({});
-  
+
   const [searchValue, setSearchValue] = useState('');
   const { data, refetch } = useFetchData(useGetItemsAllQuery, {
     body: {
@@ -141,11 +142,12 @@ const CashBackFormLayout = ({
               name="howMuchCashback"
               value={values.howMuchCashback}
               onChange={(newValue) => setFieldValue('howMuchCashback', newValue)}
-              label="Type"
+              label="Cashback Multiplier"
               placeholder="Select How Much Cash Back"
               options={typeOption}
               valueAccessKey="value"
             />
+            
 
             <ATMMultiSelect
               name="serviceId"
@@ -164,9 +166,9 @@ const CashBackFormLayout = ({
             name="selectDateOrDays"
             value={values.selectDateOrDays}
             onChange={(newValue) => {
-             setFieldValue('selectDateOrDays', newValue.value);
+              setFieldValue('selectDateOrDays', newValue.value);
             }}
-            label="Type"
+            label="Select Date/Date"
             placeholder="Select Date OR Days Wise"
             options={[
               { label: 'Days wise', value: 'days' },

@@ -55,6 +55,8 @@ export interface InvoiceDocument extends Document {
   amountPaid: number;
   couponDiscount: number;
   giftCardDiscount: number;
+  promotionCoupanCode:string;
+  promotionCoupanCodeDiscount:number;
   loyaltyPointsDiscount: number;
   referralDiscount: number;
   isDeleted: boolean;
@@ -251,6 +253,16 @@ const InvoiceSchema = new mongoose.Schema<InvoiceDocument>(
       trim: true,
     },
     giftCardCode: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    promotionCoupanCodeDiscount: {
+      type: Number,
+      required: true,
+      trim: true,
+    },
+    promotionCoupanCode: {
       type: String,
       default: "",
       trim: true,

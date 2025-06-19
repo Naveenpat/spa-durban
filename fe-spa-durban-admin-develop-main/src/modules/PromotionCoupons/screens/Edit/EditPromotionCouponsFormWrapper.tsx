@@ -30,6 +30,10 @@ const EditPromotionCouponsFormWrapper = (props: Props) => {
       (promotionCouponsData as any)?.data?.discountByPercentage || '',
     serviceId: (promotionCouponsData as any)?.data?.serviceId || '',
     customerId: (promotionCouponsData as any)?.data?.customerId || '',
+    startDate: (promotionCouponsData as any)?.data?.startDate || '',
+    endDate: (promotionCouponsData as any)?.data?.endDate || '',
+    groupTarget: (promotionCouponsData as any)?.data?.groupTarget || []
+
   };
 
   const validationSchema = object().shape({
@@ -44,14 +48,17 @@ const EditPromotionCouponsFormWrapper = (props: Props) => {
       discountByPercentage: values?.discountByPercentage,
       serviceId: Array.isArray(values?.serviceId)
         ? values?.serviceId.map((serviceId: any) =>
-            typeof serviceId === 'object' ? serviceId._id : serviceId,
-          )
+          typeof serviceId === 'object' ? serviceId._id : serviceId,
+        )
         : [],
       customerId: Array.isArray(values?.customerId)
         ? values?.customerId.map((customerId: any) =>
-            typeof customerId === 'object' ? customerId._id : customerId,
-          )
+          typeof customerId === 'object' ? customerId._id : customerId,
+        )
         : [],
+      startDate:values?.startDate,
+      endDate:values?.endDate,
+       groupTarget: (values?.groupTarget as any[]).map((group) => group._id)
       // customerId: values?.customerId?.map((customerId: any) => customerId?._id),
     };
     updatePromotionCoupons({
