@@ -707,7 +707,7 @@ const toggleEmployeeStatus = catchAsync(
   }
 );
 
-const importEmployeeExcelSheet = async (req: AuthenticatedRequest, res: Response) => {
+const importEmployeeCsvSheet = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const file = req.file;
 
@@ -715,22 +715,22 @@ const importEmployeeExcelSheet = async (req: AuthenticatedRequest, res: Response
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
-    const result = await employeeService.importExcel(file); // ✅ Now it's safe
-    res.status(200).json({ success: true, message: 'Employees imported', result });
+    await employeeService.importCSV(file); // new function for CSV
+    res.status(200).json({ success: true, message: 'Employees imported successfully' });
   } catch (error) {
-    console.error('Import Error:', error);
-    res.status(500).json({ success: false, message: 'Import failed', error });
+    console.error('CSV Import Error:', error);
+    res.status(500).json({ success: false, message: 'CSV import failed', error });
   }
 };
 
 
-const exportEmployeeExcelSheet = catchAsync(
+
+const exportEmployeeCsvSheet = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    console.log('------------ccc'); // this should now print if the API is hit
-    const buffer = await employeeService.exportExcel();
-    res.setHeader('Content-Disposition', 'attachment; filename=employees.xlsx');
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.send(buffer);
+    const csvBuffer = await employeeService.exportCSV(); // new method
+    res.setHeader('Content-Disposition', 'attachment; filename=employees.csv');
+    res.setHeader('Content-Type', 'text/csv');
+    res.send(csvBuffer);
   }
 );
 
@@ -745,6 +745,6 @@ export {
   toggleEmployeeStatus,
   getEmployeeRoles,
   createBookingEmployee,
-  importEmployeeExcelSheet,
-  exportEmployeeExcelSheet
+  importEmployeeCsvSheet,
+  exportEmployeeCsvSheet
 };

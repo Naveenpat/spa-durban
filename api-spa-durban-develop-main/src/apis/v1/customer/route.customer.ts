@@ -7,8 +7,8 @@ import {
   deleteCustomer,
   toggleCustomerStatus,
   createCustomerByBooking,
-  importCustomerExcelSheet,
-  exportCustomerExcelSheet,
+  exportCustomerCsvSheet,
+  importCustomerCsvSheet,
 } from "./controller.customer";
 import validate from "../../../middleware/validate";
 import {
@@ -331,15 +331,17 @@ router.put(
 );
 
 router.post(
-  '/new/import-excel',
+  '/new/import-csv',
   authenticate([UserEnum.Admin], TokenEnum.Access),
-  upload.single('file'), // ⬅️ file input name should be 'file'
-  importCustomerExcelSheet
+  upload.single('file'), // `file` is the name expected in form-data
+  importCustomerCsvSheet
 );
 
+
 router.get(
-  '/new/export-excel',
+  '/new/export-csv',
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  exportCustomerExcelSheet
+  exportCustomerCsvSheet
 );
+
 export default router;

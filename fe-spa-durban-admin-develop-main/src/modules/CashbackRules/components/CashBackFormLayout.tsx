@@ -12,6 +12,8 @@ import { useFetchData } from 'src/hooks/useFetchData';
 import ATMSelect from 'src/components/atoms/FormElements/ATMSelect/ATMSelect';
 import ATMTimePicker from 'src/components/atoms/FormElements/ATMDatePicker/ATMTimePicker';
 import ATMWeekdaySelect from 'src/components/atoms/FormElements/ATMDatePicker/ATMWeekdaySelect';
+import ATMMaskedInput from 'src/components/atoms/FormElements/ATMMaskedInput/ATMMaskedInput';
+import ATMNumberField from 'src/components/atoms/FormElements/ATMNumberField/ATMNumberField';
 const typeOption = [
   {
     label: '2X',
@@ -75,7 +77,7 @@ const CashBackFormLayout = ({
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
 
-    
+
   const [visibleoutletes, setVisibleoutletes] = useState<{
     [key: number]: boolean;
   }>({});
@@ -137,17 +139,21 @@ const CashBackFormLayout = ({
               isValid={!errors.cashBackRulesName}
             />
 
-            <ATMSelect
-              required
+            <ATMNumberField
               name="howMuchCashback"
+              label="Discount (in %)"
               value={values.howMuchCashback}
               onChange={(newValue) => setFieldValue('howMuchCashback', newValue)}
-              label="Cashback Multiplier"
-              placeholder="Select How Much Cash Back"
-              options={typeOption}
-              valueAccessKey="value"
+              placeholder="Cashback Multiplier"
+              required
+              isAllowDecimal={true}   // ✅ MUST BE TRUE to allow 1.2, 1.9, etc.
+              isAllowSpaces={false}
+              isAllowCharacter=""
             />
-            
+
+
+
+
 
             <ATMMultiSelect
               name="serviceId"

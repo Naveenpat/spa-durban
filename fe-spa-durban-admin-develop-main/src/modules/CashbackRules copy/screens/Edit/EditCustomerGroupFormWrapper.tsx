@@ -1,79 +1,39 @@
 import { Formik, FormikHelpers, Form } from 'formik';
 import React, { useEffect, useState } from 'react';
-import { CashBackFormValues } from '../../models/CashBack.model';
-import CashBackFormLayout from '../../components/CashBackFormLayout';
 import { object, string } from 'yup';
 import { useGetOutletQuery } from 'src/modules/Outlet/service/OutletServices';
 import { useFetchData } from 'src/hooks/useFetchData';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  useGetCashBackQuery,
-  useGetCashBacksQuery,
-  useUpdateCashBackMutation,
-} from '../../service/CashBackServices';
 import { showToast } from 'src/utils/showToaster';
+import { CustomerGroupFormValues } from '../../models/CustomerGroup.model';
+import CustomerGroupFormLayout from '../../components/CustomerGroupFormLayout';
+import { useGetCustomerGroupQuery, useUpdateCustomerGroupMutation } from '../../service/CustomerGroupServices';
 
 type Props = {};
 
-const weekdays = [
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-  'Sunday',
-];
-
-const EditCashBackFormWrapper = (props: Props) => {
+const EditCustomerGroupFormWrapper = (props: Props) => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [updateCashBack] = useUpdateCashBackMutation();
-  const { data: cashbackData, isLoading } = useFetchData(useGetCashBackQuery, {
+  const [updateCashBack] = useUpdateCustomerGroupMutation();
+  const { data: cashbackData, isLoading } = useFetchData(useGetCustomerGroupQuery, {
     body: id,
     dataType: 'VIEW',
   });
 
-  const initialValues: CashBackFormValues = {
-    cashBackRulesName: (cashbackData as any)?.data?.cashBackRulesName || '',
-    howMuchCashback: (cashbackData as any)?.data?.howMuchCashback || '',
-    cashBackDate: (cashbackData as any)?.data?.cashBackDate || '',
-    serviceId: (cashbackData as any)?.data?.serviceId || '',
-    cashBackEndDate: (cashbackData as any)?.data?.cashBackEndDate || '',
-    startTime: (cashbackData as any)?.data?.startTime || '',
-    endTime: (cashbackData as any)?.data?.endTime || '',
-    activeDays: (cashbackData as any)?.data?.activeDays || '',
-    selectDateOrDays: ''
+  const initialValues: CustomerGroupFormValues = {
+    customerGroupName: (cashbackData as any)?.data?.customerGroupName || ''
   };
-
-
-
-  useEffect(() => {
-    if (initialValues.activeDays && initialValues.activeDays.length > 0) {
-      initialValues.selectDateOrDays = 'days';
-    } else {
-      initialValues.selectDateOrDays = 'date';
-    }
-  }, [cashbackData]);
-
 
   const validationSchema = object().shape({
     cashBackRulesName: string().required('Please enter title'),
   });
 
   const handleSubmit = (
-    values: CashBackFormValues,
-    { resetForm, setSubmitting }: FormikHelpers<CashBackFormValues>,
+    values: CustomerGroupFormValues,
+    { resetForm, setSubmitting }: FormikHelpers<CustomerGroupFormValues>,
   ) => {
     let formattedValues = {
-      cashBackRulesName: values?.cashBackRulesName,
-      howMuchCashback: values?.howMuchCashback,
-      cashBackDate: values?.cashBackDate,
-      cashBackEndDate: values?.cashBackEndDate,
-      serviceId: values?.serviceId?.map((serviceId: any) => serviceId?._id),
-      startTime: values?.startTime,
-      endTime: values?.endTime,
-      activeDays: values?.selectDateOrDays === 'days' ? values?.activeDays : []
+      customerGroupName: values?.customerGroupName
     };
 
     //     let formattedValues: any = {
@@ -111,7 +71,7 @@ const EditCashBackFormWrapper = (props: Props) => {
           if (res?.data?.status) {
             showToast('success', res?.data?.message);
             resetForm();
-            navigate('/cashback-rules');
+            navigate('/customer-group');
           } else {
             showToast('error', res?.data?.message);
           }
@@ -122,7 +82,7 @@ const EditCashBackFormWrapper = (props: Props) => {
   };
 
   return (
-    <Formik<CashBackFormValues>
+    <Formik<CustomerGroupFormValues>
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
@@ -130,10 +90,10 @@ const EditCashBackFormWrapper = (props: Props) => {
     >
       {(formikProps) => (
         <Form className="h-full">
-          <CashBackFormLayout
+          <CustomerGroupFormLayout
             formikProps={formikProps}
             formType="EDIT"
-            onCancel={() => navigate('/cashback-rules')}
+            onCancel={() => navigate('/customer-group')}
             isLoading={isLoading}
           />
         </Form>
@@ -142,4 +102,4 @@ const EditCashBackFormWrapper = (props: Props) => {
   );
 };
 
-export default EditCashBackFormWrapper;
+export default EditCustomerGroupFormWrapper;

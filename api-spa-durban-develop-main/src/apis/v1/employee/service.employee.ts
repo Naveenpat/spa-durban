@@ -9,6 +9,9 @@ import XLSX from 'xlsx';
 import Outlet from "../outlet/schema.outlet";
 import Company from "../company/schema.company";
 import Role from "../role/schema.role";
+import { format, parse } from 'fast-csv';
+import { Readable } from 'stream';
+
 
 /**
  * Create a employee
@@ -229,15 +232,22 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
 }
 
 
- const importExcel = async (file: Express.Multer.File): Promise<void> => {
+const importCSV = async (file: Express.Multer.File): Promise<void> => {
   if (!file) throw new Error('No file uploaded');
 
-  const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
-  const data: any[] = XLSX.utils.sheet_to_json(sheet);
+  const stream = Readable.from(file.buffer);
 
-  for (const emp of data) {
+  const rows: any[] = [];
+
+  await new Promise<void>((resolve, reject) => {
+    stream
+      .pipe(parse({ headers: true, ignoreEmpty: true, trim: true }))
+      .on('error', reject)
+      .on('data', (row:any) => rows.push(row))
+      .on('end', resolve);
+  });
+
+  for (const emp of rows) {
     const {
       userName,
       roleName,
@@ -248,26 +258,26 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
 
     if (!userName) continue;
 
-    // ✅ Find roleId
+    // Find Role
     const role = await Role.findOne({ roleName: roleName?.trim() || '' });
     const userRoleId = role?._id;
 
-    // ✅ Find companyId (if companyName exists)
+    // Find Company
     let companyId = null;
     if (companyName) {
       const company = await Company.findOne({ companyName: companyName.trim() });
       companyId = company?._id || null;
     }
 
-    // ✅ Find outlet IDs
+    // Find Outlets
     const outletsArray = outletNames
-      ? outletNames.split(',').map((name:any) => name.trim())
+      ? outletNames.split(',').map((name: any) => name.trim())
       : [];
 
     const outlets = await Outlet.find({ name: { $in: outletsArray } });
-    const outletsId = outlets.map(o => o._id);
+    const outletsId = outlets.map((o) => o._id);
 
-    // ✅ Prepare employee object
+    // Prepare employee object
     const employeeObj = {
       ...restFields,
       userName,
@@ -276,8 +286,8 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
       outletsId
     };
 
-    console.log('------employeeObj',employeeObj)
-    // ✅ Create or update employee by userName
+    console.log('Parsed Employee:', employeeObj);
+
     await Employee.findOneAndUpdate(
       { userName },
       { $set: employeeObj },
@@ -286,110 +296,35 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
   }
 };
 
-const exportExcel = async () => {
-  console.log('-----callling')
-  const employeeData = await Employee.aggregate([
-    // Match non-deleted employees
-    { $match: { isDeleted: false } },
+const exportCSV = async (): Promise<Buffer> => {
+  const employees = await Employee.find().lean();
 
-    // Lookup Role Name
-    {
-      $lookup: {
-        from: 'roles',
-        localField: 'userRoleId',
-        foreignField: '_id',
-        as: 'role'
-      }
-    },
-    { $unwind: { path: '$role', preserveNullAndEmptyArrays: true } },
+  return new Promise((resolve, reject) => {
+    const csvStream = format({
+      headers: [
+        'Name'.padEnd(25),
+        'Email'.padEnd(35),
+        'Phone'.padEnd(20),
+        'Role'.padEnd(20),
+      ],
+    });
 
-    // Lookup Company Name
-    {
-      $lookup: {
-        from: 'companies',
-        localField: 'companyId',
-        foreignField: '_id',
-        as: 'company'
-      }
-    },
-    { $unwind: { path: '$company', preserveNullAndEmptyArrays: true } },
+    const chunks: Buffer[] = [];
 
-    // Lookup Outlet Names
-    {
-      $lookup: {
-        from: 'outlets',
-        localField: 'outletsId',
-        foreignField: '_id',
-        as: 'outlets'
-      }
-    },
+    csvStream.on('data', (chunk) => chunks.push(chunk));
+    csvStream.on('end', () => resolve(Buffer.concat(chunks)));
+    csvStream.on('error', reject);
 
-    // Final projection
-    {
-      $project: {
-        name: 1,
-        userName: 1,
-        email: 1,
-        phone: 1,
-        address: 1,
-        city: 1,
-        region: 1,
-        country: 1,
-        isActive: 1,
-        createdAt: 1,
-        companyName: '$company.companyName',    // <-- updated field
-        roleName: '$role.roleName',          // <-- updated field
-        outletNames: {
-          $reduce: {
-            input: {
-              $map: {
-                input: '$outlets',
-                as: 'outlet',
-                in: '$$outlet.name'
-              }
-            },
-            initialValue: '',
-            in: {
-              $cond: [
-                { $eq: ['$$value', ''] },
-                '$$this',
-                { $concat: ['$$value', ', ', '$$this'] }
-              ]
-            }
-          }
-        }
-      }
-    }
-  ]);
+    employees.forEach((emp) => {
+      csvStream.write({
+        ['Name'.padEnd(25)]: emp.name?.padEnd(25),
+        ['Email'.padEnd(35)]: emp.email?.padEnd(35),
+        ['Phone'.padEnd(20)]: emp.phone?.padEnd(20)
+      });
+    });
 
-
-
-
-
-  console.log('-----employeeData', employeeData)
-
-  // const formatted = employees.map((emp) => ({
-  //   Name: emp.name,
-  //   Username: emp.userName,
-  //   Email: emp.email,
-  //   Phone: emp.phone,
-  //   Role: emp.userRoleId || '', // populated role name
-  //   Outlets: emp.outletsId?.map((outlet: any) => outlet.name).join(', ') || '',
-  //   Address: emp.address,
-  //   City: emp.city,
-  //   Region: emp.region,
-  //   Country: emp.country,
-  //   Status: emp.isActive ? 'Active' : 'Inactive',
-  //   CompanyId: emp.companyId?.toString() || ''
-  // }));
-
-
-
-  const worksheet = XLSX.utils.json_to_sheet(employeeData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
-
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    csvStream.end();
+  });
 };
 
 export {
@@ -401,6 +336,6 @@ export {
   getEmployeesByIds,
   isExists,
   toggleEmployeeStatusById,
-  importExcel,
-  exportExcel
+  importCSV,
+  exportCSV
 };

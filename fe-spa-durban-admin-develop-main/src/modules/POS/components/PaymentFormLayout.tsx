@@ -219,9 +219,14 @@ const PaymentFormLayout = ({
                     <ATMTextField
                       name="couponCode"
                       value={values?.couponCode}
-                      onChange={(e) =>
-                        setFieldValue('couponCode', e.target.value)
-                      }
+                      onChange={(e) => {
+                        setFieldValue('couponCode', e.target.value),
+                          setFieldValue('useCashBackAmount', false),
+                          setFieldValue(
+                            'usedCashBackAmount',
+                            0,
+                          );
+                      }}
                       placeholder="Enter Coupon Code"
                       label="Coupon Code"
                     />
@@ -361,25 +366,34 @@ const PaymentFormLayout = ({
                                 setFieldValue('couponCode', '');
                                 setFieldValue('giftCardCode', '');
                                 setFieldValue('rewardCoupan', '');
+                                setFieldValue('useCashBackAmount', false);
                               } else if (coupon.type === 'GiftCard') {
                                 setFieldValue('giftCardCode', coupon.code);
                                 setFieldValue('couponCode', '');
                                 setFieldValue('promotionCoupanCode', '');
                                 setFieldValue('rewardCoupan', '');
+                                setFieldValue('useCashBackAmount', false);
                               } else if (coupon.type === 'Reward') {
                                 setFieldValue('rewardCoupan', coupon.code);
                                 setFieldValue('couponCode', '');
                                 setFieldValue('promotionCoupanCode', '');
                                 setFieldValue('giftCardCode', '');
+                                setFieldValue(
+                                  'usedCashBackAmount',
+                                  coupon?.discount,
+                                );
+                                setFieldValue('useCashBackAmount', true);
                               } else {
                                 // Assuming all other types fall under regular coupon
                                 setFieldValue('couponCode', coupon.code);
                                 setFieldValue('giftCardCode', '');
                                 setFieldValue('promotionCoupanCode', '');
                                 setFieldValue('rewardCoupan', '');
+                                setFieldValue('useCashBackAmount', false);
                               }
 
                               setSelectedCode(coupon.code);
+
                             }}
 
                             className="accent-[#006972] mt-1"

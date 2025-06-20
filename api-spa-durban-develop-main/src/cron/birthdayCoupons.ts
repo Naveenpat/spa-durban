@@ -87,7 +87,7 @@ export const startBirthdayCouponCron = () => {
             });
 
             const emailData = {
-                sendTo: "np.221196.np@gmail.com",
+                sendTo: customer?.email,
                 emailSubject: `🎉 Happy Early Birthday! Here's 25% Off Just for You`,
                 emailBody: `
     <p>Dear ${customer.name || 'Customer'},</p>
@@ -102,7 +102,7 @@ export const startBirthdayCouponCron = () => {
   `,
             };
             const outlet = {};
-            // await sendEmail(emailData, outlet)
+            await sendEmail(emailData, outlet)
 
             // console.log(`🎉 Coupon created for ${customer._id}`);
         }

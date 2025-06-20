@@ -44,7 +44,8 @@ export const apiSlice = createApi({
     'promotionCoupons',
     'register',
     'companies',
-    'company'
+    'company',
+    'customer-group'
   ],
   endpoints: () => ({}),
 });

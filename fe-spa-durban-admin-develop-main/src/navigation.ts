@@ -119,6 +119,16 @@ const navigation: (params?: {
           },
           permission: 'NAV_CUSTOMER',
         },
+         {
+          title: 'Customer Group',
+          icon: IconUserPlus,
+          path: 'customer-group',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'NAV_CUSTOMER_GROUP',
+        },
         {
           title: 'Invoice',
           icon: IconFileInvoice,

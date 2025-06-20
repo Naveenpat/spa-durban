@@ -69,6 +69,9 @@ import CompanyListingWrapper from './modules/AdminRole copy/screens/List/Company
 import CompanyFormWrapper from './modules/AdminRole copy/screens/Add/CompanyFormWrapper';
 import EditCompanyFormWrapper from './modules/AdminRole copy/screens/Edit/EditCompanyFormWrapper';
 import ClaimPage from './utils/ClaimPage';
+import CustomerGroupListingWrapper from './modules/CashbackRules copy/screens/List/CustomerGroupListingWrapper';
+import AddCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Add/AddCustomerGroupFormWrapper';
+import EditCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Edit/EditCustomerGroupFormWrapper';
 
 type Props = {};
 
@@ -80,7 +83,7 @@ const PageRoutes = (props: Props) => {
     },
     {
       path: '/rewards/claim',
-      element: <ClaimPage  />,
+      element: <ClaimPage />,
     },
     {
       path: '/invoice/receipt/:id',
@@ -112,10 +115,19 @@ const PageRoutes = (props: Props) => {
           element: <AdminRoleListingWrapper />,
         },
         {
+          path: '/customer-group',
+          element: <CustomerGroupListingWrapper />,
+        },
+        {
+          path: '/customer-group/add',
+          element: <AddCustomerGroupFormWrapper />,
+        },
+        { path: '/customer-group/edit/:id', element: <EditCustomerGroupFormWrapper /> },
+        {
           path: '/company',
           element: <CompanyListingWrapper />,
         },
-         {
+        {
           path: '/company/add-company',
           element: <CompanyFormWrapper />,
         },

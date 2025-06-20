@@ -65,7 +65,7 @@ const createPromotionCoupon = catchAsync(
     for (const user of customers) {
       const emailData = {
         sendTo: user.email,
-        emailSubject: `🎉 You're Eligible for Spa Rewards!`,
+        emailSubject: `🎁 Enjoy an Exclusive ${req.body.discountByPercentage}% OFF on Your Next Spa Visit!`,
         emailBody: `
   <p>Hi ${user.customerName || 'Customer'},</p>
 
@@ -74,18 +74,11 @@ const createPromotionCoupon = catchAsync(
   <ul>${serviceListHTML}</ul>
 
   <p>Use the coupon code below during checkout to claim your discount:</p>
-
-  <div style="margin: 16px 0; font-size: 20px; font-weight: bold; color: #d63384;">
-    ${promotionCoupon.couponCode}
-  </div>
-
-  <p>Click the button below to copy the coupon code:</p>
-
   <button 
     onclick="navigator.clipboard.writeText('${promotionCoupon.couponCode}')"
-    style="padding: 10px 20px; background: #d63384; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;"
+    style="padding: 10px 20px; background: #006972; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;"
   >
-    Copy Coupon Code
+     ${promotionCoupon.couponCode}
   </button>
 
   <br/><br/>
@@ -98,7 +91,7 @@ const createPromotionCoupon = catchAsync(
       };
 
       const outlet = {}; // or fetch outlet info if required
-      // await sendEmail(emailData, outlet);
+      await sendEmail(emailData, outlet);
     }
 
     console.log('-----customers', customers)
@@ -186,11 +179,53 @@ const updatePromotionCoupon = catchAsync(
     if (!req.userData) {
       throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
     }
+
     const promotionCoupon =
       await promotionCouponService.updatePromotionCouponById(
         req.params.promotionCouponId,
         req.body
       );
+
+    const { customerId, serviceId } = req.body;
+    const customers = await Customer.find({ _id: { $in: customerId } });
+    const services = await Service.find({ _id: { $in: serviceId } });
+    const serviceListHTML = services.map(s => `<li>${s.serviceName}</li>`).join('');
+
+    for (const user of customers) {
+      const emailData = {
+        sendTo: user.email,
+        emailSubject: `🎁 Enjoy an Exclusive ${req.body.discountByPercentage}% OFF on Your Next Spa Visit!`,
+        emailBody: `
+  <p>Hi ${user.customerName || 'Customer'},</p>
+
+  <p>We're excited to offer you an exclusive <strong>${req.body.discountByPercentage}% OFF</strong> on the following premium services:</p>
+
+  <ul>${serviceListHTML}</ul>
+
+  <p>Use the coupon code below during checkout to claim your discount:</p>
+  <button 
+    onclick="navigator.clipboard.writeText('${promotionCoupon.couponCode}')"
+    style="padding: 10px 20px; background: #006972; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;"
+  >
+     ${promotionCoupon.couponCode}
+  </button>
+
+  <p style="margin-top: 8px; color: #666; font-size: 14px;">
+  Valid till: <strong>${new Date(promotionCoupon.endDate).toLocaleDateString()}</strong>
+</p>
+
+  <br/><br/>
+
+  <p>This offer is valid for a limited time only, so don't miss out!</p>
+
+  <p>Cheers,</p>
+  <p><em>The Spa Durban Team</em></p>
+`,
+      };
+
+      const outlet = {}; // or fetch outlet info if required
+      await sendEmail(emailData, outlet);
+    }
 
     return res.status(httpStatus.OK).send({
       message: "Updated successfully!",

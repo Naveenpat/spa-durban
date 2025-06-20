@@ -44,6 +44,8 @@ const EditPromotionCouponsFormWrapper = (props: Props) => {
     values: PromotionCouponsFormValues,
     { resetForm, setSubmitting }: FormikHelpers<PromotionCouponsFormValues>,
   ) => {
+
+
     let formattedValues = {
       discountByPercentage: values?.discountByPercentage,
       serviceId: Array.isArray(values?.serviceId)
@@ -53,12 +55,12 @@ const EditPromotionCouponsFormWrapper = (props: Props) => {
         : [],
       customerId: Array.isArray(values?.customerId)
         ? values?.customerId.map((customerId: any) =>
-          typeof customerId === 'object' ? customerId._id : customerId,
+          typeof customerId === 'object' ? customerId.value : customerId?.value,
         )
         : [],
-      startDate:values?.startDate,
-      endDate:values?.endDate,
-       groupTarget: (values?.groupTarget as any[]).map((group) => group._id)
+      startDate: values?.startDate,
+      endDate: values?.endDate,
+      groupTarget: (values?.groupTarget as any[]).map((group) => group._id)
       // customerId: values?.customerId?.map((customerId: any) => customerId?._id),
     };
     updatePromotionCoupons({

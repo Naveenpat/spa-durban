@@ -81,7 +81,7 @@ export const runRewardCheck = () => {
 
 
                 const emailData = {
-                    sendTo: 'np.221196.np@gmail.com',
+                    sendTo: user?.email,
                     emailSubject: `🎉 You're Eligible for Spa Rewards!`,
                     emailBody: `
             <p>Hi ${user.customerName || 'Customer'},</p>
@@ -96,7 +96,7 @@ export const runRewardCheck = () => {
                 };
 
                 const outlet = {};
-                // await sendEmail(emailData, outlet);
+                await sendEmail(emailData, outlet);
             }
 
 

@@ -4,7 +4,7 @@
   "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.ts",
+    "start": "nodemon dist/app.ts",
     "build": "tsc && cp package.json dist/",
     "start:prod": "node dist/app.ts"
   },
@@ -33,6 +33,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-async-errors": "^3.1.1",
+    "fast-csv": "^5.0.2",
     "helmet": "^7.1.0",
     "http-status": "^1.7.4",
     "install": "^0.13.0",

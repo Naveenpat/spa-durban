@@ -8,8 +8,8 @@ import {
   deleteEmployee,
   toggleEmployeeStatus,
   createBookingEmployee,
-  importEmployeeExcelSheet,
-  exportEmployeeExcelSheet,
+  exportEmployeeCsvSheet,
+  importEmployeeCsvSheet,
 } from "./controller.employee";
 import validate from "../../../middleware/validate";
 import {
@@ -376,16 +376,17 @@ router.put(
 );
 
 router.post(
-  '/new/import-excel',
+  '/new/import-csv',
   authenticate([UserEnum.Admin], TokenEnum.Access),
-  upload.single('file'), // ⬅️ file input name should be 'file'
-  importEmployeeExcelSheet
+  upload.single('file'), // file input must be named 'file'
+  importEmployeeCsvSheet
 );
 
+
 router.get(
-  '/new/export-excel',
+  '/new/export-csv',
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  exportEmployeeExcelSheet
+  exportEmployeeCsvSheet
 );
 
 

@@ -36,7 +36,7 @@ const GlobalImportExport: React.FC<GlobalImportExportProps> = ({
           <input
             ref={fileInputRef}
             type="file"
-            accept=".xlsx, .csv"
+            accept=".csv"
             className="hidden"
             onChange={handleFileChange}
           />

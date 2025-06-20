@@ -6,6 +6,9 @@ import { RangeFilter } from "../../../utils/interface";
 import { userService } from "./../service.index";
 import { UserEnum, CustomerTypeEnum } from "../../../utils/enumUtils";
 import XLSX from 'xlsx';
+import { format, parse } from 'fast-csv';
+import { Readable } from "stream";
+
 /**
  * Create a customer
  * @param {Object} customerBody
@@ -312,15 +315,23 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
   return false;
 }
 
-const importExcel = async (file: Express.Multer.File): Promise<void> => {
+const importCSV = async (file: Express.Multer.File): Promise<void> => {
   if (!file) throw new Error('No file uploaded');
 
-  const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
-  const data: any[] = XLSX.utils.sheet_to_json(sheet);
+  const stream = Readable.from(file.buffer);
+  const customers: any[] = [];
 
-  for (const customer of data) {
+  // Parse CSV rows
+  await new Promise<void>((resolve, reject) => {
+    stream
+      .pipe(parse({ headers: true, ignoreEmpty: true, trim: true }))
+      .on('data', (row:any) => customers.push(row))
+      .on('end', resolve)
+      .on('error', reject);
+  });
+
+  // Loop through customers
+  for (const customer of customers) {
     const {
       email,
       ...restFields
@@ -341,12 +352,10 @@ const importExcel = async (file: Express.Multer.File): Promise<void> => {
   }
 };
 
+const exportCSV = async (): Promise<Buffer> => {
+  const customers = await Customer.find({ isDeleted: false }).limit(10).lean();
 
-// =================== EXPORT CUSTOMER EXCEL =====================
-const exportExcel = async () => {
-  const customers = await Customer.find({ isDeleted: false }).limit(10);
-
-  const formattedData = customers.map((cust) => ({
+  const rows = customers.map((cust) => ({
     CustomerName: cust.customerName,
     Phone: cust.phone,
     Email: cust.email,
@@ -355,7 +364,9 @@ const exportExcel = async () => {
     Region: cust.region,
     Country: cust.country,
     TaxNo: cust.taxNo,
-    DateOfBirth: cust.dateOfBirth ? new Date(cust.dateOfBirth).toLocaleDateString() : '',
+    DateOfBirth: cust.dateOfBirth
+      ? new Date(cust.dateOfBirth).toLocaleDateString()
+      : '',
     Gender: cust.gender,
     LoyaltyPoints: cust.loyaltyPoints || 0,
     CustomerType: cust.customerType,
@@ -364,12 +375,19 @@ const exportExcel = async () => {
     CashBackAmount: cust.cashBackAmount || 0
   }));
 
-  const worksheet = XLSX.utils.json_to_sheet(formattedData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers');
+  return new Promise((resolve, reject) => {
+    const csvStream = format({ headers: true });
+    const chunks: Buffer[] = [];
 
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    csvStream.on('data', (chunk) => chunks.push(chunk));
+    csvStream.on('end', () => resolve(Buffer.concat(chunks)));
+    csvStream.on('error', reject);
+
+    rows.forEach((row) => csvStream.write(row));
+    csvStream.end();
+  });
 };
+
 
 
 export {
@@ -382,6 +400,6 @@ export {
   isExists,
   toggleCustomerStatusById,
   findCustomerByBookingId,
-  importExcel,
-  exportExcel
+  importCSV,
+  exportCSV
 };

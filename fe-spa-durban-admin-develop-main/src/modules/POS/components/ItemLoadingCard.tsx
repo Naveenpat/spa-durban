@@ -2,19 +2,21 @@ import React from 'react';
 
 type Props = {};
 
-const ItemLoadingCard = (props: Props) => {
+const ItemLoadingCard = () => {
   return (
-    <div className="rounded-sm cursor-pointer min-w-[150px] max-w-[150px] shadow animate-pulse ">
-      <div className="h-[80px] w-full rounded-t-sm bg-gray-200"></div>
+    <div className="w-[150px] h-[170px] rounded-sm shadow animate-pulse bg-white overflow-hidden">
+      {/* Image Skeleton */}
+      <div className="h-[80px] w-full bg-gray-200"></div>
 
-      <div className="flex flex-col gap-2 px-2 py-1 pb-2 rounded-b-sm">
-        <div className="h-[14px] bg-gray-200 rounded"></div>
-
-        <div className="h-[14px] bg-gray-200 rounded w-[100px]"></div>
+      {/* Text Skeleton */}
+      <div className="flex flex-col justify-between px-2 py-2 h-[90px]">
+        <div className="h-[14px] bg-gray-200 rounded w-full mb-2"></div>
+        <div className="h-[14px] bg-gray-200 rounded w-[70%]"></div>
       </div>
     </div>
   );
 };
+
 
 export default ItemLoadingCard;
 

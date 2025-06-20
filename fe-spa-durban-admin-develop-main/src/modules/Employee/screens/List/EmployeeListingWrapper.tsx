@@ -215,10 +215,10 @@ const exportEmployeeExcelSheet = () => {
 // ⬇️ When exportData is updated by the API call, download the file
 useEffect(() => {
   if (exportData) {
-    const url = window.URL.createObjectURL(new Blob([exportData]));
+    const url = window.URL.createObjectURL(new Blob([exportData], { type: 'text/csv' }));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'Employees.xlsx');
+    link.setAttribute('download', 'Employees.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -5,6 +5,7 @@ import {
   getCustomerGroup,
   updateCustomerGroup,
   deleteCustomerGroup,
+  toggleCustomerGroupStatus,
 } from "./controller.customerGroup"
 import validate from "../../../middleware/validate"
 import {
@@ -244,5 +245,12 @@ router.delete(
   validate(deleteDocument),
   deleteCustomerGroup
 )
+
+router.put(
+  "/toggle-status/:customerGroupId",
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  // validate(toggleStatusDocument),
+  toggleCustomerGroupStatus
+);
 
 export default router

@@ -77,7 +77,7 @@ export const employeeApi = apiSlice.injectEndpoints({
 
     exportEmployeeExcel: builder.query<Blob, void>({
       query: () => ({
-        url: '/employee/new/export-excel',
+        url: '/employee/new/export-csv',
         method: 'GET',
         responseHandler: (response) => response.blob(), // this is key
         responseType: 'blob',
@@ -92,7 +92,7 @@ export const employeeApi = apiSlice.injectEndpoints({
         formData.append('file', file);
 
         return {
-          url: 'employee/new/import-excel',
+          url: 'employee/new/import-csv',
           method: 'POST',
           body: formData,
         };

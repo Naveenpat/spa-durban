@@ -98,9 +98,9 @@ const createInvoice = catchAsync(
     } = req.body;
     // console.log(req.body, 12313);
     //get pre invoicing phase
-    console.log('-----calll------1',customerId)
+    console.log('-----calll------1', customerId)
     const previewResult = await getPreview(req);
-    console.log('-----calll-----2',previewResult)
+    console.log('-----calll-----2', previewResult)
     if (!previewResult) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
@@ -159,20 +159,20 @@ const createInvoice = catchAsync(
     // });
 
     const potentialRules = await Cashback.find({
-  isActive: true,
-  serviceId: { $in: itemIds },
-  $or: [
-    {
-      // Date-based cashback rule
-      cashBackDate: { $lte: now },
-      cashBackEndDate: { $gte: now }
-    },
-    {
-      // Day-based cashback rule
-      activeDays: { $in: [currentDay] }
-    }
-  ]
-});
+      isActive: true,
+      serviceId: { $in: itemIds },
+      $or: [
+        {
+          // Date-based cashback rule
+          cashBackDate: { $lte: now },
+          cashBackEndDate: { $gte: now }
+        },
+        {
+          // Day-based cashback rule
+          activeDays: { $in: [currentDay] }
+        }
+      ]
+    });
 
 
 
@@ -337,7 +337,7 @@ const createInvoice = catchAsync(
 
     const customerData = await customerService.getCustomerById(invoiceData?.customer_id)
     const emailData = {
-      sendTo: 'np.221196.np@gmail.com',
+      sendTo: customerData?.email,
       emailSubject: `💰 You've Earned Bonus Cashback!`,
       emailBody: `
     <p>Dear ${customerData?.customerName || 'Customer'},</p>
@@ -352,7 +352,7 @@ const createInvoice = catchAsync(
   `,
     };
 
-    // await sendEmail(emailData, outlet);
+    await sendEmail(emailData, outlet);
 
 
     return res.status(httpStatus.CREATED).send({
