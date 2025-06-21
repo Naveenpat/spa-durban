@@ -141,7 +141,7 @@ const CashBackFormLayout = ({
 
             <ATMNumberField
               name="howMuchCashback"
-              label="Discount (in %)"
+              label="Cashback Multiplier"
               value={values.howMuchCashback}
               onChange={(newValue) => setFieldValue('howMuchCashback', newValue)}
               placeholder="Cashback Multiplier"

@@ -4,6 +4,7 @@ import { paginate } from "../../plugins/pagination.plugin"
 import { DateFilter, FilterByItem, RangeFilter } from "../../../utils/interface"
 import { GiftCardTypeEnum } from "../../../utils/enumUtils"
 import { format } from "date-fns"
+import { Types } from "mongoose"
 
 export interface GiftCardDocument extends Document {
   type: string
@@ -11,7 +12,7 @@ export interface GiftCardDocument extends Document {
   giftCardAmount: number
   giftCardName: string
   giftCardExpiryDate: Date
-
+  usedBy: Types.ObjectId[];
   isDeleted: boolean
   isActive: boolean
 }
@@ -66,6 +67,7 @@ const GiftCardSchema = new mongoose.Schema<GiftCardDocument>(
         return formattedDate
       },
     },
+    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Customer',default:[] }],
     isDeleted: {
       type: Boolean,
       default: false,

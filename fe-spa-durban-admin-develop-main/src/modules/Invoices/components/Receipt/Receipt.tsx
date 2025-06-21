@@ -61,7 +61,7 @@ const Receipt = () => {
   const phoneNumber = invoiceData?.customerPhone;
   const email = invoiceData?.customerEmail;
   const name = invoiceData?.customerName;
-  const youEarn = invoiceData?.loyaltyPointsEarned;
+  const youEarn = invoiceData?.loyaltyPoints;
   const youHave = invoiceData?.customerLoyaltyPoints;
   const youEarnCashback = invoiceData?.cashBackEarned;
   const youHaveCashback = invoiceData?.customerCashBackAmount;

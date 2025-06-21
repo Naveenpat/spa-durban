@@ -41,7 +41,7 @@ const LoginFormWrapper = () => {
       email: res?.user?.email,
     };
 
-    console.log('-----------ress',res)
+    // console.log('-----------ress',res)
 
     dispatch(setUserData(userData));
     dispatch(setOutlets(res?.outlets));

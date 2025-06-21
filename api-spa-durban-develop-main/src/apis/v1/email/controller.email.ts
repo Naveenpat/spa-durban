@@ -152,7 +152,7 @@ const sendInvoice = catchAsync(async (req: AuthenticatedRequest, res: Response) 
   }
 
   const invoice = invoiceExist[0] as AggregatedInvoiceDocument;
-  // console.log('----------invoice---neww', invoice?.amountReceived)
+  // console.log('----------invoice---neww', invoice)
   if (!invoice.customer || !invoice.customer.email) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Customer email not found.");
   }

@@ -94,7 +94,7 @@ const createPromotionCoupon = catchAsync(
       await sendEmail(emailData, outlet);
     }
 
-    console.log('-----customers', customers)
+    // console.log('-----customers', customers)
     return res.status(httpStatus.CREATED).send({
       message: "Added successfully!",
       data: promotionCoupon,

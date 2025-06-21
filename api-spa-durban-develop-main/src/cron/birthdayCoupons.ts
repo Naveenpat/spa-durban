@@ -6,7 +6,7 @@ import { sendEmail } from '../../src/helper/sendEmail';
 
 export const startBirthdayCouponCron = () => {
     // ⏰ Run once a day at 12:01 AM
-    cron.schedule('1 0 * * *', async () => {
+    cron.schedule('* * * * *', async () => {
         const today = new Date();
         const oneMonthLater = new Date(today);
         oneMonthLater.setMonth(today.getMonth() + 1);
@@ -94,6 +94,21 @@ export const startBirthdayCouponCron = () => {
     <p>Your birthday is coming up, and we’ve got a gift for you 🎁</p>
     <p>Enjoy <strong>25% off</strong> with your exclusive birthday coupon:</p>
     <p><strong>Coupon Code: ${couponCode}</strong></p>
+    <button 
+            style="
+              display: inline-block;
+              margin-top: 10px;
+              padding: 8px 16px;
+              background-color: #006972;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              font-weight: bold;
+              cursor: pointer;
+            "
+          >
+         ${couponCode}
+          </button>
     <p>This coupon is valid until <strong>${validTill.toDateString()}</strong>.</p>
     <p>Use it on your next visit and make your birthday extra special!</p>
     <br/>
@@ -102,7 +117,7 @@ export const startBirthdayCouponCron = () => {
   `,
             };
             const outlet = {};
-            await sendEmail(emailData, outlet)
+            // await sendEmail(emailData, outlet)
 
             // console.log(`🎉 Coupon created for ${customer._id}`);
         }

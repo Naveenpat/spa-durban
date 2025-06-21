@@ -11,7 +11,7 @@ const cron = require('node-cron');
 export const runRewardCheck = () => {
     cron.schedule('* * * * *', async () => {
         try {
-            console.log('🎁 Starting reward check cron...');
+            // console.log('🎁 Starting reward check cron...');
             const rewards = await RewardsCoupon.find({ isActive: true });
             const customers = await Customer.find({
                 isDeleted: false,
@@ -41,7 +41,7 @@ export const runRewardCheck = () => {
                 //     type: 'COUPON_CODE',
                 // });
 
-                console.log(`🟢 User ${user.customerName} has ${user.cashBackAmount} points. Sending reward list.`);
+                // console.log(`🟢 User ${user.customerName} has ${user.cashBackAmount} points. Sending reward list.`);
 
                 const rewardHTML = (
                     await Promise.all(
@@ -96,11 +96,11 @@ export const runRewardCheck = () => {
                 };
 
                 const outlet = {};
-                await sendEmail(emailData, outlet);
+                // await sendEmail(emailData, outlet);
             }
 
 
-            console.log('✅ Reward cron completed.', customers);
+            // console.log('✅ Reward cron completed.', customers);
         } catch (error) {
             console.error('❌ Error in reward cron:', error);
             process.exit(1);

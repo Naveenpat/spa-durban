@@ -47,6 +47,7 @@ export interface InvoiceDocument extends Document {
   giftCardCode: string;
   useLoyaltyPoints: boolean;
   loyaltyPointsEarned: number;
+  loyaltyPoints:Number;
   referralCode: string;
   taxes: taxes[];
   balanceDue: number;
@@ -273,6 +274,11 @@ const InvoiceSchema = new mongoose.Schema<InvoiceDocument>(
       trim: true,
     },
     loyaltyPointsEarned: {
+      type: Number,
+      // required: true,
+      trim: true,
+    },
+    loyaltyPoints:{
       type: Number,
       required: true,
       trim: true,

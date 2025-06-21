@@ -38,7 +38,7 @@ const createCustomerByBooking = catchAsync(
     const existingCustomer = await customerService.findCustomerByBookingId(
       bookingCustomerId
     );
-    console.log(bookingCustomerId, "existingCustomer=====", existingCustomer);
+    // console.log(bookingCustomerId, "existingCustomer=====", existingCustomer);
 
     if (existingCustomer) {
       return res.status(httpStatus.CONFLICT).send({

@@ -63,6 +63,32 @@ const updateGiftCardById = async (
   return giftCard;
 };
 
+const markGiftCardCouponAsUsed = async (
+  referralCode: string,
+  customerId: string
+): Promise<GiftCardDocument> => {
+  const coupon = await GiftCard.findOne({
+    giftCardName: referralCode
+  });
+  if (!coupon) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Gift Card coupon not found');
+  }
+
+  const alreadyUsed = Array.isArray(coupon.usedBy)
+    ? coupon.usedBy.map(id => id?.toString()).includes(customerId.toString())
+    : false;
+
+  if (alreadyUsed) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Gift Card coupon already used by this customer');
+  }
+
+  coupon.usedBy.push(new mongoose.Types.ObjectId(customerId));
+  await coupon.save();
+
+  return coupon;
+};
+
+
 /**
  * Toggle gift card status by id
  * @param {string | number} giftCardId
@@ -220,4 +246,5 @@ export {
   getGiftCardsByIds,
   getGiftCardByMultipleFields,
   toggleGiftCardStatusById,
+  markGiftCardCouponAsUsed
 };

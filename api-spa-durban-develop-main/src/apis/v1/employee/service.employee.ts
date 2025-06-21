@@ -286,7 +286,7 @@ const importCSV = async (file: Express.Multer.File): Promise<void> => {
       outletsId
     };
 
-    console.log('Parsed Employee:', employeeObj);
+    // console.log('Parsed Employee:', employeeObj);
 
     await Employee.findOneAndUpdate(
       { userName },

@@ -454,7 +454,7 @@ const getDiscounts = async (
   }
 
 
-  console.log('-----promotionCoupanCodeDiscount', promotionCoupanCodeDiscount)
+  // console.log('-----promotionCoupanCodeDiscount', promotionCoupanCodeDiscount)
 
   let totalDiscount =
     couponDiscount +

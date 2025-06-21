@@ -50,6 +50,7 @@ const POSWrapper = (props: Props) => {
     ],
     giftCardCode: '',
     promotionCoupanCode:'',
+    rewardCoupan:'',
     useLoyaltyPoints: false,
     useCashBackAmount: false,
     usedCashBackAmount: 0,
@@ -216,6 +217,7 @@ const POSWrapper = (props: Props) => {
       })),
       giftCardCode: values?.giftCardCode,
       promotionCoupanCode: values?.promotionCoupanCode,
+      rewardCoupan:values?.rewardCoupan,
       useLoyaltyPoints: values?.useLoyaltyPoints,
       referralCode: '',
       outletId: (outlet as any)?._id,
@@ -234,7 +236,9 @@ const POSWrapper = (props: Props) => {
       if (res?.error) {
         showToast('error', res?.error?.data?.message);
       } else if (res?.data?.status) {
+        
         const createdInvoiceId = res?.data?.data?._id;
+       
         const totalAmount = previewData?.invoiceData?.totalAmount || 0;
         const totalReceived = values?.amountReceived?.reduce(
           (sum: number, item: any) => sum + (Number(item.amount) || 0),
@@ -259,9 +263,9 @@ const POSWrapper = (props: Props) => {
         navigate(`/invoice/receipt/${createdInvoiceId}`);
         //--------
         // Then after rendering
-        setTimeout(() => {
-          handleSendEmail(createdInvoiceId);
-        }, 500); // Wait to ensure DOM is ready
+        // setTimeout(() => {
+        //   handleSendEmail(createdInvoiceId);
+        // }, 1000); // Wait to ensure DOM is ready
         //--------
       } else {
         showToast('error', res?.data?.message);

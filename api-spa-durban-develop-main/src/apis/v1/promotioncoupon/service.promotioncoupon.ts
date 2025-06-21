@@ -48,6 +48,34 @@ const updatePromotionCouponById = async (
   return promotionCoupon;
 };
 
+const markPromotionCouponAsUsed = async (
+  referralCode: string,
+  customerId: string
+): Promise<PromotionCouponDocument> => {
+  // console.log('-----referralCode',referralCode)
+  const coupon = await PromotionCoupon.findOne({
+    couponCode: referralCode
+  });
+    // console.log('-----coupon',coupon)
+
+  if (!coupon) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Promotion coupon not found');
+  }
+
+  const alreadyUsed = Array.isArray(coupon.usedBy)
+    ? coupon.usedBy.map(id => id?.toString()).includes(customerId.toString())
+    : false;
+
+  if (alreadyUsed) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Promotion coupon already used by this customer');
+  }
+
+  coupon.usedBy.push(new mongoose.Types.ObjectId(customerId));
+  await coupon.save();
+
+  return coupon;
+};
+
 const deletePromotionCouponById = async (
   promotionCouponId: string | number
 ): Promise<PromotionCouponDocument> => {
@@ -164,6 +192,7 @@ const aggregateAllCoupons = async (customerId: string, items: string[]) => {
     startDate: { $lte: today },
     endDate: { $gte: today },
     customerId: { $in: [customerId] },
+    usedBy: { $nin: [customerId] }
   }).lean();
 
   const promotionalCoupons = promotionalCouponsDocs.map((doc) => ({
@@ -174,20 +203,43 @@ const aggregateAllCoupons = async (customerId: string, items: string[]) => {
     type: 'Promotional',
   }));
 
-  // 🎯 2. Gift Cards
-  const giftCardDocs = await GiftCard.find({
-    giftCardExpiryDate: { $gte: today },
-    customerId: customerId,
-    isDeleted: false,
-  }).lean();
+  // // 🎯 2. Gift Cards
+  // const giftCardDocs = await GiftCard.find({
+  //   giftCardExpiryDate: { $gte: today },
+  //   customerId: customerId,
+  //   isDeleted: false,
+  //   // usedBy: { $nin: [customerId] }
+  // }).lean();
 
-  const giftCards = giftCardDocs.map((doc) => ({
-    _id: doc._id,
-    code: doc.giftCardName,
-    discount: doc.giftCardAmount,
-    validTill: doc.giftCardExpiryDate,
-    type: 'GiftCard',
-  }));
+  // const giftCards = giftCardDocs.map((doc) => ({
+  //   _id: doc._id,
+  //   code: doc.giftCardName,
+  //   discount: doc.giftCardAmount,
+  //   validTill: doc.giftCardExpiryDate,
+  //   type: 'GiftCard',
+  // }));
+
+  const giftCardDocs = await GiftCard.find({
+  giftCardExpiryDate: { $gte: today },
+  isDeleted: false,
+  isActive: true,
+  $or: [
+    { customerId: customerId },              // personalized
+    { customerId: null, type: 'WHOEVER_BOUGHT' } // public gift cards
+  ],
+  usedBy: { $nin: [customerId] }
+}).lean();
+
+// console.log('------giftCardDocs',giftCardDocs)
+
+const giftCards = giftCardDocs.map((doc) => ({
+  _id: doc._id,
+  code: doc.giftCardName,
+  discount: doc.giftCardAmount,
+  validTill: doc.giftCardExpiryDate,
+  type: 'GiftCard',
+}));
+
 
   // 🎯 3. Birthday Coupons
   const birthdayCouponDocs = await Coupon.find({
@@ -197,8 +249,8 @@ const aggregateAllCoupons = async (customerId: string, items: string[]) => {
     referralCode: { $regex: /^BDAY-/i }, // matches codes starting with 'BDAY-'
     isDeleted: false,
     isActive: true,
+    usedBy: { $nin: [customerId] }
   }).lean();
-
 
   const birthdayCoupons = birthdayCouponDocs.map((doc) => ({
     _id: doc._id,
@@ -212,7 +264,8 @@ const aggregateAllCoupons = async (customerId: string, items: string[]) => {
     isDeleted: false,
     isActive: true,
     rewardsPoint: { $lte: customerData?.cashBackAmount },
-    serviceId: { $in: items }
+    serviceId: { $in: items },
+    usedBy: { $nin: [customerId] }
   }).lean();
 
   const rewardCouponDocs = rewardsCoupons.map((doc) => {
@@ -246,5 +299,6 @@ export {
   getPromotionCouponById,
   getOneByMultiField,
   togglePromotionCouponStatusById,
-  aggregateAllCoupons
+  aggregateAllCoupons,
+  markPromotionCouponAsUsed
 };

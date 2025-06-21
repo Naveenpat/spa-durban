@@ -1,4 +1,4 @@
-import mongoose, { Document, ObjectId } from "mongoose";
+import mongoose, { Document, ObjectId, Types } from "mongoose";
 import timestamp from "../../plugins/timeStamp.plugin";
 import { paginate } from "../../plugins/pagination.plugin";
 import {
@@ -16,7 +16,8 @@ export interface PromotionCouponDocument extends Document {
   endDate: Date;
   isDeleted: boolean;
   isActive: boolean;
-  groupTarget: [String]
+  groupTarget: [String];
+  usedBy: Types.ObjectId[];
 }
 
 export interface PromotionCouponModel
@@ -77,6 +78,7 @@ const PromotionCouponSchema = new mongoose.Schema<PromotionCouponDocument>(
       type: Boolean,
       default: true,
     },
+    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Customer',default:[] }]
   },
   {
     timestamps: true,

@@ -42,6 +42,35 @@ const updateRewardsCouponById = async (
   return rewardsCoupon;
 };
 
+const markRewardCouponAsUsed = async (
+  referralCode: string,
+  customerId: string
+): Promise<RewardsCouponDocument> => {
+  const coupon = await RewardsCoupon.findOne({
+    couponCode: referralCode,
+    isDeleted: false,
+    isActive: true,
+  });
+
+  if (!coupon) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Reward coupon not found');
+  }
+
+  const alreadyUsed = Array.isArray(coupon.usedBy)
+    ? coupon.usedBy.map(id => id?.toString()).includes(customerId.toString())
+    : false;
+
+  if (alreadyUsed) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Reward coupon already used by this customer');
+  }
+
+  coupon.usedBy.push(new mongoose.Types.ObjectId(customerId));
+  await coupon.save();
+
+  return coupon;
+};
+
+
 const deleteRewardsCouponById = async (
   rewardsCouponId: string | number
 ): Promise<RewardsCouponDocument> => {
@@ -157,4 +186,5 @@ export {
   getRewardsCouponById,
   getOneByMultiField,
   toggleRewardsCouponStatusById,
+  markRewardCouponAsUsed
 };

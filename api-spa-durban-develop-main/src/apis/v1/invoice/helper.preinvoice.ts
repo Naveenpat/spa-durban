@@ -54,7 +54,7 @@ const getPreview = async (req: AuthenticatedRequest) => {
   } = req.body;
 
 
-  console.log('--------req.body', req.body)
+  // console.log('--------req.body', req.body)
   /**
    * employeeId = req.userData.Id
    */

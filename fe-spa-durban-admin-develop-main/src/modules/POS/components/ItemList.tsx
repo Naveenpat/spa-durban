@@ -1,4 +1,4 @@
-import { IconX, IconPlus, IconMinus, IconPencil } from '@tabler/icons-react';
+import { IconX, IconPlus, IconMinus, IconPencil, IconPin } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,7 @@ import { showToast } from 'src/utils/showToaster';
 import { IconPlusEqual } from '@tabler/icons-react';
 import { IconLoader2 } from '@tabler/icons-react';
 import { IconChevronDown } from '@tabler/icons-react';
+import { IconPinFilled } from '@tabler/icons-react';
 
 type Props = {
   onItemClick: (item: any) => void;
@@ -58,7 +59,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
   const { data, isLoading, refetch, isFetching } = useFetchData(useGetItemsQuery, {
     body: {
       page: page,            // <-- Add this
-      limit: 16,
+      limit: 25,
       searchValue: searchValue,
       filterBy: JSON.stringify([
         {
@@ -74,7 +75,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
   });
 
 
-  console.log('---------data', data)
+  // console.log('---------data', data)
   const { data: categoryData, isLoading: categoryLoading } = useFetchData(
     useGetCategoriesQuery,
     {
@@ -276,7 +277,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
         <div
           className="flex flex-wrap col-span-4 gap-4 py-4 h-fit"
           style={{
-            height: '510px', //'787px',
+            height: '76vh', //'787px',
             overflow: 'auto',
             scrollbarWidth: 'none',
             justifyContent: 'center'
@@ -284,7 +285,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
 
         >
           {isLoading ? (
-            Array(16)
+            Array(20)
               ?.fill(null)
               ?.map((_, index) => <ItemLoadingCard key={index} />)
           ) : items?.length === 0 ? (
@@ -363,7 +364,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
                 <div
                   key={product?._id}
                   ref={bottomRef}
-                  className="relative w-[150px] h-[170px] rounded-sm shadow cursor-pointer"
+                  className="relative w-[170px] h-[170px] rounded-sm shadow cursor-pointer"
                   onClick={() => onItemClick(product)}
                   style={{
                     border: `2px solid ${product?.colorCode}`,
@@ -411,13 +412,15 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
                     >
                       {showAction ? (
                         product?.pinned ? (
-                          <IconMinus size={12} color="red" />
+                          <IconPinFilled size={12} />
                         ) : (
-                          <IconPlus size={12} color="green" />
+                          <IconPin size={12} color="#006972" />
                         )
                       ) : (
                         <IconPencil size={12} color="#006972" />
                       )}
+
+
                     </div>
                   </div>
                 </div>

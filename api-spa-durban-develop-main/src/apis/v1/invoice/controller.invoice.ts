@@ -12,6 +12,10 @@ import {
   customerService,
   paymentModeService,
   invoiceLogService,
+  couponService,
+  rewardsCouponService,
+  promotionCouponService,
+  giftCardService,
 } from "../service.index";
 import {
   DateFilter,
@@ -95,12 +99,14 @@ const createInvoice = catchAsync(
       useCashBackAmount,
       usedCashBackAmount,
       bookingId,
+      rewardCoupan,
+      promotionCoupanCode
     } = req.body;
     // console.log(req.body, 12313);
     //get pre invoicing phase
-    console.log('-----calll------1', customerId)
+    // console.log('-----calll------1', customerId)
     const previewResult = await getPreview(req);
-    console.log('-----calll-----2', previewResult)
+    // console.log('-----calll-----2', previewResult)
     if (!previewResult) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
@@ -127,7 +133,7 @@ const createInvoice = catchAsync(
     } = dataToUpdate;
     let { outlet } = otherData;
 
-
+    // console.log('-----pointsToAdd', pointsToAdd)
 
 
     const now = new Date();
@@ -177,7 +183,7 @@ const createInvoice = catchAsync(
 
 
 
-    console.log('-----potentialRules', potentialRules)
+    // console.log('-----potentialRules', potentialRules)
     // Step 2: Filter valid rules
     const validRules = potentialRules.filter((rule: any) => {
       const isDayRule =
@@ -204,7 +210,7 @@ const createInvoice = catchAsync(
 
 
 
-    console.log('-----validBonusRules', validRules)
+    // console.log('-----validBonusRules', validRules)
 
     // Step 3: Calculate cashback
     let cashbackMultiplier = 1;
@@ -213,14 +219,14 @@ const createInvoice = catchAsync(
     }
 
     const finalCashback = (invoiceData?.cashBackEarned || 0) * cashbackMultiplier;
-    console.log('Final Cashback:', finalCashback);
+    // console.log('Final Cashback:', finalCashback);
 
 
     //check payment methods
     const paymentMethods = await invoiceHelper.checkPaymentMethods(
       amountReceived
     );
-    console.log("22222222222 -- invoiceData", invoiceData)
+    // console.log("22222222222 -- invoiceData", invoiceData)
 
     if (!paymentMethods) {
       throw new ApiError(httpStatus.NOT_FOUND, "Invalid payment mode.");
@@ -232,18 +238,18 @@ const createInvoice = catchAsync(
       amountReceived,
       0 //previouslyPaid
     );
-    console.log("333333333333")
+    // console.log("333333333333")
     invoiceData.balanceDue = balanceDue;
     invoiceData.amountPaid = amountPaid;
 
     // get invoice number
     const { invoiceNumber, newInvoiceNumber } =
       await invoiceHelper.generateInvoiceNumber(outlet);
-    console.log("44444444444", invoiceNumber)
+    // console.log("44444444444", invoiceNumber)
 
     invoiceData.invoiceNumber = invoiceNumber;
     invoiceData.invoiceDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
-    console.log(invoiceData, 12123);
+    // console.log(invoiceData, 12123);
 
     //update outlet invoice number
     const getOutletData = await outletService.getOutletById(outletId);
@@ -253,11 +259,12 @@ const createInvoice = catchAsync(
       ...invoiceData,
       cashBackEarned: isNaN(Number(finalCashback)) ? 0 : Number(finalCashback),
       bookingId,
-      loyaltyPointsEarned: pointsToAdd,
+      // loyaltyPointsEarned: pointsToAdd,
+      loyaltyPoints: pointsToAdd,
       companyId: getOutletData?.companyId
     });
 
-    console.log("55555555555")
+    // console.log("55555555555")
     if (!invoice) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
     }
@@ -267,7 +274,7 @@ const createInvoice = catchAsync(
       const inventoryUpdate = await inventoryHelper.updateInventoriesAfterSell(
         inventoryData
       );
-      console.log("6666666666666")
+      // console.log("6666666666666")
       if (!inventoryUpdate) {
         throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
       }
@@ -281,14 +288,14 @@ const createInvoice = catchAsync(
     if (!updatedOutlet) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
     }
-    console.log("777777777777777")
+    // console.log("777777777777777")
     //update logs
     let addedInvoiceLogs = await invoiceLogService.createOrUpdateInvoiceLog(
       invoice,
       true
     );
 
-    console.log("888888888888")
+    // console.log("888888888888")
 
     if (!addedInvoiceLogs) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
@@ -300,7 +307,7 @@ const createInvoice = catchAsync(
         walletDebitLog,
         pointsToDebit
       );
-      console.log("9999999999999")
+      // console.log("9999999999999")
       if (!debitedPoints) {
         throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
       }
@@ -312,7 +319,7 @@ const createInvoice = catchAsync(
         walletCreditLog,
         pointsToAdd
       );
-      console.log("100000000000")
+      // console.log("100000000000")
       if (!creditedPoints) {
         throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
       }
@@ -335,11 +342,27 @@ const createInvoice = catchAsync(
       );
     }
 
-    const customerData = await customerService.getCustomerById(invoiceData?.customer_id)
-    const emailData = {
-      sendTo: customerData?.email,
-      emailSubject: `💰 You've Earned Bonus Cashback!`,
-      emailBody: `
+    if (couponCode) {
+      await couponService.markCouponAsUsed(couponCode, invoiceData?.customerId)
+    }
+    if (rewardCoupan) {
+      await rewardsCouponService.markRewardCouponAsUsed(rewardCoupan, invoiceData?.customerId)
+    }
+
+    if (promotionCoupanCode) {
+      await promotionCouponService.markPromotionCouponAsUsed(promotionCoupanCode, invoiceData?.customerId)
+    }
+    if (giftCardCode) {
+      await giftCardService.markGiftCardCouponAsUsed(giftCardCode, invoiceData?.customerId)
+    }
+
+
+    if (validRules.length) {
+      const customerData = await customerService.getCustomerById(invoiceData?.customerId)
+      const emailData = {
+        sendTo: customerData?.email,
+        emailSubject: `💰 You've Earned Bonus Cashback!`,
+        emailBody: `
     <p>Dear ${customerData?.customerName || 'Customer'},</p>
     <p>Great news! You’ve earned <strong>${cashbackMultiplier}X</strong> cashback on your recent purchase 🎉</p>
     <p>🪙 <strong>Cashback Earned:</strong> ₹${invoiceData.cashBackEarned * cashbackMultiplier}</p>
@@ -350,10 +373,10 @@ const createInvoice = catchAsync(
     <p>Cheers,</p>
     <p><em>The Spa Durban Team</em></p>
   `,
-    };
+      };
 
-    await sendEmail(emailData, outlet);
-
+      await sendEmail(emailData, outlet);
+    }
 
     return res.status(httpStatus.CREATED).send({
       message: "Added successfully!",

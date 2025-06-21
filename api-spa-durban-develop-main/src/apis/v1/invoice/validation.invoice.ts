@@ -32,6 +32,7 @@ export const create: { body: ObjectSchema } = {
     ),
     giftCardCode: Joi.string().allow(""),
     promotionCoupanCode: Joi.string().allow(""),
+    rewardCoupan:Joi.string().allow(""),
     useLoyaltyPoints: Joi.boolean().required(),
     referralCode: Joi.string().allow(""),
     outletId: Joi.string().required().custom(objectId),

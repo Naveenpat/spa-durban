@@ -64,7 +64,7 @@ const ATMAppHeader = ({
   );
 
 
-  console.log('-----userData', userData)
+  // console.log('-----userData', userData)
 
 
   const [storeOutletId, setStoreOutletId] = useState<string>();
@@ -411,7 +411,7 @@ const ATMAppHeader = ({
             type="button"
             style={{
               height: '35px',
-              fontSize: '12px',
+              fontSize: '11px',
               width: '125px',
             }}
             onClick={() => dispatch(setIsOpenAddDialog(true))}
@@ -423,7 +423,7 @@ const ATMAppHeader = ({
             type="button"
             style={{
               height: '35px',
-              fontSize: '12px',
+              fontSize: '11px',
               width: '125px',
             }}
             onClick={() => dispatch(setIsCloseAddDialog(true))}
@@ -435,7 +435,7 @@ const ATMAppHeader = ({
             type="button"
             style={{
               height: '35px',
-              fontSize: '12px',
+              fontSize: '11px',
               width: '125px',
             }}
             className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
@@ -463,7 +463,7 @@ const ATMAppHeader = ({
             type="button"
             style={{
               height: '35px',
-              fontSize: '12px',
+              fontSize: '11px',
               width: '125px',
             }}
             className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
