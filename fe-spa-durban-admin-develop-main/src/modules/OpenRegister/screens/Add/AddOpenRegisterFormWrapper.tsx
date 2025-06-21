@@ -21,14 +21,16 @@ yesterday.setDate(yesterday.getDate() - 1);
 
 const formattedDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
 
-const { data, isLoading } = useGetRegisterByDateQuery({
-  outletId: '67c5c54b88910b9e3e672c4e',
-  date: formattedDate, // e.g., '2025-06-08'
-});
+
 
   const { userData, outlet, outlets } = useSelector(
     (state: RootState) => state.auth,
   );
+
+  const { data, isLoading } = useGetRegisterByDateQuery({
+  outletId: (outlet as any)._id,
+  date: formattedDate, // e.g., '2025-06-08'
+});
   const initialValues: OpenRegisterFormValues = {
     registerId: '', // Ensure validation accounts for this
     openingBalance: '',

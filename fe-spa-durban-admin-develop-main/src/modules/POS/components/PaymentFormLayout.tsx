@@ -527,12 +527,13 @@ const PaymentFormLayout = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex justify-end px-2 mb-2">
+                  <div className="flex justify-end px-2 mb-2 mt-1">
                     <ATMButton
                       onClick={() => {
                         handleApplyPayment(values, setFieldValue);
                       }}
                       isLoading={previewIsLoading}
+                      disabled={values?.usedCashBackAmount > payAbleAmount}
                     >
                       Apply
                     </ATMButton>
@@ -541,7 +542,7 @@ const PaymentFormLayout = ({
               </div>
             </div>
           </div>
-          {!isPreviewed ? (
+          {!isPreviewed || previewData?.invoiceData?.totalAmount === 0 ? (
             <div className=" w-[500px]"></div>
           ) : (
             <div className="flex flex-col justify-between p-2 border rounded-lg w-[500px]">

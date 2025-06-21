@@ -276,7 +276,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
         <div
           className="flex flex-wrap col-span-4 gap-4 py-4 h-fit"
           style={{
-            height: '787px', //'510px',
+            height: '510px', //'787px',
             overflow: 'auto',
             scrollbarWidth: 'none',
             justifyContent: 'center'
