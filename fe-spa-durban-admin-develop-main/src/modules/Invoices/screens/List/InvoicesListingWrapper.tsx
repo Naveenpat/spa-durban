@@ -298,10 +298,13 @@ const InvoicesListingWrapper = (props: Props) => {
     },
   ];
 
+  const today = new Date();
+const oneMonthAgo = subMonths(today, 1);
+
   useEffect(() => {
     if (!dateFilter?.start_date && !dateFilter?.end_date) {
       const newSearchParams = new URLSearchParams(searchParams); // Clone existing searchParams
-      newSearchParams.set('startDate', format(new Date(), 'yyyy-MM-dd') || '');
+      newSearchParams.set('startDate', format(oneMonthAgo, 'yyyy-MM-dd') || '');
       newSearchParams.set('endDate', format(new Date(), 'yyyy-MM-dd') || '');
       const existingOutlets = newSearchParams.getAll('outletId');
       const newOutletIds = outlets?.map((item) => item?._id) || [];
