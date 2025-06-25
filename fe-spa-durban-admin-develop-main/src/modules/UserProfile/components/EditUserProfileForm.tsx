@@ -167,6 +167,7 @@ const EditUserProfileForm = ({ formikProps }: Props) => {
             onChange={(newValue) => {
               setFieldValue('photoUrl', newValue);
             }}
+            folderName='users'
           />
         </div>
         {/* Signature */}

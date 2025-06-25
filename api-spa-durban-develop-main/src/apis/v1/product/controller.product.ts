@@ -29,6 +29,7 @@ import mongoose, { Document, Model, ObjectId } from "mongoose";
 import { searchKeys, allowedDateFilterKeys } from "./schema.product";
 import { availableMemory } from "process";
 import { UserEnum } from "../../../utils/enumUtils";
+import { deleteUploadedFile } from "../../../utils/fileUtils";
 
 const createProduct = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -1283,11 +1284,21 @@ const updateProduct = catchAsync(
       //throw new ApiError(httpStatus.NOT_FOUND, "Invalid tax.");
     }
 
+  
+
     const product = await productService.updateProductById(
       req.params.productId,
       req.body
     );
 
+       if (
+    req.body.productImageUrl &&
+    req.body.productImageUrl !== product.productImageUrl
+  ) {
+    // ✅ Delete old image from filesystem
+    deleteUploadedFile(product.productImageUrl);
+  }
+  
     return res.status(httpStatus.OK).send({
       message: "Updated Successfully!",
       data: product,
@@ -1300,7 +1311,8 @@ const updateProduct = catchAsync(
 
 const deleteProduct = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    await productService.deleteProductById(req.params.productId);
+   const product =  await productService.deleteProductById(req.params.productId);
+    deleteUploadedFile(product.productImageUrl);
     return res.status(httpStatus.OK).send({
       message: "Successfull",
       data: null,

@@ -266,7 +266,7 @@ const OutletFormLayout = ({
               />
             </div>
 
-            <div className="">
+            {/* <div className="">
 
 
               <div className="relative h-36 w-36 border-2 border-dashed border-gray-400 rounded-md flex items-center justify-center overflow-hidden">
@@ -300,10 +300,10 @@ const OutletFormLayout = ({
                   />
                 )}
               </div>
-            </div>
+            </div> */}
 
 
-            {/* <div className="">
+            <div className="">
               <ATMFileUploader
                 name="logo"
                 value={values.logo}
@@ -312,9 +312,10 @@ const OutletFormLayout = ({
                 }}
                 label="Outlet Logo"
                 accept=".jpg, .jpeg, .png, .gif"
+                folderName='outlets'
               />
             </div>
-          </div> */}
+          {/* </div> */}
 
             {/* <div className="grid grid-cols-3 w-[70%] m-auto gap-4"> */}
             {/* <div className="hidden ">

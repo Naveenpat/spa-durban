@@ -263,19 +263,19 @@ const ATMAppHeader = ({
     {
       fieldName: 'customerName',
       headerName: 'Customer',
-      flex: 'flex-[2_1_0%]',
+      flex: 'flex-[3_1_0%]',
       renderCell: (row: any) => toTitleCase(row.customerName),
     },
     {
       fieldName: 'paymentMode',
-      headerName: 'PaymentMode',
+      headerName: 'Mode',
       flex: 'flex-[2_1_0%]',
       renderCell: (row: any) => toTitleCase(row.paymentMode),
     },
     {
       fieldName: 'totalAmount',
       headerName: 'Total',
-      flex: 'flex-[_1_0%]',
+      flex: 'flex-[1_1_0%]',
       renderCell: (item) => (
         <div>
           {' '}
@@ -283,6 +283,12 @@ const ATMAppHeader = ({
           {item?.totalAmount ? Number(item?.totalAmount).toFixed(2) : '0'}
         </div>
       ),
+    },
+    {
+      fieldName: 'date',
+      headerName: 'Date',
+      flex: 'flex-[2_1_0%]',
+      renderCell: (row: any) => toTitleCase(row.date),
     },
     {
       fieldName: 'status',
@@ -314,57 +320,32 @@ const ATMAppHeader = ({
       renderCell: (item: SalesReport) => (
         <div className="flex items-center gap-2">
           <Tooltip title="View" arrow>
-          <button
-            type="button"
-         
-            onClick={() =>
-              navigate(`/invoice/receipt/${item?._id}`, {
-                state: { from: location },
-              })
-            }
-            className="text-blue-600 hover:text-blue-800"
-          >
-            <IconPrinter size={18} />
-          </button>
+            <button
+              type="button"
+
+              onClick={() =>
+                navigate(`/invoice/receipt/${item?._id}`, {
+                  state: { from: location },
+                })
+              }
+              className="text-blue-600 hover:text-blue-800"
+            >
+              <IconPrinter size={18} />
+            </button>
           </Tooltip>
 
-         <Tooltip title={item?.status === 'refund' ? 'Cancel Refund' : 'Refund'} arrow>
-  <button
-    type="button"
-    onClick={() => handleUpdate(item)}
-    className="text-green-600 hover:text-green-800"
-  >
-    <IconCreditCardRefund size={18} />
-  </button>
-</Tooltip>
-
-          {/* <button
-            type="button"
-            title={item?.status === 'void' ? 'Cancel Void' : 'Void'}
-            onClick={() => {
-              if (item?.status === 'void') {
-                handleCancelVoidWithConfirmation(item._id);
-              } else {
-                setIsOpenSalseReportDialog(false)
-                dispatch(setIsOpenEditDialog(true));
-                setInvoiceId(item._id);
-              }
-            }}
-            className={`${item?.status === 'void'
-              ? 'text-green-600 hover:text-green-800'
-              : 'text-red-600 hover:text-red-800'} 
-               transition-colors duration-200`}
-          >
-            {item?.status === 'void' ? (
-              <IconBan size={18} /> // Different icon for cancel void
-            ) : (
-              <IconCopyX size={18} />
-            )}
-          </button> */}
+          <Tooltip title={item?.status === 'refund' ? 'Cancel Refund' : 'Refund'} arrow>
+            <button
+              type="button"
+              onClick={() => handleUpdate(item)}
+              className="text-green-600 hover:text-green-800"
+            >
+              <IconCreditCardRefund size={18} />
+            </button>
+          </Tooltip>
         </div>
       ),
     }
-
   ];
 
   // const tableHeaders: TableHeader<any>[] = [

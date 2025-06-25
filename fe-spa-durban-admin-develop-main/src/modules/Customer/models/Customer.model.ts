@@ -14,6 +14,7 @@ export type Customer = {
   loyaltyPoints: string;
   isActive: boolean;
   updatedAt:Date;
+  viewSalesReport:any;
   // customerGroup:any;
 };
 

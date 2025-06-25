@@ -334,10 +334,12 @@ const ProductFormLayout = ({
                 name="productImageUrl"
                 value={values.productImageUrl}
                 onChange={(file: string) => {
+                  console.log('----file',file)
                   setFieldValue('productImageUrl', file);
                 }}
                 label="Product Image"
                 accept=".jpg, .jpeg, .png, .gif"
+                folderName="products"
               />
             </div>
           </div>

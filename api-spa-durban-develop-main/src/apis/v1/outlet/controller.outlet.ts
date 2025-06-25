@@ -17,7 +17,8 @@ import {
   getDateFilterQuery,
 } from "../../../utils/utils"
 import { searchKeys, allowedDateFilterKeys } from "./schema.outlet"
-import mongoose from "mongoose"
+import mongoose, { PipelineStage } from "mongoose"
+import Invoice from "../invoice/schema.invoice"
 
 const createOutlet = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -122,7 +123,7 @@ const getOutlets = catchAsync(
       }
     }
 
-    
+
     const result = await outletService.queryOutlets(filter, options)
     return res.status(httpStatus.OK).send(result)
   }
@@ -203,6 +204,10 @@ const toggleOutletStatus = catchAsync(async (req: Request, res: Response) => {
     issue: null,
   })
 })
+
+
+
+
 
 export {
   createOutlet,

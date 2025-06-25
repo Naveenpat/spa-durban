@@ -168,7 +168,7 @@ const Receipt = () => {
     <>
       <div ref={printRef} className="py-2 mx-auto receipt-print w-[50%]">
         <div className="flex justify-center px-2 mb-2">
-          <img className="h-20 w-30" src={companyData?.logo || "/spadurbanLogo.jpeg"} alt="Logo" />
+          <img className="h-20 w-30" src={`${process.env.REACT_APP_BASE_URL}/${companyData?.logo} || "/spadurbanLogo.jpeg"`} alt="Logo" />
         </div>
         <div className="px-2 text-[11px] font-medium text-center text-slate-600 ">
           {toTitleCase(invoiceData?.outletName)}

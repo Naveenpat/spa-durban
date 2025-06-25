@@ -72,6 +72,8 @@ import ClaimPage from './utils/ClaimPage';
 import CustomerGroupListingWrapper from './modules/CashbackRules copy/screens/List/CustomerGroupListingWrapper';
 import AddCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Add/AddCustomerGroupFormWrapper';
 import EditCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Edit/EditCustomerGroupFormWrapper';
+import SalesReportPage from './modules/Outlet/screens/sales-report/SalesReportPage';
+import CustomerSalesReportPage from './modules/Customer/screens/sales-report/CustomerSalesReportPage';
 
 type Props = {};
 
@@ -140,6 +142,7 @@ const PageRoutes = (props: Props) => {
         { path: '/outlets', element: <OutletListingWrapper /> },
         { path: '/outlet/add', element: <AddOutletFormWrapper /> },
         { path: '/outlet/edit/:id', element: <EditOutletFormWrapper /> },
+        { path: '/outlet/sales-report/:id', element: <SalesReportPage /> },
         {
           path: '/brand',
           element: (
@@ -270,6 +273,7 @@ const PageRoutes = (props: Props) => {
           path: '/customer',
           element: <CustomerListingWrapper />,
         },
+        { path: '/customer/sales-report/:id', element: <CustomerSalesReportPage /> },
         {
           path: '/customer/add',
           element: <AddCustomerFormWrapper />,

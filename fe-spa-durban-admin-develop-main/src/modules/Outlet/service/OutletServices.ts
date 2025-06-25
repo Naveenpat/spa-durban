@@ -68,6 +68,22 @@ export const outletApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    getSalesReportByOutlet: builder.query({
+      query: ({outletId, startDate, endDate, page = 1, limit = 10 }) => {
+        const params = new URLSearchParams({
+          outletId,
+          startDate,
+          endDate,
+          page: String(page),
+          limit: String(limit)
+        });
+
+        return {
+          url: `/analytics/new/sales-report?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
   }),
 });
 
@@ -78,5 +94,6 @@ export const {
   useUpdateOutletMutation,
   useDeleteOutletMutation,
   useOutletStatusMutation,
-  useGetOutletsByCompanyIdQuery
+  useGetOutletsByCompanyIdQuery,
+  useGetSalesReportByOutletQuery
 } = outletApi;

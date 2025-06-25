@@ -26,18 +26,46 @@ const CustomerListingWrapper = (props: Props) => {
   const [deleteCustomer] = useDeleteCustomerMutation();
   const [status] = useCustomerStatusMutation();
   const { searchQuery, limit, page } = useFilterPagination();
+  console.log('------searchQuery', searchQuery)
+  // const { data, isLoading, totalData, totalPages } = useFetchData(
+  //   useGetCustomersQuery,
+  //   {
+  //     body: {
+  //       limit,
+  //       page,
+  //       searchValue: searchQuery,
+  //       searchIn: JSON.stringify(['customerName','email','phone']),
+  //     },
+  //   },
+  // );
+
+  const query = searchQuery.trim();
+  let filterBy: any[] = [];
+
+  const isEmail = query.includes('@'); // ✅ Check email first
+  const isNumber = /^\d+$/.test(query);
+
+  if (isEmail) {
+    filterBy = [{ fieldName: 'email', value: query }];
+  } else if (isNumber) {
+    filterBy = [{ fieldName: 'phone', value: query }];
+  } else {
+    filterBy = [{ fieldName: 'customerName', value: query }];
+  }
 
   const { data, isLoading, totalData, totalPages } = useFetchData(
     useGetCustomersQuery,
     {
-      body: {
+      params: {
         limit,
         page,
-        searchValue: searchQuery,
-        searchIn: JSON.stringify(['customerName']),
+        isPaginationRequired: true,
+        filterBy: JSON.stringify(filterBy),
       },
-    },
+    }
   );
+
+
 
   const handleStatusChanges = (
     item: any,
@@ -93,11 +121,15 @@ const CustomerListingWrapper = (props: Props) => {
     }
   }
 
+  const handleViewSalesReport = (row: any) => {
+    navigate(`/customer/sales-report/${row._id}`);
+  }
+
   const tableHeaders: TableHeader<Customer>[] = [
     {
       fieldName: 'customerName',
       headerName: 'Name',
-      flex: 'flex-[1_0_0%]',
+      flex: 'flex-[2_0_0%]',
     },
     {
       fieldName: 'phone',
@@ -114,19 +146,24 @@ const CustomerListingWrapper = (props: Props) => {
       headerName: 'Gender',
       flex: 'flex-[1_0_0%]',
     },
+    // {
+    //   fieldName: 'dateOfBirth',
+    //   headerName: 'dateOfBirth',
+    //   flex: 'flex-[1_0_0%]',
+    //   renderCell(item) {
+    //     return (
+    //       <div>
+    //         {item?.dateOfBirth
+    //           ? format(new Date(item?.dateOfBirth), 'dd MMM yyyy')
+    //           : '-'}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       fieldName: 'dateOfBirth',
-      headerName: 'DOB',
+      headerName: 'dateOfBirth',
       flex: 'flex-[1_0_0%]',
-      renderCell(item) {
-        return (
-          <div>
-            {item?.dateOfBirth
-              ? format(new Date(item?.dateOfBirth), 'dd MMM yyyy')
-              : '-'}
-          </div>
-        );
-      },
     },
     {
       fieldName: 'address',
@@ -192,6 +229,21 @@ const CustomerListingWrapper = (props: Props) => {
         const date = row.updatedAt ? new Date(row.updatedAt) : null;
         return date ? format(date, 'dd-MM-yyyy') : '-';
       },
+    },
+    {
+      fieldName: 'viewSalesReport',
+      headerName: 'Sales Report',
+      flex: 'flex-[0_0_150px]',
+      renderCell: (row: any) => (
+        <button
+          onClick={() => handleViewSalesReport(row)}
+          className="text-white px-3 py-1 rounded hover:opacity-90"
+          style={{ backgroundColor: '#006972' }}
+        >
+          View Report
+        </button>
+
+      ),
     },
     {
       fieldName: 'status',

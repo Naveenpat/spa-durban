@@ -13,22 +13,24 @@ import { AllFileTypeEnum } from "../utils/enumUtils"
 
 const storage = multer.diskStorage({
   destination: (req: Request, file, cb) => {
-    req.body = JSON.parse(JSON.stringify(req.body))
+    // 👇 Accept folder from body (can also use req.query.folder if needed)
+    const folder = req.body.folder || "default"
+    const safeFolder = folder.replace(/[^a-zA-Z0-9-_]/g, "") // sanitize
 
-    const folderName = req.baseUrl.replace("/", "")
-    const newFilePath = path.join(__dirname, "../../public/uploads")
+    const newFilePath = path.join(__dirname, `../../public/uploads/${safeFolder}`)
 
     if (!fs.existsSync(newFilePath)) {
       fs.mkdirSync(newFilePath, { recursive: true })
     }
 
-    cb(null, newFilePath) // Make sure 'newFilePath' is a valid string path
+    cb(null, newFilePath)
   },
   filename: (req, file, cb) => {
     const uuid = uuidv4()
     cb(null, `${file.fieldname}-${uuid}${path.extname(file.originalname)}`)
   },
 })
+
 
 //img error start
 let errorFiles = []

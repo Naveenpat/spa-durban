@@ -339,6 +339,7 @@ const ServiceFormLayout = ({
                 }}
                 label="Image"
                 accept=".jpg, .jpeg, .png, .gif"
+                folderName='services'
               />
             </div>
             {/* Products */}

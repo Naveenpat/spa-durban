@@ -6,7 +6,7 @@ import {
   updateOutlet,
   deleteOutlet,
   toggleOutletStatus,
-  getOutletsBYCompany,
+  getOutletsBYCompany
 } from "./controller.outlet";
 import validate from "../../../middleware/validate";
 import {
@@ -15,7 +15,7 @@ import {
   getAllFilter,
   deleteDocument,
   getById,
-  toggleStatusDocument,
+  toggleStatusDocument
 } from "./validation.outlet";
 
 import { authenticate } from "../../../middleware/authentication";

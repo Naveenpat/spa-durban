@@ -4,11 +4,11 @@ export const customerApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getCustomers: builder.query({
       providesTags: ['customer'],
-      query: (body) => {
+      query: (params) => {
         return {
           url: '/customer/pagination',
           method: 'GET',
-          params: body,
+          params,
         };
       },
     }),

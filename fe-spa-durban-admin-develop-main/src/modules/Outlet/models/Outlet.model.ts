@@ -13,6 +13,7 @@ export type Outlet = {
   logo:string;
   companyName:any;
   createdAt:Date;
+  viewSalesReport:string;
 };
 
 export type OutletFormValues = {

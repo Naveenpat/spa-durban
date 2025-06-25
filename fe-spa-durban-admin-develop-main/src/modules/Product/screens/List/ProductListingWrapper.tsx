@@ -91,7 +91,7 @@ const ProductListingWrapper = (props: Props) => {
             <div className="min-w-[30px] min-h-[30px]">
               <img
                 className="w-full h-full rounded "
-                src={item?.productImageUrl || 'no-image.jpg'}
+                src={`${process.env.REACT_APP_BASE_URL}/${item?.productImageUrl}` || 'no-image.jpg'}
                 crossOrigin="anonymous"
                 alt=""
               />
@@ -192,16 +192,16 @@ const ProductListingWrapper = (props: Props) => {
       flex: 'flex-[1_0_0%]',
     },
     {
-    fieldName: 'createdAt',
-    headerName: 'Date',
-    flex: 'flex-[1_1_0%]',
-    extraClasses: () => '',
-    stopPropagation: true,
-    render: (row: any) => {
-      const date = row.createdAt ? new Date(row.createdAt) : null;
-      return date ? format(date, 'dd-MM-yyyy') : '-';
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        return date ? format(date, 'dd-MM-yyyy') : '-';
+      },
     },
-  },
     {
       fieldName: 'status',
       headerName: 'Active',

@@ -375,9 +375,14 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
                   {/* Image */}
                   <img
                     className="w-full h-[80px] object-cover rounded-t-sm"
-                    src={product?.itemUrl || 'no-image.jpg'}
+                    src={
+                      product?.itemUrl
+                        ? `${process.env.REACT_APP_BASE_URL}/${product.itemUrl}`
+                        : 'no-image.jpg'
+                    }
                     alt={product?.itemName}
                   />
+
 
                   {/* Item Name */}
                   <div className="px-2 py-1 text-[12px] text-slate-800 line-clamp-2 font-medium capitalize">

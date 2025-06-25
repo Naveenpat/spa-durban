@@ -248,4 +248,11 @@ router.get(
   // validate(analyticsValidation.getOutletReport),
   analyticsController.getOutletDailyReport
 );
+
+router.get(
+  '/new/sales-report',
+  parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getSalesReport
+);
 export default router;

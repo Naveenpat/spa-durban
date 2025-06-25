@@ -363,37 +363,22 @@ const CartSummarySection = ({
   //   }
   // };
 
-  const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
+const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
+  console.log('-------calling o');
   if (!inputValue?.trim()) return [];
 
   const query = inputValue.trim();
   let filterBy: any[] = [];
 
+  const isEmail = query.includes('@'); // ✅ Check email first
   const isNumber = /^\d+$/.test(query);
-  const isEmail = query.includes('@');
 
-  if (isNumber) {
-    filterBy = [
-      {
-        fieldName: 'phone',
-        value: query
-      },
-    ];
-  } else if (isEmail) {
-    filterBy = [
-      {
-        fieldName: 'email',
-        value: query
-      },
-    ];
+  if (isEmail) {
+    filterBy = [{ fieldName: 'email', value: query }];
+  } else if (isNumber) {
+    filterBy = [{ fieldName: 'phone', value: query }];
   } else {
-    // Generic name/text input
-    filterBy = [
-      {
-            fieldName: 'customerName',
-            value: query
-          }
-    ];
+    filterBy = [{ fieldName: 'customerName', value: query }];
   }
 
   try {
@@ -427,6 +412,7 @@ const CartSummarySection = ({
     return [];
   }
 };
+
 
   const debouncedLoadOptions = useDebounce(
     async (inputValue: any, callback: (arg0: any[]) => void) => {

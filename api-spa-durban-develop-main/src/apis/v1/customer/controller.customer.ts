@@ -88,15 +88,13 @@ const getCustomers = catchAsync(
     if (isPaginationRequiredParam !== undefined) {
       options.isPaginationRequired = isPaginationRequiredParam === "true";
     }
-
-   // 🔍 Search logic
     if (searchValue) {
       let finalSearchIn: string[] = [];
 
+      // Use provided searchIn or fallback to default
       if (searchIn?.length) {
         finalSearchIn = searchIn;
       } else {
-        // Default: search across all keys
         finalSearchIn = searchKeys;
       }
 
@@ -106,10 +104,11 @@ const getCustomers = catchAsync(
       }
 
       const searchQuery = getSearchQuery(finalSearchIn, searchKeys, searchValue);
-      if (searchQuery) {
+      if (searchQuery?.length) {
         options.search = { $or: searchQuery };
       }
     }
+
 
     // 📅 Date filter
     if (dateFilter) {
@@ -156,7 +155,7 @@ const getCustomerDropdown = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     let customerGroup = req.query.customerGroup;
 
-  
+
     const customers = await Customer.find({
       isDeleted: false,
       customerGroup: { $in: customerGroup },

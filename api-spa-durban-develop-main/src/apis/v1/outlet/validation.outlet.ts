@@ -146,3 +146,4 @@ export const toggleStatusDocument = {
     outletId: Joi.string().required(),
   }),
 }
+

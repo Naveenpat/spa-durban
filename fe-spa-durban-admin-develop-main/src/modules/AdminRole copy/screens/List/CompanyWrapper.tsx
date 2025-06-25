@@ -47,7 +47,7 @@ const tableHeaders: TableHeader<Company>[] = [
     flex: 'flex-[0.5_1_0%]',
     render: (row: any) => (
       <img
-        src={row.logo || '/images/default-logo.png'}
+        src={`${process.env.REACT_APP_BASE_URL}/${row.logo} || '/images/default-logo.png'`}
         onError={(e) => (e.currentTarget.src = '/images/default-logo.png')}
         alt="Logo"
         className="h-12 w-12 object-contain rounded-full border"

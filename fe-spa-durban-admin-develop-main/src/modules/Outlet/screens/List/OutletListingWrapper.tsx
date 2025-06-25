@@ -53,6 +53,10 @@ const OutletListingWrapper = (props: Props) => {
       setIsLoading(false);
     });
   };
+
+  const handleViewSalesReport = (row: any) => {
+    navigate(`/outlet/sales-report/${row._id}`);
+  }
   const tableHeaders: TableHeader<Outlet>[] = [
     // {
     //   fieldName: 'companyLogo',
@@ -109,6 +113,21 @@ const OutletListingWrapper = (props: Props) => {
       flex: 'flex-[1_0_0%]',
     },
     {
+      fieldName: 'viewSalesReport',
+      headerName: 'Sales Report',
+      flex: 'flex-[0_0_150px]',
+      renderCell: (row: any) => (
+        <button
+          onClick={() => handleViewSalesReport(row)}
+          className="text-white px-3 py-1 rounded hover:opacity-90"
+          style={{ backgroundColor: '#006972' }}
+        >
+          View Report
+        </button>
+
+      ),
+    },
+    {
       fieldName: 'createdAt',
       headerName: 'Date',
       flex: 'flex-[1_1_0%]',
@@ -125,7 +144,7 @@ const OutletListingWrapper = (props: Props) => {
       flex: 'flex-[0.5_1_0%]',
       render: (row: any) => (
         <img
-          src={row.logo}
+          src={`${process.env.REACT_APP_BASE_URL}/${row.logo}`}
           onError={(e) => (e.currentTarget.src)}
           alt="Logo"
           className="h-12 w-12 object-contain rounded-full border"
