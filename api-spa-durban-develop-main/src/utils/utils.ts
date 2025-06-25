@@ -29,24 +29,44 @@ export const getFormattedTimestamp = (): string => {
  * @param {string | undefined | null} searchValue - Search string to match against.
  * @returns {any} - Array of MongoDB query objects or null if searchValue is empty.
  */
+// export const getSearchQuery = (
+//   searchIn: string[] | undefined,
+//   searchKeys: string[],
+//   searchValue: string | undefined | null
+// ): Record<string, any>[] | null => {
+//   let queryArray: Record<string, any>[] = []
+
+//   if (searchValue && searchValue.trim() !== "") {
+//     const value = { $regex: `.*${searchValue}.*`, $options: "i" }
+//     const searchFields = searchIn && searchIn.length ? searchIn : searchKeys
+
+//     for (const key of searchFields) {
+//       queryArray.push({ [key]: value })
+//     }
+//   }
+
+//   return queryArray.length ? queryArray : null
+// }
+
 export const getSearchQuery = (
   searchIn: string[] | undefined,
   searchKeys: string[],
   searchValue: string | undefined | null
 ): Record<string, any>[] | null => {
-  let queryArray: Record<string, any>[] = []
+  let queryArray: Record<string, any>[] = [];
 
   if (searchValue && searchValue.trim() !== "") {
-    const value = { $regex: `.*${searchValue}.*`, $options: "i" }
-    const searchFields = searchIn && searchIn.length ? searchIn : searchKeys
+    const value = { $regex: `^${searchValue}`, $options: "i" }; // Starts with
+    const searchFields = searchIn && searchIn.length ? searchIn : searchKeys;
 
     for (const key of searchFields) {
-      queryArray.push({ [key]: value })
+      queryArray.push({ [key]: value });
     }
   }
 
-  return queryArray.length ? queryArray : null
-}
+  return queryArray.length ? queryArray : null;
+};
+
 
 interface InvalidParamsResponse {
   message: string

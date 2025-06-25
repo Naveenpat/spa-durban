@@ -16,6 +16,22 @@ import { Readable } from "stream";
  */
 
 const createCustomer = async (customerBody: any): Promise<CustomerDocument> => {
+
+    const existingCustomer = await Customer.findOne({
+    $or: [
+      { customerName: customerBody.customerName },
+      { email: customerBody.email },
+      {phone: customerBody.phone}
+    ],
+  });
+
+  if (existingCustomer) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      "Customer with same name or email or phone already exists."
+    );
+  }
+
   //create a user
   customerBody["userType"] = UserEnum.Customer;
   customerBody["userName"] = customerBody.email;
@@ -32,6 +48,12 @@ const createCustomer = async (customerBody: any): Promise<CustomerDocument> => {
     );
   }
 };
+
+const getAllCustomers = async () => {
+  return await Customer.find({ isDeleted: false }).select("_id customerName");
+};
+
+
 const findCustomerByBookingId = async (bookingCustomerId: string) => {
   if (!bookingCustomerId) return null;
   const customer = await Customer.findOne({ bookingCustomerId });
@@ -401,5 +423,6 @@ export {
   toggleCustomerStatusById,
   findCustomerByBookingId,
   importCSV,
-  exportCSV
+  exportCSV,
+  getAllCustomers
 };

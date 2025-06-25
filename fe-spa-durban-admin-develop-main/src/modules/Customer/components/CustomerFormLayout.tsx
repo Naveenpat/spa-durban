@@ -402,6 +402,19 @@ const CustomerFormLayout = ({
                 onBlur={handleBlur}
               />
             </div>
+             <div className="">
+              {/* <ATMSelect
+                required
+                name="customerGroup"
+                value={values?.customerGroup}
+                onChange={(newValue) => setFieldValue('customerGroup', newValue)}
+                label="Gender"
+                placeholder="Select Customer Group"
+                options={genderOptions}
+                valueAccessKey="value"
+                onBlur={handleBlur}
+              /> */}
+            </div>
           </div>
         </div>
       )}

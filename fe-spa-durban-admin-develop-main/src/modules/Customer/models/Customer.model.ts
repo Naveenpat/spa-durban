@@ -14,6 +14,7 @@ export type Customer = {
   loyaltyPoints: string;
   isActive: boolean;
   updatedAt:Date;
+  // customerGroup:any;
 };
 
 export type CustomerFormValues = {
@@ -27,4 +28,5 @@ export type CustomerFormValues = {
   taxNo: string;
   dateOfBirth: Date | null;
   gender: any;
+  // customerGroup:any;
 };

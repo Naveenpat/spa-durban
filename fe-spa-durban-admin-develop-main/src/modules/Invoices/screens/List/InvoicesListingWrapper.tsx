@@ -10,7 +10,7 @@ import {
   useGetInvoicesQuery,
   useUpdateInvoiceMutation,
 } from '../../service/InvoicesServices';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import { CURRENCY } from 'src/utils/constants';
 import { FilterType } from 'src/components/molecules/MOLFilterBar/MOLFilterBar';
 import { useGetOutletsQuery } from 'src/modules/Outlet/service/OutletServices';
@@ -73,8 +73,11 @@ const InvoicesListingWrapper = (props: Props) => {
         searchIn: JSON.stringify(['invoiceNumber']),
         dateFilter: JSON.stringify({
           dateFilterKey: 'createdAt',
-          startDate: dateFilter?.start_date || format(new Date(), 'yyyy-MM-dd'),
-          endDate: dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd'),
+          // startDate: dateFilter?.start_date || format(new Date(), 'yyyy-MM-dd'),
+          // endDate: dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd'),
+
+          startDate:dateFilter?.start_date || format(subMonths(new Date(), 1), 'yyyy-MM-dd'),
+          endDate:dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd')
         }),
         filterBy: JSON.stringify(appliedFilters),
       },
@@ -88,28 +91,34 @@ const InvoicesListingWrapper = (props: Props) => {
         body: { status: item?.status === "" ? 'refund' : "" },
       }).unwrap();
       // alert('Invoice updated successfully!');
+      if (item?.status == "refund") {
+        showToast('success', 'Unrefund Process successfully!')
 
-      showToast('success','Invoice updated successfully!')
+      }
+      else {
+        showToast('success', 'Refund Process successfully!')
+      }
+
     } catch (error) {
       console.error('Error updating invoice:', error);
       // alert('Failed to update invoice.');
 
-         showToast('error','Failed to update invoice.')
+      showToast('error', 'Failed to update invoice.')
     }
   };
 
   const handleCancelVoidWithConfirmation = (invoiceId: any) => {
-        updateInvoice({ body: {status:"",voidNote:""}, invoiceId }).then((res: any) => {
-          if (res?.error) {
-             showToast('error',res?.error?.data?.message)
-          } else {
-            if (res?.data?.status) {
-               showToast('success',res?.data?.message)
-            } else {
-               showToast('error',res?.data?.message)
-            }
-          }
-        });
+    updateInvoice({ body: { status: "", voidNote: "" }, invoiceId }).then((res: any) => {
+      if (res?.error) {
+        showToast('error', res?.error?.data?.message)
+      } else {
+        if (res?.data?.status) {
+          showToast('success', res?.data?.message)
+        } else {
+          showToast('error', res?.data?.message)
+        }
+      }
+    });
   }
   const tableHeaders: TableHeader<Invoices>[] = [
     {
@@ -129,7 +138,7 @@ const InvoicesListingWrapper = (props: Props) => {
     {
       fieldName: 'customerName',
       headerName: 'Customer',
-      flex: 'flex-[1_1_0%]',
+      flex: 'flex-[3_1_0%]'
     },
 
     {

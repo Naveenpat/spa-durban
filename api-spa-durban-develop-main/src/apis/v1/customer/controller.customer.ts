@@ -16,7 +16,7 @@ import {
   checkInvalidParams,
   getDateFilterQuery,
 } from "../../../utils/utils";
-import { searchKeys, allowedDateFilterKeys } from "./schema.customer";
+import Customer, { searchKeys, allowedDateFilterKeys } from "./schema.customer";
 
 const createCustomer = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -62,7 +62,7 @@ const createCustomerByBooking = catchAsync(
   }
 );
 
- const getCustomers = catchAsync(
+const getCustomers = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const filter = pick(req.query, []); // unused but kept for structure
 
@@ -89,15 +89,15 @@ const createCustomerByBooking = catchAsync(
       options.isPaginationRequired = isPaginationRequiredParam === "true";
     }
 
-    // 🔍 Search logic
+   // 🔍 Search logic
     if (searchValue) {
       let finalSearchIn: string[] = [];
 
       if (searchIn?.length) {
         finalSearchIn = searchIn;
       } else {
-        const isNumber = /^\d+$/.test(searchValue.trim());
-        finalSearchIn = [isNumber ? "phone" : "customerName"];
+        // Default: search across all keys
+        finalSearchIn = searchKeys;
       }
 
       const searchQueryCheck = checkInvalidParams(finalSearchIn, searchKeys);
@@ -149,6 +149,25 @@ const createCustomerByBooking = catchAsync(
 
     const result = await customerService.queryCustomers(filter, options);
     return res.status(httpStatus.OK).send(result);
+  }
+);
+
+const getCustomerDropdown = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    let customerGroup = req.query.customerGroup;
+
+  
+    const customers = await Customer.find({
+      isDeleted: false,
+      customerGroup: { $in: customerGroup },
+    }).select("_id customerName");
+
+    const dropdownData = customers.map((cust: any) => ({
+      value: cust._id,
+      label: cust.customerName,
+    }));
+
+    return res.status(httpStatus.OK).send({ data: dropdownData });
   }
 );
 
@@ -252,5 +271,6 @@ export {
   toggleCustomerStatus,
   createCustomerByBooking,
   importCustomerCsvSheet,
-  exportCustomerCsvSheet 
+  exportCustomerCsvSheet,
+  getCustomerDropdown
 };

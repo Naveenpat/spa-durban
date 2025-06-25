@@ -31,6 +31,12 @@ const createCustomerGroup = catchAsync(
     // if (notFoundCustomer.length > 0) {
     //   throw new ApiError(httpStatus.NOT_FOUND, "Invalid customer's")
     // }
+
+    const existingGroup = await customerGroupService.findGroupByName(req?.body?.customerGroupName);
+    if (existingGroup) {
+      throw new ApiError(httpStatus.CONFLICT, "Customer group already exists.");
+    }
+
     const customerGroup = await customerGroupService.createCustomerGroup(
       req.body
     )

@@ -58,7 +58,7 @@ const formattedDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
       const res = await openRegister(formattedValues).unwrap(); // Proper async handling
 
       if (res?.status) {
-        showToast('success', res.message);
+        showToast('success', 'Open Register Successfuly');
         resetForm();
         onClose();
       } else {

@@ -22,6 +22,7 @@ const AddCustomerFormWrapper = () => {
     taxNo: '',
     dateOfBirth: null,
     gender: '',
+    // customerGroup: ''
   };
 
   const validationSchema = object().shape({
@@ -43,6 +44,7 @@ const AddCustomerFormWrapper = () => {
     let formattedValues = {
       ...values,
       gender: values?.gender?.value,
+      // customerGroup:values?.customerGroup?.value,
       country: values?.country?.label,
     };
 

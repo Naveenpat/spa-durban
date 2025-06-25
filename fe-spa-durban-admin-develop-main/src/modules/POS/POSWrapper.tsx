@@ -263,9 +263,9 @@ const POSWrapper = (props: Props) => {
         navigate(`/invoice/receipt/${createdInvoiceId}`);
         //--------
         // Then after rendering
-        // setTimeout(() => {
-        //   handleSendEmail(createdInvoiceId);
-        // }, 1000); // Wait to ensure DOM is ready
+        setTimeout(() => {
+          handleSendEmail(createdInvoiceId);
+        }, 1000); // Wait to ensure DOM is ready
         //--------
       } else {
         showToast('error', res?.data?.message);

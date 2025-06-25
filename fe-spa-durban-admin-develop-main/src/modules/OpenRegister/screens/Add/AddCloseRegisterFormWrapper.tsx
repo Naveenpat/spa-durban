@@ -23,23 +23,23 @@ type Props = {
 
 const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
   const [closeRegister] = useAddCloseRegisterMutation();
-const [sendPdfBYEmail] = useSendPdfBYEmailMutation();
+  const [sendPdfBYEmail] = useSendPdfBYEmailMutation();
   const { userData, outlet, outlets } = useSelector(
     (state: RootState) => state.auth,
   );
-  const { data, isLoading } = useFetchData(useGetRegisterByCurrentDateQuery, {
+  const { data, isLoading,refetch } = useFetchData(useGetRegisterByCurrentDateQuery, {
     body: outlet && (outlet as any)._id,
     dataType: 'VIEW',
   });
 
-  // console.log('data========', data);
+  console.log('data========', data);
 
   const initialValues: PaymentMode = {
     _id: '',
     totalAmount: 0,
     paymentModeName: '',
     manual: {},
-    bankDeposit:0
+    bankDeposit: 0
   };
 
   // const validationSchema = object().shape({
@@ -53,74 +53,74 @@ const [sendPdfBYEmail] = useSendPdfBYEmailMutation();
 
 
 
-// const handleSendEmail = async (closeRegisterData: any[], carryForward: number, bankDeposit: number) => {
-//   console.log('---------callll')
-//   const receiptElement = document.querySelector('.receipt-print');
-//   if (!receiptElement) return;
+  // const handleSendEmail = async (closeRegisterData: any[], carryForward: number, bankDeposit: number) => {
+  //   console.log('---------callll')
+  //   const receiptElement = document.querySelector('.receipt-print');
+  //   if (!receiptElement) return;
 
-//   try {
-//     const canvas = await html2canvas(receiptElement as HTMLElement, { scale: 2 });
-//     const imgData = canvas.toDataURL('image/png', 0.6);
+  //   try {
+  //     const canvas = await html2canvas(receiptElement as HTMLElement, { scale: 2 });
+  //     const imgData = canvas.toDataURL('image/png', 0.6);
 
-//     const pdf = new jsPDF('p', 'mm', 'a4');
-//     const pageWidth = 210;
-//     const pageHeight = 297;
-//     const padding = 10;
-//     const imgWidth = pageWidth - 2 * padding;
-//     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //     const pdf = new jsPDF('p', 'mm', 'a4');
+  //     const pageWidth = 210;
+  //     const pageHeight = 297;
+  //     const padding = 10;
+  //     const imgWidth = pageWidth - 2 * padding;
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-//     let heightLeft = imgHeight;
-//     let position = 0;
+  //     let heightLeft = imgHeight;
+  //     let position = 0;
 
-//     // First page with invoice
-//     pdf.addImage(imgData, 'PNG', padding, position, imgWidth, imgHeight);
-//     heightLeft -= pageHeight - 2 * padding;
+  //     // First page with invoice
+  //     pdf.addImage(imgData, 'PNG', padding, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight - 2 * padding;
 
-//     while (heightLeft > 0) {
-//       position = heightLeft - imgHeight - 10 - padding;
-//       pdf.addPage();
-//       pdf.addImage(imgData, 'PNG', padding, position, imgWidth, imgHeight);
-//       heightLeft -= pageHeight - 10 - padding;
-//     }
+  //     while (heightLeft > 0) {
+  //       position = heightLeft - imgHeight - 10 - padding;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'PNG', padding, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight - 10 - padding;
+  //     }
 
-//     // Add Close Register Table
-//     pdf.addPage();
-//     autoTable(pdf, {
-//       head: [['Payment Type', 'Opening Register', 'Close Register (Automatic)', 'Manual Calculation']],
-//       body: closeRegisterData,
-//       startY: 20,
-//     });
+  //     // Add Close Register Table
+  //     pdf.addPage();
+  //     autoTable(pdf, {
+  //       head: [['Payment Type', 'Opening Register', 'Close Register (Automatic)', 'Manual Calculation']],
+  //       body: closeRegisterData,
+  //       startY: 20,
+  //     });
 
-//     const afterTableY = (pdf as any).lastAutoTable.finalY;
+  //     const afterTableY = (pdf as any).lastAutoTable.finalY;
 
-//     pdf.setFontSize(12);
-//     pdf.text(`Carry Forward Balance: ₹${carryForward}`, 14, afterTableY + 10);
-//     pdf.text(`Bank Deposit Balance: ₹${bankDeposit}`, 14, afterTableY + 20);
+  //     pdf.setFontSize(12);
+  //     pdf.text(`Carry Forward Balance: R${carryForward}`, 14, afterTableY + 10);
+  //     pdf.text(`Bank Deposit Balance: R${bankDeposit}`, 14, afterTableY + 20);
 
-//     // Generate PDF blob
-//     const pdfBlob = pdf.output('blob');
-//     const formData = new FormData();
-//     formData.append('file', pdfBlob, 'invoice.pdf');
-//     formData.append('emailBody', 'Dear Customer,\n\nThank you for your purchase. Please find the attached invoice and register summary.\n\nBest regards,\nYour Company Name');
+  //     // Generate PDF blob
+  //     const pdfBlob = pdf.output('blob');
+  //     const formData = new FormData();
+  //     formData.append('file', pdfBlob, 'invoice.pdf');
+  //     formData.append('emailBody', 'Dear Customer,\n\nThank you for your purchase. Please find the attached invoice and register summary.\n\nBest regards,\nYour Company Name');
 
-//     // Send to backend
-//     const res = await sendPdfBYEmail({
-//       outletId:"67c5c54b88910b9e3e672c4e",
-//       body: formData,
-//     });
+  //     // Send to backend
+  //     const res = await sendPdfBYEmail({
+  //       outletId:"67c5c54b88910b9e3e672c4e",
+  //       body: formData,
+  //     });
 
-//     console.log('------res',res)
+  //     console.log('------res',res)
 
-//     if ('error' in res) {
-//       showToast('error', 'Failed to send email');
-//     } else {
-//       showToast('success', res.data?.message || 'Invoice emailed successfully');
-//     }
-//   } catch (err) {
-//     console.error(err);
-//     showToast('error', 'Something went wrong while generating or sending the PDF');
-//   }
-// };
+  //     if ('error' in res) {
+  //       showToast('error', 'Failed to send email');
+  //     } else {
+  //       showToast('success', res.data?.message || 'Invoice emailed successfully');
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     showToast('error', 'Something went wrong while generating or sending the PDF');
+  //   }
+  // };
 
 
   const handleSubmit = async (
@@ -137,22 +137,30 @@ const [sendPdfBYEmail] = useSendPdfBYEmailMutation();
         }),
       );
 
+      if (updatedPaymentModes.some((mode: any) => mode.manual === "")) {
+        showToast('error', 'Please fill manual entry');
+        setSubmitting(false);
+        return;
+      }
+
+
       // console.log(updatedPaymentModes);
       const formattedValues = {
         closeRegister: updatedPaymentModes,
         outletId: outlet && (outlet as any)._id,
-        bankDeposit:Number(values.bankDeposit),
-        openingBalance:(data as any)?.data?.existingRegister?.openingBalance
+        bankDeposit: Number(values.bankDeposit),
+        openingBalance: (data as any)?.data?.existingRegister?.openingBalance
       };
       // console.log('formattedValues=======', formattedValues);
 
       const res = await closeRegister(formattedValues).unwrap(); // Proper async handling
 
       if (res?.status) {
-        showToast('success', res.message);
+        showToast('success', 'Register Closed Successfully');
         // handleSendEmail(updatedPaymentModes,100,values.bankDeposit)
         resetForm();
         onClose();
+        refetch()
       } else {
         showToast('error', res?.message || 'Something went wrong');
       }
@@ -167,7 +175,7 @@ const [sendPdfBYEmail] = useSendPdfBYEmailMutation();
     <Formik<PaymentMode>
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      // validationSchema={validationSchema}
+    // validationSchema={validationSchema}
     >
       {(formikProps) => (
         <Form>

@@ -10,11 +10,11 @@ import Authorization from 'src/components/Authorization/Authorization';
 import MOLFormDialog from 'src/components/molecules/MOLFormDialog/MOLFormDialog';
 
 type Props = {
-  rowData:{
-    sales:any;
-    outletName:string;
-    totalSales:any;
-    totalRefunds:any;
+  rowData: {
+    sales: any;
+    outletName: string;
+    totalSales: any;
+    totalRefunds: any;
   };
   tableHeaders: TableHeader<SalesComparisonList>[];
   filterPaginationData: {
@@ -43,11 +43,11 @@ const SalseReportLayoutWrapper = ({
       size={'medium'}
       isSubmitButtonHide={false}
     >
-      <div style={{ textAlign: 'center', fontWeight: 'bold' }}>
-        Branch Name: {rowData?.outletName} <br />
-        Date: {new Date().toLocaleDateString()} <br />
-        Total Amount: R {rowData?.totalSales || 0} {rowData?.totalRefunds  ? `Total Refund: R ${rowData?.totalRefunds}` : ''}
+      <div style={{ textAlign: 'start' }}>
+        <strong>Branch:</strong> {rowData?.outletName} |  <strong>Date:</strong> : {new Date().toLocaleDateString()} | <strong>Total: R </strong> {rowData?.totalSales || 0}
+        {rowData?.totalRefunds ? <> | <strong>Refund:</strong> R {rowData?.totalRefunds}</> : ''}
       </div>
+
 
       <div className="flex flex-col h-full gap-2 p-4">
         <Authorization permission="SALES_COMPARISON_LIST">
@@ -72,7 +72,7 @@ const SalseReportLayoutWrapper = ({
               rows={da}
             /> */}
           </div>
-          
+
         </Authorization>
       </div>
     </MOLFormDialog>

@@ -907,6 +907,21 @@
         "NAV_POS"
       ],
       "fields": []
+    },
+    {
+      "moduleName": "Customer-Group",
+      "moduleId": "CUSTOMER_GROUP",
+      "features": [
+        {
+          "featureId": "CUSTOMER_GROUP",
+          "featureName": "See Customer Group",
+          "relatedFieldColumn": "CUSTOMER_GROUP"
+        }
+      ],
+      "dependencies": [
+        "CUSTOMER_GROUP"
+      ],
+      "fields": []
     }
   ]
 }

@@ -9,6 +9,7 @@ import {
   createCustomerByBooking,
   exportCustomerCsvSheet,
   importCustomerCsvSheet,
+  getCustomerDropdown,
 } from "./controller.customer";
 import validate from "../../../middleware/validate";
 import {
@@ -343,5 +344,11 @@ router.get(
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
   exportCustomerCsvSheet
 );
+
+router.get(
+  "/new/dropdown",
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  getCustomerDropdown
+)
 
 export default router;

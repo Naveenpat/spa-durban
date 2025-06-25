@@ -20,61 +20,96 @@ import { Mongoose } from "mongoose";
 import puppeteer from 'puppeteer';
 import { sendEmail } from '../../../helper/sendEmail';
 
+// export const generatePDFBuffer = async (html: string): Promise<Buffer> => {
+//   const browser = await puppeteer.launch({ headless: true });
+//   const page = await browser.newPage();
+//   await page.setContent(html, { waitUntil: 'networkidle0' });
+//   const pdf = await page.pdf({ format: 'A4', printBackground: true });
+//   await browser.close();
+//   return Buffer.from(pdf); // ✅ This is now compatible with nodemailer
+// };
+
 export const generatePDFBuffer = async (html: string): Promise<Buffer> => {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'], // ✅ Fix for Ubuntu sandbox issue
+  });
+
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
+
   const pdf = await page.pdf({ format: 'A4', printBackground: true });
+
   await browser.close();
-  return Buffer.from(pdf); // ✅ This is now compatible with nodemailer
+  return Buffer.from(pdf); // ✅ Compatible with nodemailer
 };
 
-const generateCloseRegisterHTML = (closeRegister: any,bankDeposit:any,carryForwardBalance:any, outletData: any,openingBalance:any) => {
+const generateCloseRegisterHTML = (
+  closeRegister: any,
+  bankDeposit: any,
+  carryForwardBalance: any,
+  outletData: any,
+  openingBalance: any
+) => {
   const rows = closeRegister
     .map(
       (item: any) => `
-      <tr>
-        <td>${item.paymentModeName}</td>
-        <td>${item.totalAmount}</td>
-        <td>${item.manual}</td>
-      </tr>
-    `
+        <tr>
+          <td>${item.paymentModeName}</td>
+          <td>R ${item.totalAmount}</td>
+          <td>R ${item.manual}</td>
+        </tr>
+      `
     )
     .join('');
 
   return `
     <html>
-    <head>
-      <style>
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        td, th {
-          border: 1px solid #333;
-          padding: 8px;
-          text-align: left;
-        }
-      </style>
-    </head>
-    <body>
-      <h2>Close Register Summary</h2>
-      <h2>Outlet Name - ${outletData?.name}</h2>
-      <table>
-        <thead>
-          <tr><th>Payment Mode</th><th>Total Amount</th></tr><th>Manual Amount</th></tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-       <p><strong>Opening Balance:</strong> ₹${openingBalance}</p>
-      <p><strong>Bank Deposit:</strong> ₹${bankDeposit}</p>
-      <p><strong>Carry Forward Balance:</strong> ₹${carryForwardBalance}</p>
-    </body>
+      <head>
+        <style>
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #f2f2f2;
+          }
+          h2, p {
+            font-family: Arial, sans-serif;
+          }
+        </style>
+      </head>
+      <body>
+        <h2>Close Register Summary</h2>
+        <h3>Outlet Name: ${outletData?.name}</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Payment Mode</th>
+              <th>Total Amount</th>
+              <th>Manual Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+
+        <p><strong>Opening Balance:</strong> R ${openingBalance}</p>
+        <p><strong>Bank Deposit:</strong> R ${bankDeposit}</p>
+        <p><strong>Carry Forward Balance:</strong> R ${carryForwardBalance}</p>
+      </body>
     </html>
   `;
 };
+
 
 
 const createRegister = catchAsync(
@@ -200,18 +235,19 @@ const createCloseRegister = catchAsync(
     const htmlContent = generateCloseRegisterHTML(closeRegister,bankDeposit,carryForwardBalance, outletData,req.body.openingBalance);
     const pdfBuffer = await generatePDFBuffer(htmlContent);
 
-    const emailData = {
-      emailSubject: 'Close Register Report',
-      emailBody: '<p>Attached is your daily close register report.</p>',
-      sendTo: outletData?.email, // or dynamic
-      sendFrom: 'noreply@yourdomain.com',
-      attachments: [
-        {
-          filename: 'CloseRegister.pdf',
-          content: pdfBuffer,
-        },
-      ],
-    }
+  const emailData = {
+  emailSubject: `Close Register Report - ${outletData?.name} - ${new Date().toLocaleDateString('en-ZA')}`,
+  emailBody: '<p>Attached is your daily close register report.</p>',
+  sendTo: outletData?.email,
+  sendFrom: 'noreply@yourdomain.com',
+  attachments: [
+    {
+      filename: 'CloseRegister.pdf',
+      content: pdfBuffer,
+    },
+  ],
+};
+
     await sendEmail(emailData,outletData);
 
 
@@ -386,6 +422,7 @@ const getRegisterCurentDate = catchAsync(
       {
         $match: {
           outletId: new mongoose.Types.ObjectId(outletId),
+          status:"",
           createdAtDate: {
             $gte: startOfDay,
             $lt: endOfDay,

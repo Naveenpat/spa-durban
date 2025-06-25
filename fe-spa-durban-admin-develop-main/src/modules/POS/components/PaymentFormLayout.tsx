@@ -264,6 +264,7 @@ const PaymentFormLayout = ({
                     />
                   )}
                 </div>
+
                 <div className="">
                   {isPreviewed ? (
                     previewData?.invoiceData?.promotionCoupanCodeDiscount ? (
@@ -294,6 +295,7 @@ const PaymentFormLayout = ({
                     />
                   )}
                 </div>
+                
                 {/* Loyalty Point */}
                 <div className="">
                   {isPreviewed ? (

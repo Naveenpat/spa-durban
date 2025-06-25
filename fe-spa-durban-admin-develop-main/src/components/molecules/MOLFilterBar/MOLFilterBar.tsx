@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 
 type Option = { value: string; [field: string]: string };
 type DropdownFilter = {
-  filterType: 'multi-select' | 'single-select';
+  filterType: 'multi-select' | 'single-select' | 'search-input';
   fieldName?: string;
   label: string;
   options: Option[];

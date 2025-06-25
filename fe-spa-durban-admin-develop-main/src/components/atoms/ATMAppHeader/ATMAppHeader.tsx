@@ -40,6 +40,7 @@ import { useUpdateInvoiceMutation } from 'src/modules/Invoices/service/InvoicesS
 import { showToast } from 'src/utils/showToaster';
 import { IconArrowRight } from '@tabler/icons-react';
 import { isAuthorized } from 'src/utils/authorization';
+import { Tooltip } from '@mui/material';
 type Props = {
   hideCollapseMenuButton?: boolean;
   showOutletDropdown?: boolean;
@@ -218,7 +219,13 @@ const ATMAppHeader = ({
       }).unwrap();
       // alert('Invoice updated successfully!');
       refetch();
-      showToast('success', 'Invoice updated successfully!')
+      if (item?.status == "refund") {
+        showToast('success', 'Unrefund Process successfully!')
+
+      }
+      else {
+        showToast('success', 'Refund Process successfully!')
+      }
     } catch (error) {
       console.error('Error updating invoice:', error);
       // alert('Failed to update invoice.');
@@ -256,19 +263,19 @@ const ATMAppHeader = ({
     {
       fieldName: 'customerName',
       headerName: 'Customer',
-      flex: 'flex-[1_1_0%]',
+      flex: 'flex-[2_1_0%]',
       renderCell: (row: any) => toTitleCase(row.customerName),
     },
     {
       fieldName: 'paymentMode',
       headerName: 'PaymentMode',
-      flex: 'flex-[1_1_0%]',
+      flex: 'flex-[2_1_0%]',
       renderCell: (row: any) => toTitleCase(row.paymentMode),
     },
     {
       fieldName: 'totalAmount',
       headerName: 'Total',
-      flex: 'flex-[1_1_0%]',
+      flex: 'flex-[_1_0%]',
       renderCell: (item) => (
         <div>
           {' '}
@@ -306,9 +313,10 @@ const ATMAppHeader = ({
       flex: 'flex-[1_1_0%]',
       renderCell: (item: SalesReport) => (
         <div className="flex items-center gap-2">
+          <Tooltip title="View" arrow>
           <button
             type="button"
-            title="View"
+         
             onClick={() =>
               navigate(`/invoice/receipt/${item?._id}`, {
                 state: { from: location },
@@ -318,16 +326,17 @@ const ATMAppHeader = ({
           >
             <IconPrinter size={18} />
           </button>
+          </Tooltip>
 
-          <button
-            type="button"
-            title={item?.status === 'refund' ? 'Cancel Refund' : 'Refund'}
-            onClick={() => handleUpdate(item)}
-            className="text-green-600 hover:text-green-800"
-
-          >
-            <IconCreditCardRefund size={18} />
-          </button>
+         <Tooltip title={item?.status === 'refund' ? 'Cancel Refund' : 'Refund'} arrow>
+  <button
+    type="button"
+    onClick={() => handleUpdate(item)}
+    className="text-green-600 hover:text-green-800"
+  >
+    <IconCreditCardRefund size={18} />
+  </button>
+</Tooltip>
 
           {/* <button
             type="button"

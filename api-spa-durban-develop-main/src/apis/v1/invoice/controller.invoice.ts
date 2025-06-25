@@ -365,7 +365,7 @@ const createInvoice = catchAsync(
         emailBody: `
     <p>Dear ${customerData?.customerName || 'Customer'},</p>
     <p>Great news! You’ve earned <strong>${cashbackMultiplier}X</strong> cashback on your recent purchase 🎉</p>
-    <p>🪙 <strong>Cashback Earned:</strong> ₹${invoiceData.cashBackEarned * cashbackMultiplier}</p>
+    <p>🪙 <strong>Cashback Earned:</strong> R${invoiceData.cashBackEarned * cashbackMultiplier}</p>
     <p>This bonus was applied automatically based on our special cashback rules.</p>
     <br/>
     <p>Keep an eye out for more offers and save big on every visit!</p>

@@ -63,7 +63,7 @@ const CloseRegisterFormLayout = ({
         <div className="flex justify-center items-center max-w-[500px] h-[140px]">
           <ATMCircularProgress />
         </div>
-      ) : opningData?.isActive === true ? (
+      ) : cloedRegistered?.isActive === false ? (
         <div className="text-center text-red-600 font-semibold text-lg py-6">
           This register is already closed.
         </div>
@@ -159,13 +159,13 @@ const CloseRegisterFormLayout = ({
                         {values.bankDeposit !== "" &&
                           parseFloat(values.bankDeposit) > cashTotal && (
                             <div className="text-red-600 text-sm mt-2">
-                              You cannot deposit more than ₹{cashTotal.toFixed(2)}
+                              You cannot deposit more than R {cashTotal.toFixed(2)}
                             </div>
                           )}
 
                         {values.bankDeposit > 0 && (
                           <div className="mt-3 text-sm text-blue-700 font-semibold">
-                            Carry Forward to Next Day Opening Balance: ₹{' '}
+                            Carry Forward to Next Day Opening Balance: R{' '}
                             {(() => {
                               const deposit = parseFloat(values.bankDeposit) || 0;
                               const carryForward = Math.max(cashTotal - deposit, 0);
