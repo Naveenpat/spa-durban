@@ -21,6 +21,7 @@ import EmployeeListing from './EmployeeListing';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -127,7 +128,8 @@ const EmployeeListingWrapper = (props: Props) => {
       stopPropagation: true,
       render: (row: any) => {
         const date = row.createdAt ? new Date(row.createdAt) : null;
-        return date ? format(date, 'dd-MM-yyyy') : '-';
+        // return date ? format(date, 'dd-MM-yyyy') : '-';
+        return date ? formatZonedDate(date) : '-';
       },
     },
     {

@@ -59,7 +59,7 @@ const CouponSchema = new mongoose.Schema<CouponDocument>(
     referralCode: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
     discountAmount: {
       type: Number,

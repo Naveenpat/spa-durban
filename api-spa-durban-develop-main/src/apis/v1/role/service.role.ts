@@ -10,6 +10,14 @@ import { RangeFilter } from "../../../utils/interface";
  * @returns {Promise<RoleDocument>  }
  */
 const createRole = async (roleBody: any): Promise<RoleDocument> => {
+  const existingRole = await Role.findOne({
+    roleName: roleBody.roleName,
+    isDeleted: false, // Optional: if you're soft-deleting roles
+  });
+
+  if (existingRole) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Role name already exists!');
+  }
   return Role.create(roleBody);
 };
 
@@ -73,6 +81,18 @@ const updateRoleById = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Role not found");
   }
 
+    if (updateBody.roleName) {
+    const existingRole = await Role.findOne({
+      roleName: updateBody.roleName,
+      _id: { $ne: roleId }, // Exclude current role from the check
+      isDeleted: false,     // Optional: if using soft delete
+    });
+
+    if (existingRole) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Role name already exists!");
+    }
+  }
+  
   Object.assign(role, updateBody);
   await role.save();
   return role;

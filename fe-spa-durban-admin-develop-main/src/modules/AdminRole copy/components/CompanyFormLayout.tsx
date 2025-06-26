@@ -4,6 +4,7 @@ import ATMTextField from '../../../components/atoms/FormElements/ATMTextField/AT
 import ATMFieldLabel from '../../../components/atoms/ATMFieldLabel/ATMFieldLabel';
 import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCircularProgress';
 import { CompanyFormValues } from '../models/Company.model';
+import ATMFileUploader from 'src/components/atoms/FormElements/ATMFileUploader/ATMFileUploader';
 
 type Props = {
   formikProps: FormikProps<CompanyFormValues>;
@@ -35,40 +36,6 @@ const CompanyFormLayout = ({
   }) => {
 
   };
-
-  const cropImageToSquare = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          const sideLength = Math.min(img.width, img.height);
-          const startX = (img.width - sideLength) / 2;
-          const startY = (img.height - sideLength) / 2;
-
-          const canvas = document.createElement('canvas');
-          canvas.width = sideLength;
-          canvas.height = sideLength;
-
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            reject(new Error('Canvas context is null'));
-            return;
-          }
-
-          ctx.drawImage(img, startX, startY, sideLength, sideLength, 0, 0, sideLength, sideLength);
-          resolve(canvas.toDataURL('image/jpeg')); // You can use 'image/png' if preferred
-        };
-        img.onerror = reject;
-        img.src = reader.result as string;
-      };
-
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
 
   return (
     <>
@@ -157,37 +124,17 @@ const CompanyFormLayout = ({
               />
             </div>
 
-            <div className="relative h-36 w-36 border-2 border-dashed border-gray-400 rounded-md flex items-center justify-center overflow-hidden">
-              <input
-                id="logo-upload"
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setFieldValue('logo', reader.result);
-                    };
-                    reader.readAsDataURL(file);
-                  }
+           <div className="">
+              <ATMFileUploader
+                name="logo"
+                value={values?.logo || ''}
+                onChange={(file: string) => {
+                  setFieldValue('logo', file);
                 }}
-                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                label="Company Logo"
+                accept=".jpg, .jpeg, .png, .gif"
+                folderName='company'
               />
-
-              {!values.logo ? (
-                <div className="relative flex flex-col items-center justify-center">
-                  <div className="text-xs text-gray-500 mb-1">324 Px * 313 Px</div>
-                  <span className="text-4xl text-gray-400 z-0">+</span>
-                </div>
-
-              ) : (
-                <img
-                  src={values.logo}
-                  alt="Logo Preview"
-                  className="h-full w-full object-contain z-0"
-                />
-              )}
             </div>
           </div>
         </div>

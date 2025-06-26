@@ -12,6 +12,7 @@ import { CustomerGroup } from '../../models/CustomerGroup.model';
 import CustomerGroupListing from './CustomerGroupListing';
 import { setIsOpenAddDialog } from '../../slice/CustomerGroupSlice';
 import { useCustomerGroupStatusMutation, useDeleteCustomerGroupMutation, useGetCustomerGroupsQuery } from '../../service/CustomerGroupServices';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 type Props = {};
 
 const CustomerGroupListingWrapper = (props: Props) => {
@@ -72,7 +73,8 @@ const CustomerGroupListingWrapper = (props: Props) => {
       // sortKey: 'serialNumber',
       flex: 'flex-[1_0_0%]',
       renderCell(item) {
-        return <div>{item?.createdAt ? format(new Date(item.createdAt), 'dd/MM/yyyy') : '--'}</div>;
+        // return <div>{item?.createdAt ? format(new Date(item.createdAt), 'dd/MM/yyyy') : '--'}</div>;
+        return <div>{item?.createdAt ? formatZonedDate(item?.createdAt) : '--'}</div>;
       },
     },
     {

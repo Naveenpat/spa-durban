@@ -21,8 +21,8 @@ type Props = {
     totalPages: number;
   };
   isLoading: boolean;
-  exportEmployeeExcelSheet:any;
-  importEmployeeExcelSheet:any;
+  exportEmployeeExcelSheet: any;
+  importEmployeeExcelSheet: any;
 };
 
 const CustomerListing = ({
@@ -48,16 +48,25 @@ const CustomerListing = ({
           }}
           hideButton={!isAuthorized('CUSTOMER_ADD')}
         />
-         <GlobalImportExport
-          onImport={(file:any) => importEmployeeExcelSheet(file)}
-          onExport={() => exportEmployeeExcelSheet()}
-          showImport={true}
-          showExport={true}
-        />
+
         <Authorization permission="CUSTOMER_LIST">
           <div className="flex flex-col overflow-auto border rounded border-slate-300">
-            {/* Table Toolbar */}
-            <MOLFilterBar />
+            <div className="flex flex-wrap items-center justify-between gap-4 mr-2">
+              {/* Left Side: Filter Bar + Start/End Date */}
+              <div className="flex flex-wrap items-end gap-4">
+                <MOLFilterBar />
+
+              </div>
+              {/* Right Side: Import/Export Buttons */}
+              <div>
+                <GlobalImportExport
+                  onImport={(file: any) => importEmployeeExcelSheet(file)}
+                  onExport={() => exportEmployeeExcelSheet()}
+                  showImport={true}
+                  showExport={true}
+                />
+              </div>
+            </div>
 
             <div className="flex-1 overflow-auto">
               <MOLTable<Customer>

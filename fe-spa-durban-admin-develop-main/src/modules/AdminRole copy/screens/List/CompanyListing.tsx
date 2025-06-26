@@ -51,7 +51,7 @@ const CompanyListing = ({
         <Authorization permission="USER_ROLE_LIST">
           <div className="flex flex-col overflow-auto border rounded border-slate-300">
             {/* Table Toolbar */}
-            <MOLFilterBar
+            <MOLFilterBar searchPlaceHolder='Search Company Name...'
             />
 
             <div className="flex-1 overflow-auto">

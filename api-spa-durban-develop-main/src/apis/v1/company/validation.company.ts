@@ -16,7 +16,7 @@ export const create: { body: ObjectSchema } = {
     companyName: Joi.string().required(),
     email: Joi.string().lowercase().email().required(),
     phone: Joi.string().required(),
-    logo: Joi.string().uri().optional(),
+    logo: Joi.string().optional(),
     websiteUrl: Joi.string().uri().optional(),
   }),
 };
@@ -32,7 +32,7 @@ export const update: { params: ObjectSchema; body: ObjectSchema } = {
     companyName: Joi.string().optional(),
     email: Joi.string().lowercase().email().optional(),
     phone: Joi.string().optional(),
-    logo: Joi.string().uri().optional(),
+    logo: Joi.string().optional(),
     websiteUrl: Joi.string().uri().optional(),
   }),
 };

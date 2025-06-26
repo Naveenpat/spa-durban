@@ -22,6 +22,7 @@ import { showToast } from 'src/utils/showToaster';
 import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
 import { CURRENCY } from 'src/utils/constants';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -115,7 +116,8 @@ const GiftCardListingWrapper = (props: Props) => {
       headerName: 'Date',
       flex: 'flex-[1_0_0%]',
       renderCell(item) {
-        return <div>{format(new Date(item?.createdAt), 'dd MMM yyyy')}</div>;
+        // return <div>{format(new Date(item?.createdAt), 'dd MMM yyyy')}</div>;
+        return <div>{formatZonedDate(item?.createdAt)}</div>;
       },
     },
     {

@@ -15,7 +15,7 @@ export type Customer = {
   isActive: boolean;
   updatedAt:Date;
   viewSalesReport:any;
-  // customerGroup:any;
+  customerGroup:string;
 };
 
 export type CustomerFormValues = {
@@ -29,5 +29,5 @@ export type CustomerFormValues = {
   taxNo: string;
   dateOfBirth: Date | null;
   gender: any;
-  // customerGroup:any;
+  customerGroup?:any;
 };

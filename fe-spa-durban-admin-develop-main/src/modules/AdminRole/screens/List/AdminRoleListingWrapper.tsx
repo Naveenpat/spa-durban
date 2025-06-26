@@ -10,6 +10,7 @@ import { useFilterPagination } from '../../../../hooks/useFilterPagination';
 import { useFetchData } from '../../../../hooks/useFetchData';
 import { showToast } from 'src/utils/showToaster';
 import { format } from 'date-fns';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {
   adminRoleId?: string;
@@ -31,7 +32,8 @@ const tableHeaders: TableHeader<AdminRole>[] = [
     stopPropagation: true,
     render: (row: any) => {
       const date = row.createdAt ? new Date(row.createdAt) : null;
-      return date ? format(date, 'dd-MM-yyyy') : '-';
+      // return date ? format(date, 'dd-MM-yyyy') : '-';
+      return date ? formatZonedDate(date) : '-';
     },
   }
 ];

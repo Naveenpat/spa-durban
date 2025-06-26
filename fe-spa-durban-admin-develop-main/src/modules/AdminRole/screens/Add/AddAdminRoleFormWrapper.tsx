@@ -78,7 +78,7 @@ const AddAdminRoleFormWrapper = (props: Props) => {
         <Form className="h-full">
           <AdminRoleFormLayout
             formikProps={formikProps}
-            onCancel={() => navigate(`/company`)}
+            onCancel={() => navigate(`/admin-role`)}
           />
         </Form>
       )}

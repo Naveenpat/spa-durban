@@ -11,6 +11,7 @@ import {
   useGetDraftsQuery,
 } from '../service/POSServices';
 import { showToast } from 'src/utils/showToaster';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 const tableHeaders: TableHeader<any>[] = [
   {
     fieldName: 'createdAt',
@@ -21,10 +22,12 @@ const tableHeaders: TableHeader<any>[] = [
       return row?.createdAt ? (
         <div>
           <div className="text-xs ">
-            {format(new Date(row?.createdAt), ' HH:mm a')}
+            {/* {format(new Date(row?.createdAt), ' HH:mm a')} */}
+            {formatZonedDate(row?.createdAt)}
           </div>
           <div className="text-sm font-semibold">
-            {format(new Date(row?.createdAt), 'dd MMM yyyy')}
+            {/* {format(new Date(row?.createdAt), 'dd MMM yyyy')} */}
+            {formatZonedDate(row?.createdAt)}
           </div>
         </div>
       ) : (

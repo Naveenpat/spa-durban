@@ -33,6 +33,7 @@ import EditCategoryFormWrapper from '../Edit/EditInvoiceVoidFormWrapper';
 import toast from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip'
 import { showToast } from 'src/utils/showToaster';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 type Props = {};
 
 const InvoicesListingWrapper = (props: Props) => {
@@ -40,6 +41,7 @@ const InvoicesListingWrapper = (props: Props) => {
 
   const { searchQuery, limit, page, dateFilter, appliedFilters } =
     useFilterPagination(['outletId', 'customerId']);
+    
   const navigate = useNavigate();
   const location = useLocation();
   const { outlets } = useSelector((state: RootState) => state.auth);
@@ -127,7 +129,7 @@ const InvoicesListingWrapper = (props: Props) => {
       flex: 'flex-[1_1_0%]',
       renderCell: (item) =>
         item?.createdAt
-          ? format(new Date(item?.createdAt), 'dd MMM yyyy')
+          ? formatZonedDate(item?.createdAt)
           : '-',
     },
     {

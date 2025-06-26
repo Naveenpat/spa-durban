@@ -17,7 +17,7 @@ import {
   checkInvalidParams,
   getDateFilterQuery,
 } from "../../../utils/utils"
-import { searchKeys, allowedDateFilterKeys } from "./schema.coupon"
+import Coupon, { searchKeys, allowedDateFilterKeys } from "./schema.coupon"
 
 const createCoupon = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -31,14 +31,17 @@ const createCoupon = catchAsync(
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid user!")
       }
     }
+    const exists = await Coupon.findOne({
+         referralCode:referralCode,
+    })
 
-    const { exists, existsSummary } = await couponService.isExists(
-      [{ type }, { referralCode }],
-      [],
-      true
-    )
+    // const { exists, existsSummary } = await couponService.isExists(
+    //   [{ type }, { referralCode }],
+    //   [],
+    //   true
+    // )
     if (exists) {
-      throw new ApiError(httpStatus.BAD_REQUEST, existsSummary)
+      throw new ApiError(httpStatus.BAD_REQUEST, "Referral code already exists!")
     }
 
     const coupon = await couponService.createCoupon(req.body)
@@ -198,13 +201,17 @@ const updateCoupon = catchAsync(
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid user!")
       }
     }
-    const { exists, existsSummary } = await couponService.isExists(
-      [{ type }, { referralCode }],
-      [req.params.couponId],
-      true
-    )
+
+       const exists = await Coupon.findOne({
+         referralCode:referralCode,
+    })
+    // const { exists, existsSummary } = await couponService.isExists(
+    //   [{ type }, { referralCode }],
+    //   [req.params.couponId],
+    //   true
+    // )
     if (exists) {
-      throw new ApiError(httpStatus.BAD_REQUEST, existsSummary)
+      throw new ApiError(httpStatus.BAD_REQUEST, "Referral code already exists!")
     }
 
     const coupon = await couponService.updateCouponById(

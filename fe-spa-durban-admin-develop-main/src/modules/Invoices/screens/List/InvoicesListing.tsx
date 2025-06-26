@@ -33,7 +33,7 @@ const InvoicesListing = ({
         <Authorization permission="INVOICE_LIST">
           <div className="flex flex-col overflow-auto border rounded border-slate-300">
             {/* Table Toolbar */}
-            <MOLFilterBar filters={filter} />
+            <MOLFilterBar searchPlaceHolder={'Search Invoice No...'} filters={filter} />
 
             <div className="flex-1 overflow-auto">
               <MOLTable<Invoices>

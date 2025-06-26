@@ -30,7 +30,7 @@ const EditCustomerFormWrapper = () => {
     taxNo: (data as any)?.data?.taxNo,
     dateOfBirth: (data as any)?.data?.dateOfBirth || null,
     gender: { value: (data as any)?.data?.gender },
-    // customerGroup:{ value: (data as any)?.data?.customerGroup }
+    customerGroup: (data as any)?.data?.customerGroup || ''
   };
 
   const validationSchema = object().shape({
@@ -50,6 +50,7 @@ const EditCustomerFormWrapper = () => {
     let formattedValues = {
       ...values,
       gender: values?.gender?.value,
+      customerGroup: values?.customerGroup?.value,
       country: values?.country?.label,
     };
     updateCustomer({ body: formattedValues, customerId }).then((res: any) => {

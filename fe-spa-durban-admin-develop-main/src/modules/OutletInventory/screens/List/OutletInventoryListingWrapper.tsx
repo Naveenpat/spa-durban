@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
 import { useGetProductsQuery } from 'src/modules/Product/service/ProductServices';
 import { format } from 'date-fns';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -43,7 +44,8 @@ const tableHeaders: TableHeader<OutletInventory>[] = [
     stopPropagation: true,
     render: (row: any) => {
       const date = row.createdAt ? new Date(row.createdAt) : null;
-      return date ? format(date, 'dd-MM-yyyy') : '-';
+      // return date ? format(date, 'dd-MM-yyyy') : '-';
+      return date ? formatZonedDate(date) : '-';
     },
   }
 ];

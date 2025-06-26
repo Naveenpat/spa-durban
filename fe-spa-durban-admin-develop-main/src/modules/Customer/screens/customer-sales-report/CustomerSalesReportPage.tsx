@@ -98,7 +98,7 @@ const CustomerSalesReportPage = () => {
       stopPropagation: true,
       render: (row: any) => {
         const date = row.createdAt ? new Date(row.createdAt) : null;
-        return date ? format(date, 'dd-MM-yyyy') : '-';
+        return date ? formatZonedDate(date) : '-';
       },
     },
     {

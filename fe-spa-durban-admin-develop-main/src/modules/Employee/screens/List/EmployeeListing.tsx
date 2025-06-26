@@ -27,8 +27,8 @@ type Props = {
   ) => void;
   isTableLoading: boolean;
   filter: any;
-  importEmployeeExcelSheet:any;
-  exportEmployeeExcelSheet:any;
+  importEmployeeExcelSheet: any;
+  exportEmployeeExcelSheet: any;
 };
 
 const EmployeeListing = ({
@@ -46,7 +46,7 @@ const EmployeeListing = ({
   return (
     <>
       <div className="flex flex-col h-full gap-2 p-4">
-         
+
         <ATMPageHeader
           heading="Employee"
           buttonProps={{
@@ -56,16 +56,26 @@ const EmployeeListing = ({
           }}
           hideButton={!isAuthorized('EMPLOYEE_ADD')}
         />
-         <GlobalImportExport
-          onImport={(file:any) => importEmployeeExcelSheet(file)}
-          onExport={() => exportEmployeeExcelSheet()}
-          showImport={true}
-          showExport={true}
-        />
+
         <Authorization permission="EMPLOYEE_LIST">
           <div className="flex flex-col overflow-auto border rounded border-slate-300">
-            {/* Table Toolbar */}
-            <MOLFilterBar filters={filter} />
+            <div className="flex flex-wrap items-center justify-between gap-4 mr-2">
+              {/* Left Side: Filter Bar + Start/End Date */}
+              <div className="flex flex-wrap items-end gap-4">
+                <MOLFilterBar filters={filter} />
+
+              </div>
+              {/* Right Side: Import/Export Buttons */}
+              <div>
+                <GlobalImportExport
+                  onImport={(file: any) => importEmployeeExcelSheet(file)}
+                  onExport={() => exportEmployeeExcelSheet()}
+                  showImport={true}
+                  showExport={true}
+                />
+              </div>
+            </div>
+
 
             <div className="flex-1 overflow-auto">
               <MOLTable<Employee>
@@ -76,7 +86,7 @@ const EmployeeListing = ({
                 onDelete={
                   isAuthorized('EMPLOYEE_DELETE')
                     ? (item, closeDialog, setIsLoading) =>
-                        onDelete(item, closeDialog, setIsLoading)
+                      onDelete(item, closeDialog, setIsLoading)
                     : undefined
                 }
                 isLoading={isTableLoading}

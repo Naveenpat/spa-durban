@@ -130,6 +130,14 @@ const CustomerListingWrapper = (props: Props) => {
       fieldName: 'customerName',
       headerName: 'Name',
       flex: 'flex-[2_0_0%]',
+      renderCell: (row) => (
+      <span
+        className="text-black-600 cursor-pointer"
+        onClick={() => navigate(`/customer/view/${row._id}`)}
+      >
+        {row.customerName}
+      </span>
+    ),
     },
     {
       fieldName: 'phone',
@@ -203,6 +211,14 @@ const CustomerListingWrapper = (props: Props) => {
       flex: 'flex-[1_0_0%]',
       renderCell(item) {
         return <div>{item?.taxNo || '-'}</div>;
+      },
+    },
+    {
+      fieldName: 'customerGroup',
+      headerName: 'Group',
+      flex: 'flex-[1_0_0%]',
+      renderCell(item) {
+        return <div>{item?.customerGroup || '-'}</div>;
       },
     },
     {

@@ -74,6 +74,7 @@ import AddCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Ad
 import EditCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Edit/EditCustomerGroupFormWrapper';
 import SalesReportPage from './modules/Outlet/screens/sales-report/SalesReportPage';
 import CustomerSalesReportPage from './modules/Customer/screens/customer-sales-report/CustomerSalesReportPage';
+import ViewCustomerFormWrapper from './modules/Customer/screens/View/ViewCustomerFormWrapper';
 
 type Props = {};
 
@@ -281,6 +282,10 @@ const PageRoutes = (props: Props) => {
         {
           path: '/customer/edit/:id',
           element: <EditCustomerFormWrapper />,
+        },
+        {
+          path: '/customer/view/:id',
+          element: <ViewCustomerFormWrapper />,
         },
         {
           path: '/invoice',

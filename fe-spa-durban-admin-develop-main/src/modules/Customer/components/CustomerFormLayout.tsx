@@ -204,10 +204,17 @@ export const countries = [
   { label: 'zimbabwe', value: 'ZWE' },
 ];
 
+const customerGroupOptions = [
+  {
+    value: 'golden member',
+    label: 'Golden Member'
+}
+]
+
 type Props = {
   formikProps: FormikProps<CustomerFormValues>;
   onCancel: () => void;
-  formType: 'ADD' | 'EDIT';
+  formType: 'ADD' | 'EDIT' | 'VIEW';
   isLoading?: boolean;
 };
 const genderOptions = [
@@ -403,17 +410,17 @@ const CustomerFormLayout = ({
               />
             </div>
              <div className="">
-              {/* <ATMSelect
+              <ATMSelect
                 required
                 name="customerGroup"
                 value={values?.customerGroup}
                 onChange={(newValue) => setFieldValue('customerGroup', newValue)}
                 label="Gender"
                 placeholder="Select Customer Group"
-                options={genderOptions}
+                options={customerGroupOptions}
                 valueAccessKey="value"
                 onBlur={handleBlur}
-              /> */}
+              />
             </div>
           </div>
         </div>

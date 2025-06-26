@@ -22,6 +22,7 @@ import {
 import AddCouponFormWrapper from '../Add/AddCouponFormWrapper';
 import EditCouponFormWrapper from '../Edit/EditCouponFormWrapper';
 import CouponListing from './CouponListing';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -155,7 +156,8 @@ const CouponListingWrapper = (props: Props) => {
     stopPropagation: true,
     render: (row: any) => {
       const date = row.createdAt ? new Date(row.createdAt) : null;
-      return date ? format(date, 'dd-MM-yyyy') : '-';
+      // return date ? format(date, 'dd-MM-yyyy') : '-';
+      return date ? formatZonedDate(date) : '-';
     },
   },
     {

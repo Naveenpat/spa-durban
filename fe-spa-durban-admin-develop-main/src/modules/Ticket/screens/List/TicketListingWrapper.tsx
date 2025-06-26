@@ -19,6 +19,7 @@ import { showToast } from 'src/utils/showToaster';
 import EditTicketFormWrapper from '../Edit/EditTicketFormWrapper';
 import { FilterType } from 'src/components/molecules/MOLFilterBar/MOLFilterBar';
 import { formatDate } from 'date-fns';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -52,7 +53,7 @@ const tableHeaders: TableHeader<Ticket>[] = [
     stopPropagation: true,
     render: (row: any) => {
       const date = row.createdAt ? new Date(row.createdAt) : null;
-      return date ? formatDate(date, 'dd-MM-yyyy') : '-';
+      return date ? formatZonedDate(date) : '-';
     },
   }
 ];
