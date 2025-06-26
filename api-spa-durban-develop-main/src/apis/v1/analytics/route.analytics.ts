@@ -250,9 +250,31 @@ router.get(
 );
 
 router.get(
-  '/new/sales-report',
+  '/new/outlet/sales-report',
   parseBodyAndQuery,
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  analyticsController.getSalesReport
+  analyticsController.getSalesReportByOutlet
 );
+
+router.get(
+  '/new/outlet/sales-chart-data',
+  parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getSalesChartDataReportByOutlet
+);
+
+router.get(
+  '/new/customer/sales-report',
+  parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getSalesReportByCustomer
+);
+
+router.get(
+  '/new/customer/sales-chart-data',
+  parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getSalesChartDataReportByCustomer
+);
+
 export default router;

@@ -15,6 +15,7 @@ import {
 } from '../../service/InvoicesServices';
 import { useRef } from 'react';
 import { useGetCompanyByIdQuery } from 'src/modules/AdminRole copy/service/CompanyServices';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 const Receipt = () => {
   const { id: invoiceId } = useParams();
@@ -186,7 +187,9 @@ const Receipt = () => {
             <span className="">{invoiceData?.invoiceNumber}</span>
           </div>
           <div className="">
-            {format(new Date(invoiceData?.createdAt), 'dd MMM yyyy hh:mm a')}
+            {/* {format(new Date(invoiceData?.createdAt), 'dd MMM yyyy hh:mm a')}
+             */}
+             {formatZonedDate(invoiceData?.invoiceDate)}
           </div>
         </div>
         <div className="mt-2 border-t border-dashed"></div>

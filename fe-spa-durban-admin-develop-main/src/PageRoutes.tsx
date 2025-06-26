@@ -73,7 +73,7 @@ import CustomerGroupListingWrapper from './modules/CashbackRules copy/screens/Li
 import AddCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Add/AddCustomerGroupFormWrapper';
 import EditCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Edit/EditCustomerGroupFormWrapper';
 import SalesReportPage from './modules/Outlet/screens/sales-report/SalesReportPage';
-import CustomerSalesReportPage from './modules/Customer/screens/sales-report/CustomerSalesReportPage';
+import CustomerSalesReportPage from './modules/Customer/screens/customer-sales-report/CustomerSalesReportPage';
 
 type Props = {};
 
