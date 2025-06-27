@@ -22,6 +22,7 @@ const AddCustomerFormWrapper = () => {
     taxNo: '',
     dateOfBirth: null,
     gender: '',
+    customerGroup: ''
   };
 
   const validationSchema = object().shape({
@@ -31,7 +32,7 @@ const AddCustomerFormWrapper = () => {
       .matches(/^[0-9]+$/, 'Phone number is not valid'),
     email: string().required('Please enter email address'),
     // dateOfBirth: date().required('Please select DOB').nullable(),
-    // gender: object().required('Please select gender'),
+    customerGroup: object().required('Please select gender'),
   });
 
   const returnPath = location.state?.from || '/customer';
@@ -43,6 +44,7 @@ const AddCustomerFormWrapper = () => {
     let formattedValues = {
       ...values,
       gender: values?.gender?.value,
+      customerGroup:values?.customerGroup?.value,
       country: values?.country?.label,
     };
 

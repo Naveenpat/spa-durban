@@ -133,7 +133,7 @@ const authenticate = (authForUser: string[], authTokenType: string) => {
         return { _id: ele?._id, name: ele?.name }
       })
 
-      console.log("users============>",user)
+      // console.log("users============>",user)
       // Use the additional parameter here if needed
       let userData = {
         tokenType: TokenEnum.Access,

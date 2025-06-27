@@ -71,6 +71,13 @@ export const registerApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    getRegisterByDate: builder.query({
+      providesTags: ['register'],
+      query: ({ outletId, date }) => ({
+        url: `register/previous-date/${outletId}?date=${date}`,
+        method: 'GET',
+      }),
+    }),
     addCloseRegister: builder.mutation({
       invalidatesTags: ['register'],
       query: (body) => {
@@ -81,6 +88,14 @@ export const registerApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    sendPdfBYEmail: builder.mutation({
+      query: ({ body, outletId }) => ({
+        url: `/email/send/${outletId}`,
+        method: 'POST',
+        body,
+      }),
+    }),
+
   }),
 });
 
@@ -92,4 +107,6 @@ export const {
   useDeleteRegisterMutation,
   useGetRegisterByCurrentDateQuery,
   useAddCloseRegisterMutation,
+  useGetRegisterByDateQuery,
+  useSendPdfBYEmailMutation
 } = registerApi;

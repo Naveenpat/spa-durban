@@ -2,15 +2,17 @@ import React from 'react';
 
 type Props = {};
 
-const ItemLoadingCard = (props: Props) => {
+const ItemLoadingCard = () => {
   return (
-    <div className="rounded-sm cursor-pointer min-w-[150px] max-w-[150px] shadow animate-pulse ">
-      <div className="h-[80px] w-full rounded-t-sm bg-gray-200"></div>
+    <div className="w-[230px] h-[260px] rounded-lg shadow animate-pulse bg-white overflow-hidden border border-gray-200">
+      {/* Image Skeleton */}
+      <div className="h-[150px] w-full bg-gray-200"></div>
 
-      <div className="flex flex-col gap-2 px-2 py-1 pb-2 rounded-b-sm">
-        <div className="h-[14px] bg-gray-200 rounded"></div>
-
-        <div className="h-[14px] bg-gray-200 rounded w-[100px]"></div>
+      {/* Text Skeleton */}
+      <div className="flex flex-col justify-between px-3 py-3 h-[110px]">
+        <div className="h-[16px] bg-gray-300 rounded w-full mb-2"></div>
+        <div className="h-[14px] bg-gray-200 rounded w-[60%] mb-2"></div>
+        <div className="h-[14px] bg-gray-200 rounded w-[40%]"></div>
       </div>
     </div>
   );

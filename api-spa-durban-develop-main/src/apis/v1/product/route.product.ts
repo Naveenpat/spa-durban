@@ -26,6 +26,7 @@ import {
 import { authenticate } from "../../../middleware/authentication";
 import { parseBodyAndQuery } from "../../../middleware/parseBodyAndQuery";
 import { UserEnum, TokenEnum } from "../../../utils/enumUtils";
+import { fileUpload } from "../../../middleware/multerFileUpload";
 
 const router = Router();
 
@@ -409,5 +410,25 @@ router.put(
   validate(toggleStatusDocument),
   toggleProductStatus
 );
+
+
+router.post("/upload", fileUpload.single("file"), (req, res) => {
+  const { folder = "default" } = req.body
+  const file = req.file
+
+  if (!file) {
+    return res.status(400).json({ message: "No file uploaded" })
+  }
+
+  const safeFolder = folder.replace(/[^a-zA-Z0-9-_]/g, "")
+  const filePath = `uploads/${safeFolder}/${file.filename}`
+
+  return res.status(200).json({
+    message: "File uploaded successfully",
+    file_path: filePath,
+    originalName: file.originalname,
+  })
+})
+
 
 export default router;

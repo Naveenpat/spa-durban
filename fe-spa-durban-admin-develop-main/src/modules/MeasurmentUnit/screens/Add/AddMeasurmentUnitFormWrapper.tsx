@@ -31,7 +31,7 @@ const AddMeasurmentUnitFormWrapper = ({ onClose }: Props) => {
         showToast('error', res?.error?.data?.message);
       } else {
         if (res?.data?.status) {
-          showToast('success', res?.data?.message);
+          showToast('success', 'Measurment added successfully');
           resetForm();
           onClose();
         } else {

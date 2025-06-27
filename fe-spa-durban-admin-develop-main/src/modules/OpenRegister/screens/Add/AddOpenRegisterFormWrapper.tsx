@@ -3,20 +3,34 @@ import React from 'react';
 import { OpenRegisterFormValues } from '../../models/OpenRegister.model';
 import OpenRegisterFormLayout from '../../components/OpenRegisterFormLayout';
 import { object, number, string } from 'yup';
-import { useAddRegisterMutation } from '../../service/OpenRegisterServices';
+import { useAddRegisterMutation, useGetRegisterByCurrentDateQuery, useGetRegisterByDateQuery } from '../../service/OpenRegisterServices';
 import { showToast } from 'src/utils/showToaster';
 import { RootState } from 'src/store';
 import { useSelector } from 'react-redux';
 
 type Props = {
   onClose: () => void;
+  opningData:any;
 };
 
 const OpenRegisterFormWrapper = ({ onClose }: Props) => {
   const [openRegister] = useAddRegisterMutation();
+
+const yesterday = new Date();
+yesterday.setDate(yesterday.getDate() - 1);
+
+const formattedDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
+
+
+
   const { userData, outlet, outlets } = useSelector(
     (state: RootState) => state.auth,
   );
+
+  const { data, isLoading } = useGetRegisterByDateQuery({
+  outletId: (outlet as any)._id,
+  date: formattedDate, // e.g., '2025-06-08'
+});
   const initialValues: OpenRegisterFormValues = {
     registerId: '', // Ensure validation accounts for this
     openingBalance: '',
@@ -44,7 +58,7 @@ const OpenRegisterFormWrapper = ({ onClose }: Props) => {
       const res = await openRegister(formattedValues).unwrap(); // Proper async handling
 
       if (res?.status) {
-        showToast('success', res.message);
+        showToast('success', 'Open Register Successfuly');
         resetForm();
         onClose();
       } else {
@@ -69,6 +83,7 @@ const OpenRegisterFormWrapper = ({ onClose }: Props) => {
             formikProps={formikProps}
             onClose={onClose}
             formType="OPEN"
+            opningData={(data as any)?.data}
           />
         </Form>
       )}

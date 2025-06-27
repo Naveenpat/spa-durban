@@ -12,25 +12,43 @@ import { useGetAdminRolesQuery } from 'src/modules/AdminRole/service/AdminRoleSe
 import { useGetOutletsQuery } from 'src/modules/Outlet/service/OutletServices';
 import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCircularProgress';
 import { countries } from 'src/modules/Customer/components/CustomerFormLayout';
+import { useEffect, useState } from 'react';
+import { useGetCompaniesQuery } from 'src/modules/AdminRole copy/service/CompanyServices';
 
 type Props = {
   formikProps: FormikProps<EmployeeFormValues>;
   onCancel: () => void;
   formType: 'ADD' | 'UPDATE';
   isLoading?: boolean;
+  setOutletOrBranchOutlet:any;
+  outletOrBranchOutlet:any;
 };
+
+const selectOption = [
+  {
+    label: 'Outlet',
+    value: 'outlet',
+  },
+  {
+    label: 'Company',
+    value: 'company',
+  },
+];
 
 const EmployeeFormLayout = ({
   formikProps,
   onCancel,
   formType,
   isLoading = false,
+  setOutletOrBranchOutlet,
+  outletOrBranchOutlet
 }: Props) => {
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
   const handleValidPercent = (event: any): boolean => {
     return !isNaN(event) && event >= 0 && event <= 100;
   };
+
   const { data } = useFetchData(useGetAdminRolesQuery, {
     body: {
       isPaginationRequired: false,
@@ -42,6 +60,11 @@ const EmployeeFormLayout = ({
       ]),
     },
   });
+
+  const { data:companyData } = useFetchData(
+      useGetCompaniesQuery
+    )
+
   const { data: outletsData } = useFetchData(useGetOutletsQuery, {
     body: {
       isPaginationRequired: false,
@@ -100,6 +123,23 @@ const EmployeeFormLayout = ({
                 isValid={!errors?.userName}
               />
             </div>
+
+             {/* Name */}
+            <div className="">
+              <ATMTextField
+                required
+                name="name"
+                value={values.name}
+                onChange={(e) => setFieldValue('name', e.target.value)}
+                label="Name"
+                placeholder="Enter Name"
+                onBlur={handleBlur}
+                isValid={!errors?.name}
+                isTouched={touched?.name}
+                errorMessage={errors?.name}
+              />
+            </div>
+            
             {/* Email */}
             <div className="">
               <ATMTextField
@@ -132,6 +172,7 @@ const EmployeeFormLayout = ({
               />
             </div>
 
+            
             {/* UserRole  */}
             <div>
               <ATMSelect
@@ -146,34 +187,53 @@ const EmployeeFormLayout = ({
                 placeholder="Please Select User Role"
               />
             </div>
-            {/* Outlets */}
-            <div className="col-span-3">
-              <ATMMultiSelect
-                name="outletsId"
-                value={values?.outletsId || []}
-                onChange={(newValue) => setFieldValue('outletsId', newValue)}
-                label="Outlets"
-                options={outletsData}
-                getOptionLabel={(options) => options?.name}
-                valueAccessKey="_id"
-                placeholder="Please Select Outlets"
-              />
-            </div>
-            {/* Name */}
-            <div className="">
-              <ATMTextField
+
+<div>
+              <ATMSelect
                 required
-                name="name"
-                value={values.name}
-                onChange={(e) => setFieldValue('name', e.target.value)}
-                label="Name"
-                placeholder="Enter Name"
-                onBlur={handleBlur}
-                isValid={!errors?.name}
-                isTouched={touched?.name}
-                errorMessage={errors?.name}
+                name="outletOrBranchOutlet"
+                value={outletOrBranchOutlet}
+                onChange={(newValue) => setOutletOrBranchOutlet(newValue?.value)}
+                label="Select"
+                getOptionLabel={(options) => options?.label}
+                options={selectOption}
+                valueAccessKey="value"
+                placeholder="Please Outlet Or Branch"
               />
             </div>
+            {outletOrBranchOutlet === "company" && (
+              <div>
+                <ATMSelect
+                  required
+                  name="companyId"
+                  value={values?.companyId}
+                  onChange={(newValue) => setFieldValue('companyId', newValue)}
+                  label="Company"
+                  getOptionLabel={(options) => options?.companyName}
+                  options={companyData}
+                  valueAccessKey="_id"
+                  placeholder="Please Select Company"     
+                />
+              </div>
+            )}
+
+            {/* Outlets */}
+            {outletOrBranchOutlet === "outlet" && (
+              <div className="col-span-3">
+                <ATMMultiSelect
+                  name="outletsId"
+                  value={values?.outletsId || []}
+                  onChange={(newValue) => setFieldValue('outletsId', newValue)}
+                  label="Outlets"
+                  options={outletsData}
+                  getOptionLabel={(options) => options?.name}
+                  valueAccessKey="_id"
+                  placeholder="Please Select Outlets"
+                />
+              </div>
+            )}
+
+           
             {/* Address */}
             <div className="">
               <ATMTextField

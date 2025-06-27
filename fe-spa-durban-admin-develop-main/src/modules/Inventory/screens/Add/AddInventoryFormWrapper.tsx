@@ -52,7 +52,7 @@ const AddInventoryFormWrapper = ({ onClose }: Props) => {
     { resetForm, setSubmitting }: FormikHelpers<InventoryFormValues>,
   ) => {
     setTimeout(() => {
-      console.log(values, 'Submit values');
+      // console.log(values, 'Submit values');
       setSubmitting(false);
       resetForm();
     }, 1000);

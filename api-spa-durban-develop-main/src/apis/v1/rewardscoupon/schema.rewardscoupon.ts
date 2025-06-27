@@ -1,4 +1,4 @@
-import mongoose, { Document, ObjectId } from "mongoose";
+import mongoose, { Document, ObjectId, Types } from "mongoose";
 import timestamp from "../../plugins/timeStamp.plugin";
 import { paginate } from "../../plugins/pagination.plugin";
 import {
@@ -13,6 +13,8 @@ export interface RewardsCouponDocument extends Document {
   serviceId: [ObjectId];
   isDeleted: boolean;
   isActive: boolean;
+  createdAt:Date;
+  usedBy: Types.ObjectId[];
 }
 
 export interface RewardsCouponModel
@@ -53,6 +55,7 @@ const RewardsCouponSchema = new mongoose.Schema<RewardsCouponDocument>(
       type: Boolean,
       default: false,
     },
+    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Customer',default:[] }],
     isActive: {
       type: Boolean,
       default: true,

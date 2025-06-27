@@ -20,6 +20,8 @@ import {
 import { showToast } from 'src/utils/showToaster';
 import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
+import { format } from 'date-fns';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -78,6 +80,18 @@ const PaymentModeListingWrapper = (props: Props) => {
       flex: 'flex-[1_1_0%]',
       extraClasses: () => 'capitalize',
       stopPropagation: true,
+    },
+    {
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        // return date ? format(date, 'dd-MM-yyyy') : '-';
+        return date ? formatZonedDate(date) : '-';
+      },
     },
     {
       fieldName: 'status',

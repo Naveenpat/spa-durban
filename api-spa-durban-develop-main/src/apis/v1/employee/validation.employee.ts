@@ -15,21 +15,43 @@ const Joi = JoiBase.extend(JoiDate);
 /**
  * create new document
  */
+// export const create: { body: ObjectSchema } = {
+//   body: Joi.object().keys({
+//     userName: Joi.string().required(),
+//     email: Joi.string().lowercase().required(),
+//     password: Joi.string().required().custom(passwordCheck),
+//     userRoleId: Joi.required().custom(objectId),
+//     companyId: Joi.required().custom(objectId),
+//     outletsId: Joi.array().items(Joi.required().custom(objectId)),
+//     name: Joi.string().lowercase().required(),
+//     address: Joi.string().lowercase().required(),
+//     city: Joi.string().lowercase().required(),
+//     region: Joi.string().lowercase().required(),
+//     country: Joi.string().lowercase().required(),
+//     phone: Joi.string().lowercase().required(),
+//   }),
+// };
+
 export const create: { body: ObjectSchema } = {
-  body: Joi.object().keys({
-    userName: Joi.string().required(),
-    email: Joi.string().lowercase().required(),
-    password: Joi.string().required().custom(passwordCheck),
-    userRoleId: Joi.required().custom(objectId),
-    outletsId: Joi.array().items(Joi.required().custom(objectId)),
-    name: Joi.string().lowercase().required(),
-    address: Joi.string().lowercase().required(),
-    city: Joi.string().lowercase().required(),
-    region: Joi.string().lowercase().required(),
-    country: Joi.string().lowercase().required(),
-    phone: Joi.string().lowercase().required(),
-  }),
+  body: Joi.object()
+    .keys({
+      userName: Joi.string().required(),
+      email: Joi.string().lowercase().required(),
+      password: Joi.string().required().custom(passwordCheck),
+      userRoleId: Joi.required().custom(objectId),
+      companyId: Joi.custom(objectId),
+      outletsId: Joi.array().items(Joi.required().custom(objectId)),
+      name: Joi.string().lowercase().required(),
+      address: Joi.string().lowercase().required(),
+      city: Joi.string().lowercase().required(),
+      region: Joi.string().lowercase().required(),
+      country: Joi.string().lowercase().required(),
+      phone: Joi.string().lowercase().required(),
+    })
+    // Ensure that only one of the two is present
+    .xor('companyId', 'outletsId'),
 };
+
 
 /**
  * update existing document
@@ -44,13 +66,14 @@ export const update: { params: ObjectSchema; body: ObjectSchema } = {
     password: Joi.string().required().custom(passwordCheck),
     userRoleId: Joi.required().custom(objectId),
     outletsId: Joi.array().items(Joi.required().custom(objectId)),
+    companyId: Joi.custom(objectId),
     name: Joi.string().lowercase().required(),
     address: Joi.string().lowercase().required(),
     city: Joi.string().lowercase().required(),
     region: Joi.string().lowercase().required(),
     country: Joi.string().lowercase().required(),
     phone: Joi.string().lowercase().required(),
-  }),
+  }).xor('companyId', 'outletsId'),
 };
 
 /**

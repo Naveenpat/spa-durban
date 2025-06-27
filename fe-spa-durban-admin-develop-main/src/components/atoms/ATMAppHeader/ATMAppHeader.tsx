@@ -1,7 +1,10 @@
 import {
+  IconBan,
+  IconCashBanknote,
   IconCopyX,
   IconCreditCardRefund,
   IconDotsVertical,
+  IconHome,
   IconKey,
   IconLogout,
   IconMenu2,
@@ -34,6 +37,10 @@ import { SalesReport } from 'src/modules/Invoices/models/Invoices.model';
 import ATMMenu from '../ATMMenu/ATMMenu';
 import { setIsOpenEditDialog } from 'src/modules/Product/slice/ProductSlice';
 import { useUpdateInvoiceMutation } from 'src/modules/Invoices/service/InvoicesServices';
+import { showToast } from 'src/utils/showToaster';
+import { IconArrowRight } from '@tabler/icons-react';
+import { isAuthorized } from 'src/utils/authorization';
+import { Tooltip } from '@mui/material';
 type Props = {
   hideCollapseMenuButton?: boolean;
   showOutletDropdown?: boolean;
@@ -49,15 +56,22 @@ const ATMAppHeader = ({
   const { isNavBarExpanded } = useSelector(
     (state: RootState) => state.sideNavLayout,
   );
-  const { userData, outlet, outlets } = useSelector(
+  const { userData, outlet, outlets, permissions } = useSelector(
     (state: RootState) => state.auth,
   );
 
+  const { isOpenEditDialog } = useSelector(
+    (state: RootState) => state?.invoices,
+  );
+
+
+  // console.log('-----userData', userData)
 
 
   const [storeOutletId, setStoreOutletId] = useState<string>();
+  const [invoiceId, setInvoiceId] = useState('');
   const [isSearch, setIsSearch] = useState(true);
-   console.log('--isSearch',isSearch)
+  // console.log('--isSearch', isSearch)
   // const [getSalesReportDaily] = useGetSalesReportDailyQuery();
   // const { data, isLoading, totalData, totalPages } = useFetchData(
   //   useGetSalesReportDailyQuery,
@@ -89,7 +103,7 @@ const ATMAppHeader = ({
   const [isOpenChangePasswordDialog, setIsOpenChangePassword] = useState(false);
   const [isOpenSalseReportDialog, setIsOpenSalseReportDialog] = useState(false);
   const [isOpenRegistertDialog, setIsOpenRegistertDialog] = useState(false);
-  const [invoiceId, setInvoiceId] = useState('');
+
   const [dropdownPosition, setDropdownPosition] = useState({
     top: 0,
     right: 0,
@@ -128,33 +142,33 @@ const ATMAppHeader = ({
   // }, [outlet, isSearch]);
 
 
-// Step 1: When location or outlets change, set outlet info
-useEffect(() => {
-  const urlStoreId = searchParams.get('storeId');
-  const localStoreId = localStorage.getItem('store_Id');
-  const finalStoreId = urlStoreId || localStoreId;
+  // Step 1: When location or outlets change, set outlet info
+  useEffect(() => {
+    const urlStoreId = searchParams.get('storeId');
+    const localStoreId = localStorage.getItem('store_Id');
+    const finalStoreId = urlStoreId || localStoreId;
 
-  if (finalStoreId && outlets?.length) {
-    const outlet = outlets.find(
-      (item) => item.bookingStoreId === finalStoreId
-    );
-    if (outlet) {
-      dispatch(setOutlet(outlet));
-      if (urlStoreId) {
-        localStorage.setItem('store_Id', urlStoreId);
+    if (finalStoreId && outlets?.length) {
+      const outlet = outlets.find(
+        (item) => item.bookingStoreId === finalStoreId
+      );
+      if (outlet) {
+        dispatch(setOutlet(outlet));
+        if (urlStoreId) {
+          localStorage.setItem('store_Id', urlStoreId);
+        }
+        setStoreOutletId(outlet?._id); // triggers next effect
+        setIsSearch(true);             // triggers next effect
       }
-      setStoreOutletId(outlet?._id); // triggers next effect
-      setIsSearch(true);             // triggers next effect
     }
-  }
-}, [location.pathname, outlets]);
+  }, [location.pathname, outlets]);
 
-// Step 2: Trigger API when both `storeOutletId` and `isSearch` are valid
-useEffect(() => {
-  if (storeOutletId && isSearch && isOpenSalseReportDialog) {
-    refetch(); // or whatever function you use to fetch
-  }
-}, [storeOutletId, isSearch,isOpenSalseReportDialog]);
+  // Step 2: Trigger API when both `storeOutletId` and `isSearch` are valid
+  useEffect(() => {
+    if (storeOutletId && isSearch && isOpenSalseReportDialog) {
+      refetch(); // or whatever function you use to fetch
+    }
+  }, [storeOutletId, isSearch, isOpenSalseReportDialog]);
 
 
 
@@ -197,22 +211,47 @@ useEffect(() => {
   //   ),
   // );
 
-  const handleUpdate = async (_id: string) => {
+  const handleUpdate = async (item: any) => {
     try {
       await updateInvoice({
-        invoiceId: _id,
-        body: { status: 'refund' },
+        invoiceId: item?._id,
+        body: { status: item?.status === "" ? 'refund' : "" },
       }).unwrap();
-      alert('Invoice updated successfully!');
+      // alert('Invoice updated successfully!');
+      refetch();
+      if (item?.status == "refund") {
+        showToast('success', 'Unrefund Process successfully!')
+
+      }
+      else {
+        showToast('success', 'Refund Process successfully!')
+      }
     } catch (error) {
       console.error('Error updating invoice:', error);
-      alert('Failed to update invoice.');
+      // alert('Failed to update invoice.');
+
+      showToast('error', 'Failed to update invoice.')
     }
   };
 
+  const handleCancelVoidWithConfirmation = (invoiceId: any) => {
+    updateInvoice({ body: { status: "", voidNote: "" }, invoiceId }).then((res: any) => {
+      if (res?.error) {
+        showToast('error', res?.error?.data?.message)
+      } else {
+        if (res?.data?.status) {
+          refetch();
+          showToast('success', res?.data?.message)
+        } else {
+          showToast('error', res?.data?.message)
+        }
+      }
+    });
+  }
+
   const toTitleCase = (str: string = '') => {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-};
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
 
 
   const tableHeaders: TableHeader<any>[] = [
@@ -224,13 +263,13 @@ useEffect(() => {
     {
       fieldName: 'customerName',
       headerName: 'Customer',
-      flex: 'flex-[1_1_0%]',
+      flex: 'flex-[3_1_0%]',
       renderCell: (row: any) => toTitleCase(row.customerName),
     },
     {
       fieldName: 'paymentMode',
-      headerName: 'PaymentMode',
-      flex: 'flex-[1_1_0%]',
+      headerName: 'Mode',
+      flex: 'flex-[2_1_0%]',
       renderCell: (row: any) => toTitleCase(row.paymentMode),
     },
     {
@@ -244,6 +283,12 @@ useEffect(() => {
           {item?.totalAmount ? Number(item?.totalAmount).toFixed(2) : '0'}
         </div>
       ),
+    },
+    {
+      fieldName: 'date',
+      headerName: 'Date',
+      flex: 'flex-[2_1_0%]',
+      renderCell: (row: any) => toTitleCase(row.date),
     },
     {
       fieldName: 'status',
@@ -274,41 +319,33 @@ useEffect(() => {
       flex: 'flex-[1_1_0%]',
       renderCell: (item: SalesReport) => (
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            title="View"
-            onClick={() =>
-              navigate(`/invoice/receipt/${item?._id}`, {
-                state: { from: location },
-              })
-            }
-            className="text-blue-600 hover:text-blue-800"
-          >
-            <IconPrinter size={18} />
-          </button>
-          
-          <button
-            type="button"
-            title="Refund"
-            onClick={() => handleUpdate(item?._id)}
-            className="text-green-600 hover:text-green-800"
-            disabled={item?.status === "refund"}
-          >
-            <IconCreditCardRefund size={18} />
-          </button>
+          <Tooltip title="View" arrow>
+            <button
+              type="button"
 
-          <button
-            type="button"
-            title="Void"
-            onClick={() => setInvoiceId(item?._id)}
-            className="text-red-600 hover:text-red-800"
-          >
-            <IconCopyX size={18} />
-          </button>
+              onClick={() =>
+                navigate(`/invoice/receipt/${item?._id}`, {
+                  state: { from: location },
+                })
+              }
+              className="text-blue-600 hover:text-blue-800"
+            >
+              <IconPrinter size={18} />
+            </button>
+          </Tooltip>
+
+          <Tooltip title={item?.status === 'refund' ? 'Cancel Refund' : 'Refund'} arrow>
+            <button
+              type="button"
+              onClick={() => handleUpdate(item)}
+              className="text-green-600 hover:text-green-800"
+            >
+              <IconCreditCardRefund size={18} />
+            </button>
+          </Tooltip>
         </div>
       ),
     }
-
   ];
 
   // const tableHeaders: TableHeader<any>[] = [
@@ -334,6 +371,9 @@ useEffect(() => {
   //     },
   //   })),
   // ];
+
+  const isPOS = location.pathname === '/pos'
+
   return (
     <div className="flex items-center justify-between h-full px-4 border-b bg-gray-50">
       <div className="flex items-center gap-4">
@@ -352,13 +392,16 @@ useEffect(() => {
           className="w-[165px] h-[48px] text-center"
         />
       </div>
+
+
+
       {showRegisterbutton && (
         <div className="flex items-center gap-4">
           <button
             type="button"
             style={{
               height: '35px',
-              fontSize: '12px',
+              fontSize: '11px',
               width: '125px',
             }}
             onClick={() => dispatch(setIsOpenAddDialog(true))}
@@ -370,7 +413,7 @@ useEffect(() => {
             type="button"
             style={{
               height: '35px',
-              fontSize: '12px',
+              fontSize: '11px',
               width: '125px',
             }}
             onClick={() => dispatch(setIsCloseAddDialog(true))}
@@ -382,7 +425,7 @@ useEffect(() => {
             type="button"
             style={{
               height: '35px',
-              fontSize: '12px',
+              fontSize: '11px',
               width: '125px',
             }}
             className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
@@ -393,6 +436,33 @@ useEffect(() => {
         </div>
       )}
       <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => {
+              // navigate(isPOS ? '/dashboard' : '/pos');
+              const canNavigate = isPOS
+                ? isAuthorized('NAV_DASHBOARD')
+                : isAuthorized('NAV_POS');
+
+              if (canNavigate) {
+                navigate(isPOS ? '/dashboard' : '/pos');
+              } else {
+                showToast("error", 'You are not authorized to access this page.');
+              }
+            }}
+            type="button"
+            style={{
+              height: '35px',
+              fontSize: '11px',
+              width: '125px',
+            }}
+            className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
+          >
+            {isPOS ? <IconHome size={16} className="mr-1" /> : <IconCashBanknote size={16} className="mr-1" />}
+            {isPOS ? 'Dashboard' : 'POS'}
+          </button>
+
+        </div>
         {(userData?.userType === 'EMPLOYEE' || showOutletDropdown) && (
           <div className="w-[300px]">
             <ATMSelect
@@ -484,6 +554,13 @@ useEffect(() => {
           isLoading={false}
         />
       )}
+
+      {/* {isOpenEditDialog && (
+        <EditInvoicesVoidFormWrapper
+          onClose={() => dispatch(setIsOpenEditDialog(false))}
+          invoiceId={invoiceId}
+        />
+      )} */}
 
       {/* {isOpenAddDialog && (
         <OpenRegisterFormWrapper

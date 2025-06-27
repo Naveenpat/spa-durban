@@ -177,17 +177,20 @@ const PromotionCouponsFormLayout = ({
     1000,
   );
   return (
+
+
+
     <>
       {isLoading ? (
         <div className="flex items-center justify-center h-full">
           <ATMCircularProgress />
         </div>
       ) : (
-        <div className="p-4">
-          <div className="sticky -top-2  flex items-center justify-between py-2 bg-white z-[10000]">
-            <span className="text-lg font-semibold text-slate-700">
+        <div className="flex flex-col gap-2 p-4">
+          <div className="flex items-center justify-between w-[70%] m-auto">
+            <div className="font-semibold">
               {formType === 'ADD' ? 'Add' : 'Edit'} Promotion Coupons
-            </span>
+            </div>
             <div className="flex items-center gap-2">
               <div>
                 <ATMButton
@@ -205,15 +208,16 @@ const PromotionCouponsFormLayout = ({
               </div>
             </div>
           </div>
-          <div className="flex flex-row gap-2">
-            <div className="w-[300px]">
+          <div className="border-t"></div>
+          <div className="grid grid-cols-3 gap-4 w-[70%] m-auto">
+            <div>
               <ATMNumberField
                 required
                 label="Discount by Percentage"
-                name={`discountByPercentage`}
+                name="discountByPercentage"
                 value={values.discountByPercentage}
                 onChange={(newValue) =>
-                  setFieldValue(`discountByPercentage`, newValue)
+                  setFieldValue('discountByPercentage', newValue)
                 }
                 placeholder="Enter Discount In Percentage"
                 onBlur={handleBlur}
@@ -222,52 +226,75 @@ const PromotionCouponsFormLayout = ({
                 isValid={!errors.discountByPercentage}
               />
             </div>
-            <div className="w-[300px]">
+
+            <div><ATMMultiSelect
+              name="serviceId"
+              value={values?.serviceId || []}
+              onChange={(newValue) => setFieldValue('serviceId', newValue)}
+              label="Service"
+              options={data}
+              getOptionLabel={(options) => options?.itemName}
+              valueAccessKey="_id"
+              placeholder="Please Select Service"
+            /></div>
+
+            <div className="min-w-[280px] flex-1">
               <ATMMultiSelect
-                name="serviceId"
-                value={values?.serviceId || []}
-                onChange={(newValue) => setFieldValue('serviceId', newValue)}
-                label="Service"
-                options={data}
-                getOptionLabel={(options) => options?.itemName}
+                name="groupTarget"
+                value={values?.groupTarget || []}
+                onChange={(newValue) => setFieldValue('groupTarget', newValue)}
+                label="Customer Groups"
+                options={[
+                  { _id: 'golden-member', itemName: 'Golden Member' },
+                  { _id: 'silver-member', itemName: 'Silver Member' },
+                  { _id: 'new-user', itemName: 'New Users' },
+                ]}
+                getOptionLabel={(option) => option.itemName}
                 valueAccessKey="_id"
-                placeholder="Please Select Service"
+                placeholder="Select Customer Groups"
               />
             </div>
-            <div className="w-[300px]">
-              {/* <ATMMultiSelect
-                name="customerId"
-                value={values?.customerId || []}
-                onChange={(newValue) => setFieldValue('customerId', newValue)}
-                label="Customer"
-                options={data}
-                getOptionLabel={(options) => options?.itemName}
-                valueAccessKey="_id"
-                placeholder="Please Select Customer"
-              /> */}
-              <label className="text-xs font-medium tracking-wide text-slate-500  false ">
+
+
+            <div>
+              <label className="text-xs font-medium tracking-wide text-slate-500 mb-1 block">
                 Select Customer
               </label>
               <AsyncSelect
                 cacheOptions
                 defaultOptions
                 loadOptions={debouncedLoadOptions}
-                value={values?.customerId || []} // ✅ Set initial value
-                onChange={(newValue) => {
-                  console.log(newValue, 'newValue==============');
-
-                  setFieldValue('customerId', newValue);
-                }}
+                value={values?.customerId || []}
+                onChange={(newValue) => setFieldValue('customerId', newValue)}
                 placeholder="Search..."
                 isLoading={loading}
                 isClearable
                 isMulti
               />
-              {/* <ErrorMessage name={values?.customerId}>
-                {(errorMessage) => (
-                  <ATMFieldError> {errorMessage} </ATMFieldError>
-                )}
-              </ErrorMessage> */}
+            </div>
+            <div>
+              <ATMDatePicker
+                required
+                name="startDate"
+                dateFormat="dd/MM/yyyy"
+                minDate={new Date()}
+                value={values?.startDate}
+                onChange={(newValue) => setFieldValue('startDate', newValue)}
+                label="Start Date"
+                placeholder="dd/MM/yyyy"
+              />
+            </div>
+            <div>
+              <ATMDatePicker
+                required
+                name="endDate"
+                dateFormat="dd/MM/yyyy"
+                minDate={new Date()}
+                value={values?.endDate}
+                onChange={(newValue) => setFieldValue('endDate', newValue)}
+                label="End Date"
+                placeholder="dd/MM/yyyy"
+              />
             </div>
           </div>
         </div>

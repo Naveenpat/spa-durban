@@ -185,6 +185,11 @@ const getCustomerGroupsByIds = async (
   }).exec()
 }
 
+const findGroupByName = async (groupName: string) => {
+  return await CustomerGroup.findOne({ customerGroupName: { $regex: `^${groupName}$`, $options: 'i' } });
+};
+
+
 export {
   createCustomerGroup,
   queryCustomerGroups,
@@ -193,4 +198,5 @@ export {
   isExists,
   getCustomerGroupById,
   getCustomerGroupsByIds,
+  findGroupByName
 }

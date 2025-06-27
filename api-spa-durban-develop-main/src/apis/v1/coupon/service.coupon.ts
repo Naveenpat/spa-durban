@@ -64,6 +64,37 @@ const updateCouponById = async (
 };
 
 /**
+ * Mark a coupon as used by a specific customer using referralCode
+ * @param {string} referralCode - The coupon code used as referral
+ * @param {string} customerId - The customer using the coupon
+ * @returns {Promise<CouponDocument>}
+ */
+const markCouponAsUsed = async (
+  referralCode: string,
+  customerId: string
+): Promise<CouponDocument> => {
+  const coupon = await Coupon.findOne({
+    referralCode: referralCode,
+    isDeleted: false,
+    isActive: true,
+  });
+
+  if (!coupon) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Referral coupon not found');
+  }
+  if (Array.isArray(coupon.usedBy) && coupon.usedBy.some(id => id?.equals(customerId))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Referral coupon already used by this customer');
+  }
+
+  coupon.usedBy.push(new mongoose.Types.ObjectId(customerId));
+  await coupon.save();
+
+  return coupon;
+};
+
+
+
+/**
  * Toggle coupon status by id
  * @param {string | number} couponId
  * @returns {Promise<CouponDocument>}
@@ -184,6 +215,18 @@ const getCouponById = async (
   }
   return null;
 };
+
+// coupon.service.ts
+export const getCouponByFilter = async (filter: any): Promise<CouponDocument | null> => {
+  return await Coupon.findOne({
+    ...filter,
+    isDeleted: false,
+    valid: { $gte: new Date() }, // ✅ Still valid (future)
+  });
+};
+
+
+
 /**
  * Get Coupon by id
  * @param {object} matchObject
@@ -220,4 +263,5 @@ export {
   getCouponsByIds,
   getCouponByMultipleFields,
   toggleCouponStatusById,
+  markCouponAsUsed
 };

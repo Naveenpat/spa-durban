@@ -92,6 +92,13 @@ export const productApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    addFileUrl: builder.mutation({
+      query: (body) => ({
+        url: '/product/upload',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -105,4 +112,5 @@ export const {
   useGetItemsQuery,
   useGetItemsAllQuery,
   useProductStatusMutation,
+  useAddFileUrlMutation
 } = productApi;

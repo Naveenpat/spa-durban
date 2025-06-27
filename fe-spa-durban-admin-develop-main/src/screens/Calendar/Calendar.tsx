@@ -30,7 +30,7 @@ const renderDayContents = (day: any, date: any) => {
   const isWeekend = getDay(date) === 0 || getDay(date) === 6;
   const isPresent =
     absent?.findIndex((d) => {
-      console.log(d, date);
+      // console.log(d, date);
       return isEqual(startOfDay(d), startOfDay(date));
     }) > -1;
 

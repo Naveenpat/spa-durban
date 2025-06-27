@@ -7,6 +7,9 @@ import {
   deleteCustomer,
   toggleCustomerStatus,
   createCustomerByBooking,
+  exportCustomerCsvSheet,
+  importCustomerCsvSheet,
+  getCustomerDropdown,
 } from "./controller.customer";
 import validate from "../../../middleware/validate";
 import {
@@ -20,9 +23,10 @@ import {
 import { authenticate } from "../../../middleware/authentication";
 import { parseBodyAndQuery } from "../../../middleware/parseBodyAndQuery";
 import { UserEnum, TokenEnum } from "../../../utils/enumUtils";
+import multer, { FileFilterCallback } from "multer"
 
 const router = Router();
-
+const upload = multer();
 /**
  * @swagger
  * tags:
@@ -326,5 +330,25 @@ router.put(
   validate(toggleStatusDocument),
   toggleCustomerStatus
 );
+
+router.post(
+  '/new/import-csv',
+  authenticate([UserEnum.Admin], TokenEnum.Access),
+  upload.single('file'), // `file` is the name expected in form-data
+  importCustomerCsvSheet
+);
+
+
+router.get(
+  '/new/export-csv',
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  exportCustomerCsvSheet
+);
+
+router.get(
+  "/new/dropdown",
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  getCustomerDropdown
+)
 
 export default router;

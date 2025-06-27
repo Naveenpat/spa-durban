@@ -10,6 +10,10 @@ export type Outlet = {
   country: string;
   status: any;
   isActive: boolean;
+  logo:string;
+  companyName:any;
+  createdAt:Date;
+  viewSalesReport:string;
 };
 
 export type OutletFormValues = {
@@ -24,4 +28,15 @@ export type OutletFormValues = {
   invoicePrefix: string;
   invoiceNumber: string;
   onlinePaymentAccountId: any;
+  logo:string;
+  companyId:any;
+ smtp: {
+  host: string ,
+  port:string,
+  username:string,
+  password:string,
+  sendFrom:string,
+  ccEmails:string,
+  bccEmails:string
+}
 };

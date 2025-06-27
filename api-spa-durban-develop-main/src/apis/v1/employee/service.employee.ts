@@ -5,6 +5,13 @@ import mongoose from "mongoose";
 import { RangeFilter } from "../../../utils/interface";
 import { userService } from "./../service.index";
 import { UserEnum } from "../../../utils/enumUtils";
+import XLSX from 'xlsx';
+import Outlet from "../outlet/schema.outlet";
+import Company from "../company/schema.company";
+import Role from "../role/schema.role";
+import { format, parse } from 'fast-csv';
+import { Readable } from 'stream';
+
 
 /**
  * Create a employee
@@ -67,10 +74,10 @@ const getEmployeeById = async (
   id: string | number
 ): Promise<EmployeeDocument | null> => {
   if (typeof id === "string" || typeof id === "number") {
-    return Employee.findById({
+    return Employee.findOne({
       _id: new mongoose.Types.ObjectId(id),
       isDeleted: false,
-    });
+    }).select("+password");
   }
   return null;
 };
@@ -224,6 +231,102 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
   return false;
 }
 
+
+const importCSV = async (file: Express.Multer.File): Promise<void> => {
+  if (!file) throw new Error('No file uploaded');
+
+  const stream = Readable.from(file.buffer);
+
+  const rows: any[] = [];
+
+  await new Promise<void>((resolve, reject) => {
+    stream
+      .pipe(parse({ headers: true, ignoreEmpty: true, trim: true }))
+      .on('error', reject)
+      .on('data', (row:any) => rows.push(row))
+      .on('end', resolve);
+  });
+
+  for (const emp of rows) {
+    const {
+      userName,
+      roleName,
+      companyName,
+      outletNames,
+      ...restFields
+    } = emp;
+
+    if (!userName) continue;
+
+    // Find Role
+    const role = await Role.findOne({ roleName: roleName?.trim() || '' });
+    const userRoleId = role?._id;
+
+    // Find Company
+    let companyId = null;
+    if (companyName) {
+      const company = await Company.findOne({ companyName: companyName.trim() });
+      companyId = company?._id || null;
+    }
+
+    // Find Outlets
+    const outletsArray = outletNames
+      ? outletNames.split(',').map((name: any) => name.trim())
+      : [];
+
+    const outlets = await Outlet.find({ name: { $in: outletsArray } });
+    const outletsId = outlets.map((o) => o._id);
+
+    // Prepare employee object
+    const employeeObj = {
+      ...restFields,
+      userName,
+      userRoleId,
+      companyId,
+      outletsId
+    };
+
+    // console.log('Parsed Employee:', employeeObj);
+
+    await Employee.findOneAndUpdate(
+      { userName },
+      { $set: employeeObj },
+      { upsert: true, new: true }
+    );
+  }
+};
+
+const exportCSV = async (): Promise<Buffer> => {
+  const employees = await Employee.find().lean();
+
+  return new Promise((resolve, reject) => {
+    const csvStream = format({
+      headers: [
+        'Name'.padEnd(25),
+        'Email'.padEnd(35),
+        'Phone'.padEnd(20),
+        'Role'.padEnd(20),
+      ],
+    });
+
+    const chunks: Buffer[] = [];
+
+    csvStream.on('data', (chunk) => chunks.push(chunk));
+    csvStream.on('end', () => resolve(Buffer.concat(chunks)));
+    csvStream.on('error', reject);
+
+    employees.forEach((emp) => {
+      csvStream.write({
+        ['Name'.padEnd(25)]: emp.name?.padEnd(25),
+        ['Email'.padEnd(35)]: emp.email?.padEnd(35),
+        ['Phone'.padEnd(20)]: emp.phone?.padEnd(20)
+      });
+    });
+
+    csvStream.end();
+  });
+};
+
 export {
   createEmployee,
   queryEmployees,
@@ -233,4 +336,6 @@ export {
   getEmployeesByIds,
   isExists,
   toggleEmployeeStatusById,
+  importCSV,
+  exportCSV
 };

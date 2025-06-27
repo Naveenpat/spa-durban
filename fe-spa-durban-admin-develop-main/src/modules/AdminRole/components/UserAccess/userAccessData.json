@@ -137,7 +137,7 @@
         "SUPPLIER_ACTIVE_DEACTIVE"
       ],
       "fields": []
-    }, 
+    },
     {
       "moduleName": "Customer",
       "moduleId": "NAV_CUSTOMER",
@@ -163,6 +163,18 @@
         {
           "featureId": "CUSTOMER_ACTIVE_DEACTIVE",
           "featureName": "Activate/Deactivate Customer"
+        },
+        {
+          "featureId": "CUSTOMER_SALES_REPORT",
+          "featureName": "See Customer Sales Report"
+        },
+        {
+          "featureId": "CUSTOMER_IMPORT_BUTTON",
+          "featureName": "Import Customer"
+        },
+        {
+          "featureId": "CUSTOMER_EXPORT_BUTTON",
+          "featureName": "Export Customer"
         }
       ],
       "dependencies": [
@@ -170,7 +182,10 @@
         "CUSTOMER_ADD",
         "CUSTOMER_UPDATE",
         "CUSTOMER_DELETE",
-        "CUSTOMER_ACTIVE_DEACTIVE"
+        "CUSTOMER_ACTIVE_DEACTIVE",
+        "CUSTOMER_SALES_REPORT",
+        "CUSTOMER_IMPORT_BUTTON",
+        "CUSTOMER_EXPORT_BUTTON"
       ],
       "fields": []
     },
@@ -198,7 +213,7 @@
         }
       ],
       "dependencies": [
-        "TASK_ADD" ,
+        "TASK_ADD",
         "TASK_UPDATE",
         "TASK_DELETE",
         "TASK_LIST"
@@ -229,7 +244,7 @@
         }
       ],
       "dependencies": [
-        "TICKET_ADD" ,
+        "TICKET_ADD",
         "TICKET_UPDATE",
         "TICKET_DELETE",
         "TICKET_LIST"
@@ -302,11 +317,6 @@
       ],
       "fields": []
     },
-
-
-
-
-    
     {
       "moduleName": "Products",
       "moduleId": "NAV_PRODUCT",
@@ -476,6 +486,14 @@
         {
           "featureId": "EMPLOYEE_ACTIVE_DEACTIVE",
           "featureName": "Activate/Deactivate Employee"
+        },
+        {
+          "featureId": "EMPLOYEE_IMPORT_BUTTON",
+          "featureName": "Import Employee"
+        },
+        {
+          "featureId": "EMPLOYEE_EXPORT_BUTTON",
+          "featureName": "Export Employee"
         }
       ],
       "dependencies": [
@@ -483,13 +501,12 @@
         "EMPLOYEE_ADD",
         "EMPLOYEE_UPDATE",
         "EMPLOYEE_DELETE",
-        "EMPLOYEE_ACTIVE_DEACTIVE"
+        "EMPLOYEE_ACTIVE_DEACTIVE",
+        "EMPLOYEE_IMPORT_BUTTON",
+        "EMPLOYEE_EXPORT_BUTTON"
       ],
       "fields": []
     },
-
-
-
     {
       "moduleName": "Coupon-Referral",
       "moduleId": "NAV_COUPONS_REFERRAL",
@@ -598,12 +615,6 @@
       ],
       "fields": []
     },
-
-
-
-
-
-
     {
       "moduleName": "Outlets",
       "moduleId": "NAV_OUTLET",
@@ -629,6 +640,10 @@
         {
           "featureId": "OUTLET_ACTIVE_DEACTIVE",
           "featureName": "Activate/Deactivate Outlets"
+        },
+        {
+          "featureId": "OUTLET_SALES_REPORT",
+          "featureName": "See Outlet Sales Report"
         }
       ],
       "dependencies": [
@@ -636,7 +651,8 @@
         "OUTLET_ADD",
         "OUTLET_UPDATE",
         "OUTLET_DELETE",
-        "OUTLET_ACTIVE_DEACTIVE"
+        "OUTLET_ACTIVE_DEACTIVE",
+        "OUTLET_SALES_REPORT"
       ],
       "fields": []
     },
@@ -891,8 +907,51 @@
         "ACCOUNT_ACTIVE_DEACTIVE"
       ],
       "fields": []
+    },
+    {
+      "moduleName": "Dashboard",
+      "moduleId": "NAV_DASHBOARD",
+      "features": [
+        {
+          "featureId": "NAV_DASHBOARD",
+          "featureName": "See Dashboard",
+          "relatedFieldColumn": "NAV_DASHBOARD"
+        }
+      ],
+      "dependencies": [
+        "NAV_DASHBOARD"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "POS",
+      "moduleId": "NAV_POS",
+      "features": [
+        {
+          "featureId": "NAV_POS",
+          "featureName": "See POS",
+          "relatedFieldColumn": "NAV_POS"
+        }
+      ],
+      "dependencies": [
+        "NAV_POS"
+      ],
+      "fields": []
+    },
+    {
+      "moduleName": "Customer-Group",
+      "moduleId": "CUSTOMER_GROUP",
+      "features": [
+        {
+          "featureId": "CUSTOMER_GROUP",
+          "featureName": "See Customer Group",
+          "relatedFieldColumn": "CUSTOMER_GROUP"
+        }
+      ],
+      "dependencies": [
+        "CUSTOMER_GROUP"
+      ],
+      "fields": []
     }
- 
-  
   ]
 }

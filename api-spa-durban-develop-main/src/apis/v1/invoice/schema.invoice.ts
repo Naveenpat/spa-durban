@@ -36,6 +36,7 @@ export interface InvoiceDocument extends Document {
   invoiceDate: Date;
   invoiceNumber: string;
   outletId: ObjectId;
+  companyId:ObjectId;
   customerId: ObjectId;
   employeeId: ObjectId;
   items: items[];
@@ -46,6 +47,7 @@ export interface InvoiceDocument extends Document {
   giftCardCode: string;
   useLoyaltyPoints: boolean;
   loyaltyPointsEarned: number;
+  loyaltyPoints:Number;
   referralCode: string;
   taxes: taxes[];
   balanceDue: number;
@@ -54,6 +56,8 @@ export interface InvoiceDocument extends Document {
   amountPaid: number;
   couponDiscount: number;
   giftCardDiscount: number;
+  promotionCoupanCode:string;
+  promotionCoupanCodeDiscount:number;
   loyaltyPointsDiscount: number;
   referralDiscount: number;
   isDeleted: boolean;
@@ -69,6 +73,18 @@ export interface InvoiceDocument extends Document {
 
 export interface AggregatedInvoiceDocument extends InvoiceDocument {
   customer: UserDocument;
+  amount:any;
+  date:Date;
+  serviceName:any;
+  spa_name:any;
+  contact_info:any;
+  website:any;
+  paymentMethod:any;
+  outlet:any;
+  paymentMode:any;
+  amountReceived:any;
+  websiteUrl:string;
+  company:any;
 }
 
 export interface InvoiceModel extends mongoose.Model<InvoiceDocument> {
@@ -120,6 +136,11 @@ const InvoiceSchema = new mongoose.Schema<InvoiceDocument>(
       type: mongoose.Types.ObjectId,
       ref: "Outlet",
       required: true,
+      trim: true,
+    },
+    companyId:{
+       type: mongoose.Types.ObjectId,
+      ref: "Company",
       trim: true,
     },
     items: {
@@ -237,12 +258,27 @@ const InvoiceSchema = new mongoose.Schema<InvoiceDocument>(
       default: "",
       trim: true,
     },
+    promotionCoupanCodeDiscount: {
+      type: Number,
+      required: true,
+      trim: true,
+    },
+    promotionCoupanCode: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     useLoyaltyPoints: {
       type: Boolean,
       default: false,
       trim: true,
     },
     loyaltyPointsEarned: {
+      type: Number,
+      // required: true,
+      trim: true,
+    },
+    loyaltyPoints:{
       type: Number,
       required: true,
       trim: true,

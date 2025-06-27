@@ -27,6 +27,7 @@ export interface CustomerDocument extends Document {
   isActive: boolean;
   bookingCustomerId: string;
   cashBackAmount: number;
+  customerGroup:string;
 }
 
 export interface CustomerModel extends mongoose.Model<CustomerDocument> {
@@ -128,6 +129,10 @@ const CustomerSchema = new mongoose.Schema<CustomerDocument>(
       enum: [GenderTypeEnum.male, GenderTypeEnum.female, GenderTypeEnum.other],
       // required: true,
       trim: true,
+    },
+    customerGroup:{
+      type:String,
+      required:true
     },
     customerType: {
       type: String,

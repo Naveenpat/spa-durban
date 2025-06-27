@@ -61,7 +61,7 @@ const AccountFormLayout = ({ formikProps, onClose, formType, isLoading = false }
               name="note"
               value={values.note}
               onChange={(e) => setFieldValue("note", e.target.value)}
-              label="Note"
+              label="Note (optional)"
               placeholder="Enter Note"
               onBlur={handleBlur}
               isTouched={touched?.note}

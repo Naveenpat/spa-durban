@@ -6,7 +6,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
 import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCircularProgress';
 import { useFetchData } from 'src/hooks/useFetchData';
-import { useGetOutletsQuery } from 'src/modules/Outlet/service/OutletServices';
+import { useGetOutletsByCompanyIdQuery, useGetOutletsQuery } from 'src/modules/Outlet/service/OutletServices';
 import { calculatedAmounts } from 'src/modules/POS/components/CartSummarySection';
 import { showToast } from 'src/utils/showToaster';
 import {
@@ -14,6 +14,8 @@ import {
   useSendPdfViaEmailMutation,
 } from '../../service/InvoicesServices';
 import { useRef } from 'react';
+import { useGetCompanyByIdQuery } from 'src/modules/AdminRole copy/service/CompanyServices';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 const Receipt = () => {
   const { id: invoiceId } = useParams();
@@ -25,6 +27,12 @@ const Receipt = () => {
     body: invoiceId,
     dataType: 'VIEW',
   });
+
+  console.log('-------data ssss',(data as any)?.data)
+
+  const { data: companyData } = useGetCompanyByIdQuery((data as any)?.data?.companyId)
+  const { data: outletData } = useGetOutletsByCompanyIdQuery((data as any)?.data?.companyId);
+   console.log('----get all outlet by com id',companyData)
   const { data: outletsData } = useFetchData(useGetOutletsQuery, {
     body: {
       isPaginationRequired: false,
@@ -55,7 +63,7 @@ const Receipt = () => {
   const phoneNumber = invoiceData?.customerPhone;
   const email = invoiceData?.customerEmail;
   const name = invoiceData?.customerName;
-  const youEarn = invoiceData?.loyaltyPointsEarned;
+  const youEarn = invoiceData?.loyaltyPoints;
   const youHave = invoiceData?.customerLoyaltyPoints;
   const youEarnCashback = invoiceData?.cashBackEarned;
   const youHaveCashback = invoiceData?.customerCashBackAmount;
@@ -81,6 +89,7 @@ const Receipt = () => {
     : 0 || 0;
   const couponDiscount = invoiceData?.couponDiscount || 0;
   const giftCardDiscount = invoiceData?.giftCardDiscount || 0;
+  const promotionCoupanCodeDiscount = invoiceData?.promotionCoupanCodeDiscount || 0;
   const referralDiscount = invoiceData?.referralDiscount || 0;
   const grandTotal = invoiceData?.totalAmount || 0;
   const youPay = invoiceData?.amountPaid || 0;
@@ -161,7 +170,7 @@ const Receipt = () => {
     <>
       <div ref={printRef} className="py-2 mx-auto receipt-print w-[50%]">
         <div className="flex justify-center px-2 mb-2">
-          <img className="h-20 w-30" src="/spadurbanLogo.jpeg" alt="Logo" />
+          <img className="h-20 w-30" src={`${process.env.REACT_APP_BASE_URL}/${companyData?.data?.logo}`} alt="Logo" />
         </div>
         <div className="px-2 text-[11px] font-medium text-center text-slate-600 ">
           {toTitleCase(invoiceData?.outletName)}
@@ -179,7 +188,9 @@ const Receipt = () => {
             <span className="">{invoiceData?.invoiceNumber}</span>
           </div>
           <div className="">
-            {format(new Date(invoiceData?.createdAt), 'dd MMM yyyy hh:mm a')}
+            {/* {format(new Date(invoiceData?.createdAt), 'dd MMM yyyy hh:mm a')}
+             */}
+             {formatZonedDate(invoiceData?.invoiceDate)}
           </div>
         </div>
         <div className="mt-2 border-t border-dashed"></div>
@@ -242,6 +253,12 @@ const Receipt = () => {
               <div className="flex justify-between px-2">
                 <div>GiftCard Discount</div>
                 <div>- {giftCardDiscount.toFixed(2)}</div>
+              </div>
+            ) : null}
+            {promotionCoupanCodeDiscount ? (
+              <div className="flex justify-between px-2">
+                <div>Promotion Discount</div>
+                <div>- {promotionCoupanCodeDiscount.toFixed(2)}</div>
               </div>
             ) : null}
             {referralDiscount ? (
@@ -329,11 +346,11 @@ const Receipt = () => {
               </div>
               <div className="mt-2 mb-1 border-t"></div>
               <div className="px-2 font-semibold text-center text-slate-800">
-                Thank you for Choosing Spa-Durban
+                Thank you for Choosing {companyData?.data?.companyName}
                 <br />
                 Kindly Refer Your Friends and Family to us . <br />
                 Come again soon !
-                {outletsData?.map((outlet: any) => {
+                {outletData?.data?.map((outlet: any) => {
                   return (
                     <div className="mt-1 font-normal tracking-wider text-center text-slate-500">
                       <div>{toTitleCase(outlet?.name)}</div>

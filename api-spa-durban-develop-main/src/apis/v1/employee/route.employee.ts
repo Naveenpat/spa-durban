@@ -8,6 +8,8 @@ import {
   deleteEmployee,
   toggleEmployeeStatus,
   createBookingEmployee,
+  exportEmployeeCsvSheet,
+  importEmployeeCsvSheet,
 } from "./controller.employee";
 import validate from "../../../middleware/validate";
 import {
@@ -21,7 +23,11 @@ import {
 import { authenticate } from "../../../middleware/authentication";
 import { parseBodyAndQuery } from "../../../middleware/parseBodyAndQuery";
 import { UserEnum, TokenEnum } from "../../../utils/enumUtils";
+import { fileUpload } from "../../../middleware/multerFileUpload";
+import multer, { FileFilterCallback } from "multer"
 
+
+const upload = multer();
 const router = Router();
 
 /**
@@ -368,5 +374,20 @@ router.put(
   validate(toggleStatusDocument),
   toggleEmployeeStatus
 );
+
+router.post(
+  '/new/import-csv',
+  authenticate([UserEnum.Admin], TokenEnum.Access),
+  upload.single('file'), // file input must be named 'file'
+  importEmployeeCsvSheet
+);
+
+
+router.get(
+  '/new/export-csv',
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  exportEmployeeCsvSheet
+);
+
 
 export default router;

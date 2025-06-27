@@ -20,17 +20,23 @@ import { searchKeys, allowedDateFilterKeys } from "./schema.customerGroup"
 
 const createCustomerGroup = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    const { customers } = req.body
-    const allCustomers = await Promise.all(
-      customers.map((ele: any) => customerService.getCustomerById(ele))
-    )
+    // const { customers } = req.body
+    // const allCustomers = await Promise.all(
+    //   customers.map((ele: any) => customerService.getCustomerById(ele))
+    // )
 
     // Check if any outlet is not found
-    const notFoundCustomer = allCustomers.filter((customer) => !customer)
+    // const notFoundCustomer = allCustomers.filter((customer) => !customer)
 
-    if (notFoundCustomer.length > 0) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Invalid customer's")
+    // if (notFoundCustomer.length > 0) {
+    //   throw new ApiError(httpStatus.NOT_FOUND, "Invalid customer's")
+    // }
+
+    const existingGroup = await customerGroupService.findGroupByName(req?.body?.customerGroupName);
+    if (existingGroup) {
+      throw new ApiError(httpStatus.CONFLICT, "Customer group already exists.");
     }
+
     const customerGroup = await customerGroupService.createCustomerGroup(
       req.body
     )
@@ -194,17 +200,17 @@ const getCustomerGroup = catchAsync(
 
 const updateCustomerGroup = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    const { customers } = req.body
-    const allCustomers = await Promise.all(
-      customers.map((ele: any) => customerService.getCustomerById(ele))
-    )
+    // const { customers } = req.body
+    // const allCustomers = await Promise.all(
+    //   customers.map((ele: any) => customerService.getCustomerById(ele))
+    // )
 
     // Check if any outlet is not found
-    const notFoundCustomer = allCustomers.filter((customer) => !customer)
+    // const notFoundCustomer = allCustomers.filter((customer) => !customer)
 
-    if (notFoundCustomer.length > 0) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Invalid customer's")
-    }
+    // if (notFoundCustomer.length > 0) {
+    //   throw new ApiError(httpStatus.NOT_FOUND, "Invalid customer's")
+    // }
     const customerGroup = await customerGroupService.updateCustomerGroupById(
       req.params.customerGroupId,
       req.body
@@ -234,10 +240,31 @@ const deleteCustomerGroup = catchAsync(
   }
 )
 
+const toggleCustomerGroupStatus = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const customerGroup = await customerGroupService.getCustomerGroupById(
+      req.params.customerGroupId
+    );
+    if (!customerGroup) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Customer Group not found");
+    }
+    customerGroup.isActive = !customerGroup.isActive;
+    await customerGroup.save();
+    return res.status(httpStatus.OK).send({
+      message: "Status updated successfully.",
+      data: customerGroup,
+      status: true,
+      code: "OK",
+      issue: null,
+    });
+  }
+);
+
 export {
   createCustomerGroup,
   getCustomerGroups,
   getCustomerGroup,
   updateCustomerGroup,
   deleteCustomerGroup,
+  toggleCustomerGroupStatus
 }

@@ -11,6 +11,7 @@ import { useSearchParams } from 'react-router-dom';
 import { showToast } from 'src/utils/showToaster';
 import { useFetchData } from 'src/hooks/useFetchData';
 import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCircularProgress';
+import toast from 'react-hot-toast';
 
 type Props = {
   onClose: () => void;
@@ -40,14 +41,14 @@ const EditInvoiceVoidFormWrapper = ({ onClose, invoiceId }: Props) => {
     values.status = 'void';
     updateInvoice({ body: values, invoiceId }).then((res: any) => {
       if (res?.error) {
-        showToast('error', res?.error?.data?.message);
+        showToast('error',res?.error?.data?.message)
       } else {
         if (res?.data?.status) {
-          showToast('success', res?.data?.message);
+       showToast('success',res?.data?.message)
           resetForm();
           onClose();
         } else {
-          showToast('error', res?.data?.message);
+         showToast('error',res?.data?.message)
         }
       }
       setSubmitting(false);

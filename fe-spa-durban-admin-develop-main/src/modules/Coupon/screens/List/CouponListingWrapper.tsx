@@ -22,6 +22,7 @@ import {
 import AddCouponFormWrapper from '../Add/AddCouponFormWrapper';
 import EditCouponFormWrapper from '../Edit/EditCouponFormWrapper';
 import CouponListing from './CouponListing';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -147,6 +148,18 @@ const CouponListingWrapper = (props: Props) => {
       flex: 'flex-[1_1_0%]',
       stopPropagation: true,
     },
+    {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      // return date ? format(date, 'dd-MM-yyyy') : '-';
+      return date ? formatZonedDate(date) : '-';
+    },
+  },
     {
       fieldName: 'status',
       headerName: 'Active',

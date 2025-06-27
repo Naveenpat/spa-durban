@@ -7,12 +7,18 @@ import { Customer } from '../../models/Customer.model';
 import {
   useCustomerStatusMutation,
   useDeleteCustomerMutation,
+  useExportCustomerExcelQuery,
   useGetCustomersQuery,
+  useImportCustomerExcelMutation,
 } from '../../service/CustomerServices';
 import CustomerListing from './CustomerListing';
 import { format } from 'date-fns';
 import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
+import { useEffect, useState } from 'react';
+import { EmptyPointSettings } from '@syncfusion/ej2-react-charts';
+import toast from 'react-hot-toast';
+import { isAuthorized } from 'src/utils/authorization';
 
 type Props = {};
 
@@ -21,18 +27,46 @@ const CustomerListingWrapper = (props: Props) => {
   const [deleteCustomer] = useDeleteCustomerMutation();
   const [status] = useCustomerStatusMutation();
   const { searchQuery, limit, page } = useFilterPagination();
+  console.log('------searchQuery', searchQuery)
+  // const { data, isLoading, totalData, totalPages } = useFetchData(
+  //   useGetCustomersQuery,
+  //   {
+  //     body: {
+  //       limit,
+  //       page,
+  //       searchValue: searchQuery,
+  //       searchIn: JSON.stringify(['customerName','email','phone']),
+  //     },
+  //   },
+  // );
+
+  const query = searchQuery.trim();
+  let filterBy: any[] = [];
+
+  const isEmail = query.includes('@'); // ✅ Check email first
+  const isNumber = /^\d+$/.test(query);
+
+  if (isEmail) {
+    filterBy = [{ fieldName: 'email', value: query }];
+  } else if (isNumber) {
+    filterBy = [{ fieldName: 'phone', value: query }];
+  } else {
+    filterBy = [{ fieldName: 'customerName', value: query }];
+  }
 
   const { data, isLoading, totalData, totalPages } = useFetchData(
     useGetCustomersQuery,
     {
-      body: {
+      params: {
         limit,
         page,
-        searchValue: searchQuery,
-        searchIn: JSON.stringify(['customerName']),
+        isPaginationRequired: true,
+        filterBy: JSON.stringify(filterBy),
       },
-    },
+    }
   );
+
+
 
   const handleStatusChanges = (
     item: any,
@@ -53,12 +87,61 @@ const CustomerListingWrapper = (props: Props) => {
       setIsLoading(false);
     });
   };
+  const [loading, setLoading] = useState(false);
+  const [startExport, setStartExport] = useState(false)
+  const { data: exportData, isLoading: isExporting } = useExportCustomerExcelQuery(undefined, {
+    skip: !startExport, // trigger only when needed
+  });
+
+  const [importEmployeeExcel, { isLoading: isImporting }] = useImportCustomerExcelMutation();
+
+  const exportEmployeeExcelSheet = () => {
+    setStartExport(true); // This will trigger the API call to fetch exportData
+  };
+
+  // ⬇️ When exportData is updated by the API call, download the file
+  useEffect(() => {
+    if (exportData) {
+      const url = window.URL.createObjectURL(new Blob([exportData], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'Customer.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url); // Clean up
+    }
+  }, [exportData]);
+
+  const importCustomerExcelSheet = async (file: any) => {
+    try {
+      setLoading(true)
+      await importEmployeeExcel(file).unwrap();
+      setLoading(false)
+      toast.success('Customer imported successfully!');
+    } catch (err) {
+      setLoading(false)
+      toast.error('Failed to import employees');
+    }
+  }
+
+  const handleViewSalesReport = (row: any) => {
+    navigate(`/customer/sales-report/${row._id}`);
+  }
 
   const tableHeaders: TableHeader<Customer>[] = [
     {
       fieldName: 'customerName',
       headerName: 'Name',
-      flex: 'flex-[1_0_0%]',
+      flex: 'flex-[2_0_0%]',
+      renderCell: (row) => (
+        <span
+          className="text-black-600 cursor-pointer"
+          onClick={() => navigate(`/customer/view/${row._id}`)}
+        >
+          {row.customerName}
+        </span>
+      ),
     },
     {
       fieldName: 'phone',
@@ -75,19 +158,24 @@ const CustomerListingWrapper = (props: Props) => {
       headerName: 'Gender',
       flex: 'flex-[1_0_0%]',
     },
+    // {
+    //   fieldName: 'dateOfBirth',
+    //   headerName: 'dateOfBirth',
+    //   flex: 'flex-[1_0_0%]',
+    //   renderCell(item) {
+    //     return (
+    //       <div>
+    //         {item?.dateOfBirth
+    //           ? format(new Date(item?.dateOfBirth), 'dd MMM yyyy')
+    //           : '-'}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       fieldName: 'dateOfBirth',
-      headerName: 'DOB',
+      headerName: 'dateOfBirth',
       flex: 'flex-[1_0_0%]',
-      renderCell(item) {
-        return (
-          <div>
-            {item?.dateOfBirth
-              ? format(new Date(item?.dateOfBirth), 'dd MMM yyyy')
-              : '-'}
-          </div>
-        );
-      },
     },
     {
       fieldName: 'address',
@@ -130,6 +218,14 @@ const CustomerListingWrapper = (props: Props) => {
       },
     },
     {
+      fieldName: 'customerGroup',
+      headerName: 'Group',
+      flex: 'flex-[1_0_0%]',
+      renderCell(item) {
+        return <div>{item?.customerGroup || '-'}</div>;
+      },
+    },
+    {
       fieldName: 'loyaltyPoints',
       headerName: 'Loyalty',
       flex: 'flex-[1_0_0%]',
@@ -142,6 +238,36 @@ const CustomerListingWrapper = (props: Props) => {
           </div>
         );
       },
+    },
+    {
+      fieldName: 'updatedAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.updatedAt ? new Date(row.updatedAt) : null;
+        return date ? format(date, 'dd-MM-yyyy') : '-';
+      },
+    },
+    {
+      fieldName: 'viewSalesReport',
+      headerName: 'Sales Report',
+      flex: 'flex-[0_0_150px]',
+      renderCell: (row: any) => (
+        <button
+          onClick={() => {
+            if (!isAuthorized('CUSTOMER_SALES_REPORT')) {
+              showToast('error', 'You are not authorized to access this page.')
+            } else { handleViewSalesReport(row) }
+          }}
+          className="text-white px-3 py-1 rounded hover:opacity-90"
+          style={{ backgroundColor: '#006972' }}
+        >
+          View Report
+        </button>
+
+      ),
     },
     {
       fieldName: 'status',
@@ -199,6 +325,8 @@ const CustomerListingWrapper = (props: Props) => {
           totalPages: totalPages,
         }}
         isLoading={isLoading}
+        importEmployeeExcelSheet={importCustomerExcelSheet}
+        exportEmployeeExcelSheet={exportEmployeeExcelSheet}
       />
     </>
   );

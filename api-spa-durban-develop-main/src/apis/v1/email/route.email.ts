@@ -74,4 +74,14 @@ router.post(
   emailController.sendInvoice
 )
 
+router.post(
+  "/send/:outletId",
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  multerUpload.imgError,
+  multerUpload.fileUpload.array("file", 1),
+  validate(emailValidation.sendInvoice),
+  emailController.sendEmailBYEmail
+);
+
+
 export default router

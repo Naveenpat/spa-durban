@@ -65,6 +65,16 @@ import TopCustomerAndProductsListingWrapper from './modules/TopCustomerAndProduc
 import SalesComparisonListingWrapper from './modules/salesComparison/screens/List/SalesComparisonListingWrapper';
 import TaskListingWrapper from './modules/Task/screens/List/TaskListingWrapper';
 import TicketListingWrapper from './modules/Ticket/screens/List/TicketListingWrapper';
+import CompanyListingWrapper from './modules/AdminRole copy/screens/List/CompanyWrapper';
+import CompanyFormWrapper from './modules/AdminRole copy/screens/Add/CompanyFormWrapper';
+import EditCompanyFormWrapper from './modules/AdminRole copy/screens/Edit/EditCompanyFormWrapper';
+import ClaimPage from './utils/ClaimPage';
+import CustomerGroupListingWrapper from './modules/CashbackRules copy/screens/List/CustomerGroupListingWrapper';
+import AddCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Add/AddCustomerGroupFormWrapper';
+import EditCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/Edit/EditCustomerGroupFormWrapper';
+import SalesReportPage from './modules/Outlet/screens/sales-report/SalesReportPage';
+import CustomerSalesReportPage from './modules/Customer/screens/customer-sales-report/CustomerSalesReportPage';
+import ViewCustomerFormWrapper from './modules/Customer/screens/View/ViewCustomerFormWrapper';
 
 type Props = {};
 
@@ -73,6 +83,10 @@ const PageRoutes = (props: Props) => {
     {
       path: '/login',
       element: <LoginFormWrapper />,
+    },
+    {
+      path: '/rewards/claim',
+      element: <ClaimPage />,
     },
     {
       path: '/invoice/receipt/:id',
@@ -104,13 +118,32 @@ const PageRoutes = (props: Props) => {
           element: <AdminRoleListingWrapper />,
         },
         {
+          path: '/customer-group',
+          element: <CustomerGroupListingWrapper />,
+        },
+        {
+          path: '/customer-group/add',
+          element: <AddCustomerGroupFormWrapper />,
+        },
+        { path: '/customer-group/edit/:id', element: <EditCustomerGroupFormWrapper /> },
+        {
+          path: '/company',
+          element: <CompanyListingWrapper />,
+        },
+        {
+          path: '/company/add-company',
+          element: <CompanyFormWrapper />,
+        },
+        {
           path: '/admin-role/add-admin-role',
           element: <AddAdminRoleFormWrapper />,
         },
+        { path: '/company/edit/:id', element: <EditCompanyFormWrapper /> },
         { path: '/admin-role/edit/:id', element: <EditAdminRoleFormWrapper /> },
         { path: '/outlets', element: <OutletListingWrapper /> },
         { path: '/outlet/add', element: <AddOutletFormWrapper /> },
         { path: '/outlet/edit/:id', element: <EditOutletFormWrapper /> },
+        { path: '/outlet/sales-report/:id', element: <SalesReportPage /> },
         {
           path: '/brand',
           element: (
@@ -241,6 +274,7 @@ const PageRoutes = (props: Props) => {
           path: '/customer',
           element: <CustomerListingWrapper />,
         },
+        { path: '/customer/sales-report/:id', element: <CustomerSalesReportPage /> },
         {
           path: '/customer/add',
           element: <AddCustomerFormWrapper />,
@@ -248,6 +282,10 @@ const PageRoutes = (props: Props) => {
         {
           path: '/customer/edit/:id',
           element: <EditCustomerFormWrapper />,
+        },
+        {
+          path: '/customer/view/:id',
+          element: <ViewCustomerFormWrapper />,
         },
         {
           path: '/invoice',

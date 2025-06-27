@@ -4,6 +4,7 @@ export type PaymentMode = {
   isActive: boolean;
   status: any;
   _id: string;
+  createdAt:Date;
 };
 
 export type PaymentModeFormValues = {

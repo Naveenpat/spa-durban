@@ -41,6 +41,8 @@ const LoginFormWrapper = () => {
       email: res?.user?.email,
     };
 
+    // console.log('-----------ress',res)
+
     dispatch(setUserData(userData));
     dispatch(setOutlets(res?.outlets));
     dispatch(setOutlet(res?.outlets?.[0]));
@@ -80,7 +82,7 @@ const LoginFormWrapper = () => {
     login(values).then((res: any) => {
       setSubmitting(false);
       if (res.error) {
-        showToast('error', res?.error?.data?.message);
+        showToast('error', 'Login Successfully');
       } else {
         if (res?.data?.status) {
           afterLogin(res?.data?.data);

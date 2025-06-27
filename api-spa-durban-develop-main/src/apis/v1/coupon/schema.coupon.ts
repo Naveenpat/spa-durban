@@ -1,4 +1,4 @@
-import mongoose, { Document, ObjectId } from "mongoose"
+import mongoose, { Document, ObjectId, Types } from "mongoose"
 import timestamp from "../../plugins/timeStamp.plugin"
 import { paginate } from "../../plugins/pagination.plugin"
 import { format } from "date-fns"
@@ -17,6 +17,7 @@ export interface CouponDocument extends Document {
   note: string
   isDeleted: boolean
   isActive: boolean
+  usedBy: Types.ObjectId[];
 }
 
 export interface CouponModel extends mongoose.Model<CouponDocument> {
@@ -58,7 +59,7 @@ const CouponSchema = new mongoose.Schema<CouponDocument>(
     referralCode: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
     discountAmount: {
       type: Number,
@@ -93,6 +94,7 @@ const CouponSchema = new mongoose.Schema<CouponDocument>(
       type: Boolean,
       default: true,
     },
+    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Customer',default:[] }]
   },
 
   {

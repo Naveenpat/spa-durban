@@ -44,7 +44,6 @@ const loginAuto = catchAsync(async (req: Request, res: Response) => {
     deviceId,
     outletsData
   );
-  console.log('-------------resposeData',resposeData)
   return res.status(httpStatus.OK).send(resposeData);
 });
 //------------------------------------------------------------

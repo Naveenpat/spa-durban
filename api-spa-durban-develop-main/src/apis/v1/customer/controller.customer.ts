@@ -16,7 +16,7 @@ import {
   checkInvalidParams,
   getDateFilterQuery,
 } from "../../../utils/utils";
-import { searchKeys, allowedDateFilterKeys } from "./schema.customer";
+import Customer, { searchKeys, allowedDateFilterKeys } from "./schema.customer";
 
 const createCustomer = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -38,7 +38,7 @@ const createCustomerByBooking = catchAsync(
     const existingCustomer = await customerService.findCustomerByBookingId(
       bookingCustomerId
     );
-    console.log(bookingCustomerId, "existingCustomer=====", existingCustomer);
+    // console.log(bookingCustomerId, "existingCustomer=====", existingCustomer);
 
     if (existingCustomer) {
       return res.status(httpStatus.CONFLICT).send({
@@ -62,7 +62,7 @@ const createCustomerByBooking = catchAsync(
   }
 );
 
- const getCustomers = catchAsync(
+const getCustomers = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const filter = pick(req.query, []); // unused but kept for structure
 
@@ -88,16 +88,14 @@ const createCustomerByBooking = catchAsync(
     if (isPaginationRequiredParam !== undefined) {
       options.isPaginationRequired = isPaginationRequiredParam === "true";
     }
-
-    // 🔍 Search logic
     if (searchValue) {
       let finalSearchIn: string[] = [];
 
+      // Use provided searchIn or fallback to default
       if (searchIn?.length) {
         finalSearchIn = searchIn;
       } else {
-        const isNumber = /^\d+$/.test(searchValue.trim());
-        finalSearchIn = [isNumber ? "phone" : "customerName"];
+        finalSearchIn = searchKeys;
       }
 
       const searchQueryCheck = checkInvalidParams(finalSearchIn, searchKeys);
@@ -106,10 +104,11 @@ const createCustomerByBooking = catchAsync(
       }
 
       const searchQuery = getSearchQuery(finalSearchIn, searchKeys, searchValue);
-      if (searchQuery) {
+      if (searchQuery?.length) {
         options.search = { $or: searchQuery };
       }
     }
+
 
     // 📅 Date filter
     if (dateFilter) {
@@ -149,6 +148,25 @@ const createCustomerByBooking = catchAsync(
 
     const result = await customerService.queryCustomers(filter, options);
     return res.status(httpStatus.OK).send(result);
+  }
+);
+
+const getCustomerDropdown = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    let customerGroup = req.query.customerGroup;
+
+
+    const customers = await Customer.find({
+      isDeleted: false,
+      customerGroup: { $in: customerGroup },
+    }).select("_id customerName");
+
+    const dropdownData = customers.map((cust: any) => ({
+      value: cust._id,
+      label: cust.customerName,
+    }));
+
+    return res.status(httpStatus.OK).send({ data: dropdownData });
   }
 );
 
@@ -213,6 +231,36 @@ const toggleCustomerStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const importCustomerCsvSheet = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    await customerService.importCSV(file); // CSV handler instead of Excel
+    res.status(200).json({ success: true, message: 'Customers imported successfully' });
+  } catch (error) {
+    console.error('CSV Import Error:', error);
+    res.status(500).json({ success: false, message: 'Import failed', error });
+  }
+};
+
+
+
+const exportCustomerCsvSheet = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const buffer = await customerService.exportCSV();
+
+    res.setHeader('Content-Disposition', 'attachment; filename=customers.csv');
+    res.setHeader('Content-Type', 'text/csv');
+    res.send(buffer);
+  }
+);
+
+
+
 export {
   createCustomer,
   getCustomers,
@@ -221,4 +269,7 @@ export {
   deleteCustomer,
   toggleCustomerStatus,
   createCustomerByBooking,
+  importCustomerCsvSheet,
+  exportCustomerCsvSheet,
+  getCustomerDropdown
 };

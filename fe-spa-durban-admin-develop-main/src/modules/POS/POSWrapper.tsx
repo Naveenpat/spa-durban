@@ -49,6 +49,8 @@ const POSWrapper = (props: Props) => {
       },
     ],
     giftCardCode: '',
+    promotionCoupanCode:'',
+    rewardCoupan:'',
     useLoyaltyPoints: false,
     useCashBackAmount: false,
     usedCashBackAmount: 0,
@@ -141,6 +143,7 @@ const POSWrapper = (props: Props) => {
   const [sendPdfViaEmail, { isLoading }] = useSendPdfViaEmailMutation();
 
   const handleSendEmail = async (invoiceId: any) => {
+    // console.log('---- handle send email')
     const receiptElement = document.querySelector('.receipt-print');
 
     if (!receiptElement) return;
@@ -199,7 +202,6 @@ const POSWrapper = (props: Props) => {
     values: any,
     { resetForm, setSubmitting }: FormikHelpers<any>,
   ) => {
-
     let formattedValues = {
       customerId: values?.customer?._id,
       items: values?.items?.map((item: any) => ({
@@ -214,6 +216,8 @@ const POSWrapper = (props: Props) => {
         amount: el?.amount,
       })),
       giftCardCode: values?.giftCardCode,
+      promotionCoupanCode: values?.promotionCoupanCode,
+      rewardCoupan:values?.rewardCoupan,
       useLoyaltyPoints: values?.useLoyaltyPoints,
       referralCode: '',
       outletId: (outlet as any)?._id,
@@ -226,13 +230,15 @@ const POSWrapper = (props: Props) => {
     setSubmitting(true);
 
     try {
-      console.log("4444444444444440000000000")
+      // console.log("4444444444444440000000000")
       const res: any = await addInvoice(formattedValues);
 
       if (res?.error) {
         showToast('error', res?.error?.data?.message);
       } else if (res?.data?.status) {
+        
         const createdInvoiceId = res?.data?.data?._id;
+       
         const totalAmount = previewData?.invoiceData?.totalAmount || 0;
         const totalReceived = values?.amountReceived?.reduce(
           (sum: number, item: any) => sum + (Number(item.amount) || 0),
@@ -247,7 +253,7 @@ const POSWrapper = (props: Props) => {
             invoiceId: createdInvoiceId,
             value: givenChange,
           };
-          console.log("555555555540000000000")
+          // console.log("555555555540000000000")
           await updateGivenChange(givenChangePayload);
         }
 
@@ -259,7 +265,7 @@ const POSWrapper = (props: Props) => {
         // Then after rendering
         setTimeout(() => {
           handleSendEmail(createdInvoiceId);
-        }, 500); // Wait to ensure DOM is ready
+        }, 1000); // Wait to ensure DOM is ready
         //--------
       } else {
         showToast('error', res?.data?.message);
@@ -296,6 +302,7 @@ const POSWrapper = (props: Props) => {
       {isOpenAddDialog && (
         <OpenRegisterFormWrapper
           onClose={() => dispatch(setIsOpenAddDialogRegister(false))}
+          opningData={null}
         />
       )}
       {isCloseAddDialog && (

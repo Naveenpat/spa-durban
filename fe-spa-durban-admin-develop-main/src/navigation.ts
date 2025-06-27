@@ -88,7 +88,6 @@ const navigation: (params?: {
           },
           permission: 'NAV_USER_ROLE',
         },
-
         {
           title: 'Purchase Order',
           icon: IconShoppingCart,
@@ -119,6 +118,16 @@ const navigation: (params?: {
             limit: '10',
           },
           permission: 'NAV_CUSTOMER',
+        },
+         {
+          title: 'Customer Group',
+          icon: IconUserPlus,
+          path: 'customer-group',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'NAV_CUSTOMER_GROUP',
         },
         {
           title: 'Invoice',
@@ -298,6 +307,16 @@ const navigation: (params?: {
     {
       groupLable: 'Configuration',
       items: [
+         {
+          title: 'Company',
+          icon: IconBuildingWarehouse,
+          path: 'company',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'NAV_COMPANY',
+        },
         {
           title: 'Outlets',
           icon: IconLayoutDistributeHorizontal,

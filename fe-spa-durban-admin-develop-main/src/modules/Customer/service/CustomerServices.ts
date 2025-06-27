@@ -4,11 +4,11 @@ export const customerApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getCustomers: builder.query({
       providesTags: ['customer'],
-      query: (body) => {
+      query: (params) => {
         return {
           url: '/customer/pagination',
           method: 'GET',
-          params: body,
+          params,
         };
       },
     }),
@@ -59,6 +59,29 @@ export const customerApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    exportCustomerExcel: builder.query<Blob, void>({
+      query: () => ({
+        url: '/customer/new/export-csv',
+        method: 'GET',
+        responseHandler: (response) => response.blob(), // this is key
+        responseType: 'blob',
+      }),
+    }),
+
+
+    importCustomerExcel: builder.mutation({
+      invalidatesTags: ['customer'],
+      query: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return {
+          url: 'customer/new/import-csv',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    })
   }),
 });
 
@@ -69,4 +92,6 @@ export const {
   useDeleteCustomerMutation,
   useAddCustomerMutation,
   useCustomerStatusMutation,
+  useExportCustomerExcelQuery,
+  useImportCustomerExcelMutation
 } = customerApi;

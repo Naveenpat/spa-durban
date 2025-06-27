@@ -277,8 +277,10 @@ const sendTaskEmailEmployee = async (taskId: string, userData: any) => {
       sendFrom: config.smtp_mail_email,
       attachments: [],
     }
-    const sendEmailResult = await sendEmail(emailData)
-    console.log(sendEmailResult, "sendEmailResult")
+
+    const oultetData = {};
+    const sendEmailResult = await sendEmail(emailData,oultetData)
+    // console.log(sendEmailResult, "sendEmailResult")
   }
   return taskDetail
 }

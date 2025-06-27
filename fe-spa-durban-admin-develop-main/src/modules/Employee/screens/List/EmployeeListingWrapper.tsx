@@ -13,9 +13,15 @@ import { Employee } from '../../models/Employee.model';
 import {
   useDeleteEmployeeMutation,
   useEmployeeStatusMutation,
+  useExportEmployeeExcelQuery,
   useGetEmployiesQuery,
+  useImportEmployeeExcelMutation
 } from '../../service/EmployeeServices';
 import EmployeeListing from './EmployeeListing';
+import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -45,6 +51,14 @@ const EmployeeListingWrapper = (props: Props) => {
       },
     },
   );
+
+  const [startExport, setStartExport] = useState(false)
+  const { data: exportData, isLoading: isExporting } = useExportEmployeeExcelQuery(undefined, {
+    skip: !startExport, // trigger only when needed
+  });
+
+  const [importEmployeeExcel, { isLoading: isImporting }] = useImportEmployeeExcelMutation();
+
   const handleStatusChanges = (
     item: any,
     closeDialog: () => void,
@@ -96,6 +110,26 @@ const EmployeeListingWrapper = (props: Props) => {
       sortKey: 'age',
       renderCell: (row: any) => {
         return row?.outletNames?.join(', ') || '-';
+      },
+    },
+    {
+      fieldName: 'companyName',
+      headerName: 'Company Name',
+      sortKey: 'age',
+      renderCell: (row: any) => {
+        return row?.companyName || '-';
+      },
+    },
+    {
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        // return date ? format(date, 'dd-MM-yyyy') : '-';
+        return date ? formatZonedDate(date) : '-';
       },
     },
     {
@@ -176,6 +210,34 @@ const EmployeeListingWrapper = (props: Props) => {
     },
   ];
 
+const exportEmployeeExcelSheet = () => {
+  setStartExport(true); // This will trigger the API call to fetch exportData
+};
+
+// ⬇️ When exportData is updated by the API call, download the file
+useEffect(() => {
+  if (exportData) {
+    const url = window.URL.createObjectURL(new Blob([exportData], { type: 'text/csv' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'Employees.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url); // Clean up
+  }
+}, [exportData]);
+
+
+  const importEmployeeExcelSheet = async (file: any) => {
+    try {
+      await importEmployeeExcel(file).unwrap();
+      toast.success('Employees imported successfully!');
+    } catch (err) {
+      toast.error('Failed to import employees');
+    }
+  }
+
   return (
     <>
       <EmployeeListing
@@ -190,6 +252,8 @@ const EmployeeListingWrapper = (props: Props) => {
         isTableLoading={isLoading}
         onDelete={handleDelete}
         filter={filters}
+        exportEmployeeExcelSheet={exportEmployeeExcelSheet}
+        importEmployeeExcelSheet={importEmployeeExcelSheet}
       />
     </>
   );

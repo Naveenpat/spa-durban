@@ -12,6 +12,8 @@ import { useFetchData } from 'src/hooks/useFetchData';
 import { showToast } from 'src/utils/showToaster';
 import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
+import { format } from 'date-fns';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -52,6 +54,10 @@ const OutletListingWrapper = (props: Props) => {
       setIsLoading(false);
     });
   };
+
+  const handleViewSalesReport = (row: any) => {
+    navigate(`/outlet/sales-report/${row._id}`);
+  }
   const tableHeaders: TableHeader<Outlet>[] = [
     // {
     //   fieldName: 'companyLogo',
@@ -74,7 +80,7 @@ const OutletListingWrapper = (props: Props) => {
     {
       fieldName: 'name',
       headerName: 'Name',
-      flex: 'flex-[1_0_0%]',
+      flex: 'flex-[3_0_0%]',
     },
     {
       fieldName: 'phone',
@@ -101,10 +107,52 @@ const OutletListingWrapper = (props: Props) => {
       headerName: 'Region',
       flex: 'flex-[1_0_0%]',
     },
+
     {
-      fieldName: 'country',
-      headerName: 'Country',
+      fieldName: 'companyName',
+      headerName: 'Company Name',
       flex: 'flex-[1_0_0%]',
+    },
+    {
+      fieldName: 'viewSalesReport',
+      headerName: 'Sales Report',
+      flex: 'flex-[0_0_150px]',
+      renderCell: (row: any) => (
+        <button
+          onClick={() => handleViewSalesReport(row)}
+          className="text-white px-3 py-1 rounded hover:opacity-90"
+          style={{ backgroundColor: '#006972' }}
+        >
+          View Report
+        </button>
+
+      ),
+    },
+    {
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        // return date ? format(date, 'dd-MM-yyyy') : '-';
+        return date ? formatZonedDate(date) : '-';
+      },
+    },
+    {
+      fieldName: 'logo',
+      headerName: 'Logo',
+      flex: 'flex-[0.5_1_0%]',
+      render: (row: any) => (
+        <img
+          src={`${process.env.REACT_APP_BASE_URL}/${row.logo}`}
+          onError={(e) => (e.currentTarget.src)}
+          alt="Logo"
+          className="h-12 w-12 object-contain rounded-full border"
+        />
+      ),
+      stopPropagation: true,
     },
     {
       fieldName: 'status',

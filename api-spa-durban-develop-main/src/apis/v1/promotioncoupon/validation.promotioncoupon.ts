@@ -22,6 +22,18 @@ export const create: { body: ObjectSchema } = {
       .items(Joi.string().custom(objectId))
       .min(1)
       .required(),
+    startDate: Joi.date()
+      .required()
+      .label('Start Date'),
+    endDate: Joi.date()
+      .min(Joi.ref('startDate'))
+      .required()
+      .label('End Date'),
+      groupTarget: Joi.array()
+  .items(Joi.string().trim())
+  .optional()
+  .label('Customer Groups'),
+
   }),
 };
 
@@ -42,6 +54,17 @@ export const update: { params: ObjectSchema; body: ObjectSchema } = {
       .items(Joi.string().custom(objectId))
       .min(1)
       .required(),
+      startDate: Joi.date()
+      .required()
+      .label('Start Date'),
+    endDate: Joi.date()
+      .min(Joi.ref('startDate'))
+      .required()
+      .label('End Date'),
+      groupTarget: Joi.array()
+  .items(Joi.string().trim())
+  .optional()
+  .label('Customer Groups'),
   }),
 };
 

@@ -11,6 +11,7 @@ type Props = {
   onClose: () => void;
   formType: 'OPEN' | 'EDIT';
   isLoading?: boolean;
+  opningData?: any;
 };
 
 const registerOptions = [
@@ -29,11 +30,13 @@ const OpenRegisterFormLayout = ({
   onClose,
   formType,
   isLoading = false,
+  opningData
 }: Props) => {
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
   const formHeading = formType === 'OPEN' ? 'Open Register' : 'Edit Register';
 
+  // console.log('-----', opningData)
   return (
     <MOLFormDialog
       title={formHeading}
@@ -58,6 +61,15 @@ const OpenRegisterFormLayout = ({
               placeholder="Please Select Register"
             />
           </div> */}
+          {opningData?.carryForwardBalance !== 0 && (
+            <div>
+              <h6 className="text-sm text-blue-600 font-medium">
+                Previous Carry Forword Balance: R {opningData.carryForwardBalance}
+              </h6>
+            </div>
+          )}
+
+
 
           {/* Opening Balance */}
           <div className="">
@@ -65,7 +77,9 @@ const OpenRegisterFormLayout = ({
               required
               name="openingBalance"
               value={values.openingBalance}
-              onChange={(newValue) => setFieldValue('openingBalance', newValue)}
+              onChange={(newValue) => {
+                setFieldValue('openingBalance', newValue);
+              }}
               isAllowDecimal
               label="Float Cash Amount"
               placeholder="Enter float cash amount"
@@ -74,7 +88,25 @@ const OpenRegisterFormLayout = ({
               errorMessage={errors?.openingBalance}
               isValid={!errors?.openingBalance}
             />
+
+            {opningData?.carryForwardBalance !== 0 && (
+              <>
+                {Number(values.openingBalance) < Number(opningData.carryForwardBalance) && (
+                  <p className="text-sm text-red-600 mt-1">
+                    Opening balance is less than previous carry forward balance.
+                  </p>
+                )}
+
+                {Number(values.openingBalance) > Number(opningData.carryForwardBalance) && (
+                  <p className="text-sm text-green-600 mt-1">
+                    Extra amount will be added to the float cash.
+                  </p>
+                )}
+              </>
+            )}
           </div>
+
+
         </div>
       )}
     </MOLFormDialog>

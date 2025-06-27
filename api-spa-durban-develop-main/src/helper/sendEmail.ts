@@ -57,7 +57,7 @@ export const emailSend = async (
   }
 }
 
-export const createTransporter = async (): Promise<Transporter> => {
+export const createTransporter = async (outlet: any): Promise<Transporter> => {
   try {
     // const transporter = nodemailer.createTransport({
     //   host: config.smtp_mail_host,
@@ -70,25 +70,34 @@ export const createTransporter = async (): Promise<Transporter> => {
     //   debug: true,
     // })
 
-       const transporter = nodemailer.createTransport({
-      host: 'smtp.office365.com',
-      port: 587,
+
+    const smtp = outlet?.smtp || {};
+    const {
+      host,
+      port,
+      username,
+      password
+    } = smtp;
+
+    const transporter = nodemailer.createTransport({
+      host: host || config.smtp_mail_host || 'smtp.office365.com',
+      port: port || 587,
       secure: false,
-      pool:true,
+      pool: true,
       auth: {
-        user: 'info4@spadurban.co.za',
-        pass: 'Sp@durban!',
+        user: username || config.smtp_mail_user || 'info4@spadurban.co.za',
+        pass: password || config.smtp_mail_password || 'Sp@durban!',
       },
-      tls: {ciphers: 'SSLv3'}
+      tls: { ciphers: 'SSLv3' }
     })
 
     transporter.verify((error, success) => {
-  if (error) {
-    console.error("SMTP connection failed:", error);
-  } else {
-    console.log("SMTP server is ready to send emails");
-  }
-});
+      if (error) {
+        console.error("SMTP connection failed:", error);
+      } else {
+        console.log("SMTP server is ready to send emails");
+      }
+    });
 
     return transporter
   } catch (err) {
@@ -107,17 +116,27 @@ export const createMailOptions = async (emailData: {
   sendTo: string
   sendFrom: string
   attachments: any[]
-}): Promise<SendMailOptions> => {
+}, outlet: any): Promise<SendMailOptions> => {
   try {
     const { emailSubject, emailBody, sendTo, sendFrom, attachments } = emailData
 
+    const smtp = outlet?.smtp || {};
+    const {
+      sendFrom: outletSendFrom,
+      ccEmails,
+      bccEmails,
+    } = smtp;
+
+
     const mailOptions: SendMailOptions = {
-      from: 'info4@spadurban.co.za',
+      from: outletSendFrom || 'info4@spadurban.co.za',
       to: sendTo,
       subject: emailSubject,
       html: emailBody,
-      attachments: attachments,
-    }
+      attachments: attachments || [],
+      cc: ccEmails ? ccEmails.split(',') : undefined,
+      bcc: bccEmails ? bccEmails.split(',') : undefined,
+    };
 
     // console.log('-----mailOptions',mailOptions)
 
@@ -132,16 +151,11 @@ export const createMailOptions = async (emailData: {
   }
 }
 
-export const sendEmail = async (emailData: {
-  emailSubject: string
-  emailBody: string
-  sendTo: any
-  sendFrom: string
-  attachments: any[]
-}): Promise<boolean> => {
+export const sendEmail = async (emailData: any, outlet: any): Promise<boolean> => {
   try {
-    const transporter = await createTransporter()
-    const mailOptions = await createMailOptions(emailData)
+
+    const transporter = await createTransporter(outlet)
+    const mailOptions = await createMailOptions(emailData, outlet)
     const isEmailSent = await emailSend(transporter, mailOptions)
     return isEmailSent ? true : false
   } catch (err) {

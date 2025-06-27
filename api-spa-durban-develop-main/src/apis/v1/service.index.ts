@@ -35,6 +35,7 @@ import * as cashbackService from "./cashback/service.cashback";
 import * as rewardsCouponService from "./rewardscoupon/service.rewardscoupon";
 import * as promotionCouponService from "./promotioncoupon/service.promotioncoupon";
 import * as registerService from "./register/service.register";
+import * as companyService from "./company/service.company"
 export {
   authService,
   tokenService,
@@ -73,4 +74,5 @@ export {
   rewardsCouponService,
   promotionCouponService,
   registerService,
+  companyService
 };

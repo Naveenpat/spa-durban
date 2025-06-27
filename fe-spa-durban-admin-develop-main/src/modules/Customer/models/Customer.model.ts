@@ -13,6 +13,9 @@ export type Customer = {
   status: any;
   loyaltyPoints: string;
   isActive: boolean;
+  updatedAt:Date;
+  viewSalesReport:any;
+  customerGroup:string;
 };
 
 export type CustomerFormValues = {
@@ -26,4 +29,5 @@ export type CustomerFormValues = {
   taxNo: string;
   dateOfBirth: Date | null;
   gender: any;
+  customerGroup?:any;
 };

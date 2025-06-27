@@ -18,6 +18,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import { useFilterPagination } from 'src/hooks/useFilterPagination';
 import { showToast } from 'src/utils/showToaster';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -35,6 +36,15 @@ const tableHeaders: TableHeader<Category>[] = [
       return <div title={item?.description}>{item?.description}</div>;
     },
   },
+  {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    renderCell(item) {
+      // return <div>{item?.createdAt ? format(new Date(item.createdAt), 'dd/MM/yyyy') : '--'}</div>;
+      return <div>{item?.createdAt ? formatZonedDate(item?.createdAt) : '--'}</div>;
+    },
+  }
   // {
   //   fieldName: 'totalProducts',
   //   headerName: 'total Products',

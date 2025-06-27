@@ -15,6 +15,8 @@ import ProductListing from './ProductListing';
 import { CURRENCY } from 'src/utils/constants';
 import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
+import { format } from 'date-fns';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -90,7 +92,7 @@ const ProductListingWrapper = (props: Props) => {
             <div className="min-w-[30px] min-h-[30px]">
               <img
                 className="w-full h-full rounded "
-                src={item?.productImageUrl || 'no-image.jpg'}
+                src={`${process.env.REACT_APP_BASE_URL}/${item?.productImageUrl}` || 'no-image.jpg'}
                 crossOrigin="anonymous"
                 alt=""
               />
@@ -189,6 +191,18 @@ const ProductListingWrapper = (props: Props) => {
       fieldName: 'description',
       headerName: 'Description',
       flex: 'flex-[1_0_0%]',
+    },
+    {
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        // return date ? format(date, 'dd-MM-yyyy') : '-';
+        return date ? formatZonedDate(date) : '-';
+      },
     },
     {
       fieldName: 'status',

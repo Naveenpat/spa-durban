@@ -14,6 +14,8 @@ import {
   useGetTaxQuery,
 } from '../../service/TaxServices';
 import { showToast } from 'src/utils/showToaster';
+import { format } from 'date-fns';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 
 type Props = {};
 
@@ -30,6 +32,18 @@ const tableHeaders: TableHeader<Tax>[] = [
     flex: 'flex-[1_1_0%]',
     stopPropagation: true,
   },
+  {
+    fieldName: 'createdAt',
+    headerName: 'Date',
+    flex: 'flex-[1_1_0%]',
+    extraClasses: () => '',
+    stopPropagation: true,
+    render: (row: any) => {
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      // return date ? format(date, 'dd-MM-yyyy') : '-';
+      return date ? formatZonedDate(date) : '-';
+    },
+  }
 ];
 
 const TaxListingWrapper = (props: Props) => {

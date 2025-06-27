@@ -12,6 +12,10 @@ import {
   customerService,
   paymentModeService,
   invoiceLogService,
+  couponService,
+  rewardsCouponService,
+  promotionCouponService,
+  giftCardService,
 } from "../service.index";
 import {
   DateFilter,
@@ -36,6 +40,8 @@ import {
 } from "../loyaltyWallet/helper.loyaltyWallet";
 import { getPreview } from "./helper.preinvoice";
 import mongoose from "mongoose";
+import Cashback from "../cashback/schema.cashback";
+import { sendEmail } from "../../../../src/helper/sendEmail";
 
 const previewInvoice = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -76,7 +82,7 @@ const createInvoice = catchAsync(
     /**
      * employeeId = req.userData.Id
      */
-    console.log("1111111111111111111111111111")
+    // console.log("1111111111111111111111111111")
     if (!req.userData) {
       throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
     }
@@ -93,17 +99,21 @@ const createInvoice = catchAsync(
       useCashBackAmount,
       usedCashBackAmount,
       bookingId,
+      rewardCoupan,
+      promotionCoupanCode
     } = req.body;
-    console.log(req.body, 12313);
+    // console.log(req.body, 12313);
     //get pre invoicing phase
+    // console.log('-----calll------1', customerId)
     const previewResult = await getPreview(req);
+    // console.log('-----calll-----2', previewResult)
     if (!previewResult) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
         "Something Went Wrong"
       );
     }
-    console.log("22222222222")
+    // console.log("22222222222")
 
     let { dataToResponse, dataToUpdate, otherData } = previewResult;
     if (!previewResult.status) {
@@ -123,11 +133,101 @@ const createInvoice = catchAsync(
     } = dataToUpdate;
     let { outlet } = otherData;
 
+    // console.log('-----pointsToAdd', pointsToAdd)
+
+
+    const now = new Date();
+    const itemIds = invoiceData?.items.map((item: any) => item.itemId);
+
+    const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+    const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+
+    // const potentialRules = await Cashback.find({
+    //   isActive: true,
+    //   serviceId: { $in: itemIds },
+    //   $or: [
+    //     {
+    //       $and: [
+    //         {
+    //           cashBackDate: { $exists: true }
+    //         },
+    //         {
+    //           cashBackDate: { $lte: now }
+    //         },
+    //         { cashBackEndDate: { $exists: true } },
+    //         { cashBackEndDate: { $gte: now } }
+    //       ]
+    //     },
+    //     {
+    //       activeDays: { $in: [currentDay] }
+    //     }
+    //   ]
+    // });
+
+    const potentialRules = await Cashback.find({
+      isActive: true,
+      serviceId: { $in: itemIds },
+      $or: [
+        {
+          // Date-based cashback rule
+          cashBackDate: { $lte: now },
+          cashBackEndDate: { $gte: now }
+        },
+        {
+          // Day-based cashback rule
+          activeDays: { $in: [currentDay] }
+        }
+      ]
+    });
+
+
+
+
+    // console.log('-----potentialRules', potentialRules)
+    // Step 2: Filter valid rules
+    const validRules = potentialRules.filter((rule: any) => {
+      const isDayRule =
+        Array.isArray(rule.activeDays) &&
+        rule.activeDays.includes(currentDay) &&
+        rule.startTime &&
+        rule.endTime;
+
+      if (isDayRule) {
+        const [sh, sm] = rule.startTime.split(':').map(Number); // 17, 52
+        const [eh, em] = rule.endTime.split(':').map(Number);   // 18, 29
+        const startMins = sh * 60 + sm;
+        const endMins = eh * 60 + em;
+
+        return currentTimeMinutes >= startMins && currentTimeMinutes <= endMins;
+      }
+
+      return (
+        (!rule.cashBackDate || now >= new Date(rule.cashBackDate)) &&
+        (!rule.cashBackEndDate || now <= new Date(rule.cashBackEndDate))
+      );
+    });
+
+
+
+
+    // console.log('-----validBonusRules', validRules)
+
+    // Step 3: Calculate cashback
+    let cashbackMultiplier = 1;
+    if (validRules.length) {
+      cashbackMultiplier = Math.max(...validRules.map((r: any) => r.howMuchCashback || 1));
+    }
+
+    const finalCashback = (invoiceData?.cashBackEarned || 0) * cashbackMultiplier;
+    // console.log('Final Cashback:', finalCashback);
+
+
     //check payment methods
     const paymentMethods = await invoiceHelper.checkPaymentMethods(
       amountReceived
     );
-    console.log("22222222222")
+    // console.log("22222222222 -- invoiceData", invoiceData)
+
     if (!paymentMethods) {
       throw new ApiError(httpStatus.NOT_FOUND, "Invalid payment mode.");
     }
@@ -145,18 +245,25 @@ const createInvoice = catchAsync(
     // get invoice number
     const { invoiceNumber, newInvoiceNumber } =
       await invoiceHelper.generateInvoiceNumber(outlet);
-    console.log("44444444444",invoiceNumber)
+    // console.log("44444444444", invoiceNumber)
 
     invoiceData.invoiceNumber = invoiceNumber;
     invoiceData.invoiceDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
-    console.log(invoiceData, 12123);
+    // console.log(invoiceData, 12123);
+
+    //update outlet invoice number
+    const getOutletData = await outletService.getOutletById(outletId);
 
     //create invoice
     const invoice = await invoiceService.createInvoice({
       ...invoiceData,
+      cashBackEarned: isNaN(Number(finalCashback)) ? 0 : Number(finalCashback),
       bookingId,
-      loyaltyPointsEarned: pointsToAdd,
+      // loyaltyPointsEarned: pointsToAdd,
+      loyaltyPoints: pointsToAdd,
+      companyId: getOutletData?.companyId
     });
+
     // console.log("55555555555")
     if (!invoice) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
@@ -177,6 +284,7 @@ const createInvoice = catchAsync(
     const updatedOutlet = await outletService.updateOutletById(outletId, {
       invoiceNumber: newInvoiceNumber,
     });
+
     if (!updatedOutlet) {
       throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
     }
@@ -216,9 +324,14 @@ const createInvoice = catchAsync(
         throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong.");
       }
     }
+
+
+
+
+
     await updateCashBack(
       invoiceData?.customerId,
-      invoiceData?.cashBackEarned,
+      isNaN(Number(finalCashback)) ? 0 : Number(finalCashback),
       "add"
     );
     if (useCashBackAmount && usedCashBackAmount) {
@@ -227,6 +340,42 @@ const createInvoice = catchAsync(
         usedCashBackAmount,
         "remove"
       );
+    }
+
+    if (couponCode) {
+      await couponService.markCouponAsUsed(couponCode, invoiceData?.customerId)
+    }
+    if (rewardCoupan) {
+      await rewardsCouponService.markRewardCouponAsUsed(rewardCoupan, invoiceData?.customerId)
+    }
+
+    if (promotionCoupanCode) {
+      await promotionCouponService.markPromotionCouponAsUsed(promotionCoupanCode, invoiceData?.customerId)
+    }
+    if (giftCardCode) {
+      await giftCardService.markGiftCardCouponAsUsed(giftCardCode, invoiceData?.customerId)
+    }
+
+
+    if (validRules.length) {
+      const customerData = await customerService.getCustomerById(invoiceData?.customerId)
+      const emailData = {
+        sendTo: customerData?.email,
+        emailSubject: `💰 You've Earned Bonus Cashback!`,
+        emailBody: `
+    <p>Dear ${customerData?.customerName || 'Customer'},</p>
+    <p>Great news! You’ve earned <strong>${cashbackMultiplier}X</strong> cashback on your recent purchase 🎉</p>
+    <p>🪙 <strong>Cashback Earned:</strong> R${invoiceData.cashBackEarned * cashbackMultiplier}</p>
+    <p>This bonus was applied automatically based on our special cashback rules.</p>
+    <br/>
+    <p>Keep an eye out for more offers and save big on every visit!</p>
+    <br/>
+    <p>Cheers,</p>
+    <p><em>The Spa Durban Team</em></p>
+  `,
+      };
+
+      await sendEmail(emailData, outlet);
     }
 
     return res.status(httpStatus.CREATED).send({
@@ -303,7 +452,8 @@ const getInvoices = catchAsync(
       );
 
       if (datefilterQuery && datefilterQuery.length) {
-        options["dateFilter"] = { $and: datefilterQuery } as any;
+        // options["dateFilter"] = { $and: datefilterQuery } as any;
+        options["dateFilter"] = datefilterQuery[0];
       } else {
         options["dateFilter"] = {} as any;
       }
@@ -448,6 +598,7 @@ const getInvoice = catchAsync(
               $project: {
                 phone: 1,
                 name: 1,
+                logo: 1
               },
             },
           ],
@@ -587,6 +738,9 @@ const getInvoice = catchAsync(
           outletPhone: {
             $arrayElemAt: ["$outlet.phone", 0],
           },
+          Outletlogo: {
+            $arrayElemAt: ["$outlet.logo", 0],
+          },
           employeeName: {
             $arrayElemAt: ["$employeeDetails.name", 0],
           },
@@ -698,7 +852,7 @@ const updateInvoice = catchAsync(
 const getInvoiceByBookingId = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { bookingId } = req.params;
-    console.log(bookingId);
+    // console.log(bookingId);
 
     let additionalQuery = [
       { $match: { bookingId: bookingId } },

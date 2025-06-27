@@ -48,6 +48,7 @@ const AuthWrapper = ({ children }: Props) => {
       email: res?.user?.email,
     };
 
+    // console.log('-resssssssss authwr---',res)
     dispatch(setUserData(userData));
     dispatch(setOutlets(res?.outlets));
     dispatch(setOutlet(res?.outlets?.[0]));
@@ -69,7 +70,7 @@ const AuthWrapper = ({ children }: Props) => {
     const sessionAlreadyLoggedIn = localStorage.getItem('isLogin') === 'true';
 
     if (!sessionAlreadyLoggedIn && pathname.startsWith('/pos') && bookingUserId) {
-      console.log('Auto-login with bookingUserId:', bookingUserId);
+      // console.log('Auto-login with bookingUserId:', bookingUserId);
 
       login({ bookingUserId }).then((res: any) => {
         if (res.error) {
@@ -96,6 +97,8 @@ const AuthWrapper = ({ children }: Props) => {
         email: (data as any)?.data?.userdata?.email,
         mobile: (data as any)?.data?.userdata?.phone,
       };
+
+      // console.log('--------data-------- ',data)
 
       dispatch(setOutlets((data as any)?.data?.outlets));
       dispatch(setOutlet((data as any)?.data?.outlets?.[0]));

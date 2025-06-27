@@ -29,7 +29,8 @@ const generateUniqueCouponCode = async (): Promise<string> => {
 
   while (!isUnique) {
     // Generate a random 10-character alphanumeric code
-    couponCode = crypto.randomBytes(5).toString("hex").toUpperCase();
+    // couponCode = crypto.randomBytes(5).toString("hex").toUpperCase();
+     couponCode = `REWARD-${crypto.randomBytes(5).toString('hex').toUpperCase()}`;
 
     // Check if the code already exists in the database
     const existingCoupon = await RewardsCoupon.findOne({ couponCode });

@@ -26,7 +26,7 @@ const CloseRegisterFormLayout = ({
   const formHeading = formType === 'OPEN' ? 'Close Register' : 'Edit Register';
   //   console.log('opningData', opningData);
   let updatedResult: any[] = []; // `let` use kiya taki reassignment ho sake
-
+  let cloedRegistered: any;
   if (opningData) {
     const formattedExistingRegister = {
       _id: opningData?.existingRegister?._id,
@@ -35,10 +35,24 @@ const CloseRegisterFormLayout = ({
     };
 
     updatedResult = [formattedExistingRegister, ...(opningData?.result || [])];
-
+    cloedRegistered = opningData?.closeRegister;
     // console.log(updatedResult);
   }
 
+
+  // Place this inside your component, before return
+  const cashTotal = Array.isArray(updatedResult)
+    ? updatedResult
+      .filter(
+        (item) =>
+          item.paymentModeName &&
+          item.paymentModeName.toLowerCase() === 'cash'
+      )
+      .reduce((sum, item) => sum + (parseFloat(item.totalAmount) || 0), 0)
+    : 0;
+
+
+  // console.log('----cloedRegistered', cloedRegistered)
   return (
     <MOLFormDialog
       title={formHeading}
@@ -49,69 +63,129 @@ const CloseRegisterFormLayout = ({
         <div className="flex justify-center items-center max-w-[500px] h-[140px]">
           <ATMCircularProgress />
         </div>
+      ) : cloedRegistered?.isActive === false ? (
+        <div className="text-center text-red-600 font-semibold text-lg py-6">
+          This register is already closed.
+        </div>
       ) : (
         <>
-          <div className="flex flex-col gap-2"></div>
-          <div className="flex justify-center items-center ">
-            <div className="rounded-lg shadow-md w-full max-w-3xl">
-              <table className="w-full border-collapse border ">
-                <thead>
-                  <tr className=" text-left">
-                    <th className="p-2 border ">Payment Type</th>
-                    <th className="p-2 border ">Opening Register</th>
-                    <th className="p-2 border ">Close Register (Automatic)</th>
-                    <th className="p-2 border ">Manual Calculation</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {updatedResult &&
-                    updatedResult.map((row, index) => (
-                      <tr key={index} className="border">
-                        <td className="p-2 border">{row.paymentModeName}</td>
+          {/* ⬇ Your entire table + deposit section remains unchanged */}
+          <div className="flex flex-col gap-4">
+            <>
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-center items-center">
+                  <div className="rounded-2xl shadow-xl w-full max-w-5xl bg-white border border-gray-200">
+                    {/* Table */}
+                    <table className="w-full border-collapse rounded-2xl overflow-hidden">
+                      <thead className="bg-gray-100 text-sm text-gray-800 uppercase tracking-wide">
+                        <tr>
+                          <th className="p-3 border">Payment Type</th>
+                          <th className="p-3 border">Opening Register</th>
+                          <th className="p-3 border">Close Register (Automatic)</th>
+                          <th className="p-3 border">Manual Calculation</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-sm text-gray-700 font-medium">
+                        {updatedResult?.map((row, index) => (
+                          <tr key={index} className="border hover:bg-gray-50 transition-all">
+                            <td className="p-3 border">{row.paymentModeName}</td>
+                            <td className="p-3 border text-green-600 font-semibold">
+                              {index === 0 && typeof row?.totalAmount === 'number'
+                                ? `R ${row.totalAmount.toFixed(2)}`
+                                : ''}
+                            </td>
+                            <td className="p-3 border text-blue-600 font-semibold">
+                              {index > 0 && typeof row?.totalAmount === 'number'
+                                ? `R ${row.totalAmount.toFixed(2)}`
+                                : ''}
+                            </td>
 
-                        <td className="p-2 border">
-                          {index === 0 ? row?.totalAmount : ''}
-                        </td>
+                            <td className="p-3 border">
+                              {index > 0 ? (
+                                <div className="flex flex-col gap-1">
+                                  <ATMTextField
+                                    name={`manual.${row._id}`}
+                                    value={values.manual[row._id] || ''}
+                                    onChange={(e) =>
+                                      setFieldValue(`manual.${row._id}`, e.target.value)
+                                    }
+                                    onBlur={handleBlur}
+                                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                    placeholder="Enter amount"
+                                  />
+                                  {values.manual[row._id] && (
+                                    <div className="text-xs font-medium">
+                                      {parseFloat(values.manual[row._id]) === row.totalAmount ? (
+                                        <span className="text-green-600">✅ Success</span>
+                                      ) : parseFloat(values.manual[row._id]) > row.totalAmount ? (
+                                        <span className="text-red-600">⬆ Greater</span>
+                                      ) : (
+                                        <span className="text-orange-600">⬇ Less</span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : null}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
 
-                        {/* Close Register */}
-                        <td className="p-2 border">
-                          {index > 0 ? row?.totalAmount : ''}
-                        </td>
+                    {/* Cash Deposit Section */}
+                    {updatedResult && (
+                      <div className="mt-6 p-4 border-t">
+                        <label className="block mb-2 font-semibold text-gray-800 text-base">
+                          Enter Cash to Deposit in Bank
+                        </label>
+                        <ATMTextField
+                          name="bankDeposit"
+                          value={values.bankDeposit}
+                          onChange={(e) => {
+                            const input = e.target.value;
+                            const num = parseFloat(input);
 
-                        {/* Manual Calculation */}
-                        <td className="p-2 border">
-                          {index > 0 ? (
-                            <ATMTextField
-                              name={`manual.${row._id}`}
-                              value={values.manual[row._id] || ''}
-                              onChange={(e) =>
-                                setFieldValue(
-                                  `manual.${row._id}`,
-                                  e.target.value,
-                                )
-                              }
-                              onBlur={handleBlur}
-                              className="w-full p-1 border rounded"
-                            />
-                          ) : (
-                            ''
+                            if (!isNaN(num) && num <= cashTotal) {
+                              setFieldValue('bankDeposit', input);
+                            } else if (input === '') {
+                              setFieldValue('bankDeposit', '');
+                            }
+                          }}
+                          onBlur={handleBlur}
+                          placeholder="Enter amount"
+                          className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                        />
+
+                        {values.bankDeposit !== "" &&
+                          parseFloat(values.bankDeposit) > cashTotal && (
+                            <div className="text-red-600 text-sm mt-2">
+                              You cannot deposit more than R {cashTotal.toFixed(2)}
+                            </div>
                           )}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
 
-              {/* Close Register Button */}
-              {/* <div className="flex justify-end mt-4">
-                <button className="bg-red-600 text-white px-6 py-2 rounded shadow-md hover:bg-red-700">
-                  Close Register
-                </button>
-              </div> */}
-            </div>
+                        {values.bankDeposit > 0 && (
+                          <div className="mt-3 text-sm text-blue-700 font-semibold">
+                            Carry Forward to Next Day Opening Balance: R{' '}
+                            {(() => {
+                              const deposit = parseFloat(values.bankDeposit) || 0;
+                              const carryForward = Math.max(cashTotal - deposit, 0);
+                              return carryForward.toFixed(2);
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
           </div>
         </>
       )}
+
+
+
+
     </MOLFormDialog>
   );
 };

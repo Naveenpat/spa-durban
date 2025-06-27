@@ -14,7 +14,7 @@ const Joi = JoiBase.extend(JoiDate)
 export const create: { body: ObjectSchema } = {
   body: Joi.object().keys({
     customerGroupName: Joi.string().lowercase().required(),
-    customers: Joi.array().items(Joi.string().custom(objectId).required()),
+    // customers: Joi.array().items(Joi.string().custom(objectId).required()),
   }),
 }
 
@@ -27,7 +27,7 @@ export const update: { params: ObjectSchema; body: ObjectSchema } = {
   }),
   body: Joi.object().keys({
     customerGroupName: Joi.string().lowercase().required(),
-    customers: Joi.array().items(Joi.string().custom(objectId).required()),
+    // customers: Joi.array().items(Joi.string().custom(objectId).required()),
   }),
 }
 

@@ -10,7 +10,7 @@ import {
   useGetInvoicesQuery,
   useUpdateInvoiceMutation,
 } from '../../service/InvoicesServices';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import { CURRENCY } from 'src/utils/constants';
 import { FilterType } from 'src/components/molecules/MOLFilterBar/MOLFilterBar';
 import { useGetOutletsQuery } from 'src/modules/Outlet/service/OutletServices';
@@ -30,7 +30,10 @@ import {
   setIsOpenEditDialog,
 } from '../../slice/InvoicesSlice';
 import EditCategoryFormWrapper from '../Edit/EditInvoiceVoidFormWrapper';
-
+import toast from 'react-hot-toast';
+import { Tooltip } from 'react-tooltip'
+import { showToast } from 'src/utils/showToaster';
+import { formatZonedDate } from 'src/utils/formatZonedDate';
 type Props = {};
 
 const InvoicesListingWrapper = (props: Props) => {
@@ -38,6 +41,7 @@ const InvoicesListingWrapper = (props: Props) => {
 
   const { searchQuery, limit, page, dateFilter, appliedFilters } =
     useFilterPagination(['outletId', 'customerId']);
+    
   const navigate = useNavigate();
   const location = useLocation();
   const { outlets } = useSelector((state: RootState) => state.auth);
@@ -60,6 +64,7 @@ const InvoicesListingWrapper = (props: Props) => {
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const [invoiceId, setInvoiceId] = useState('');
+  const [updateInvoice] = useUpdateInvoiceMutation();
   const { data, isLoading, totalData, totalPages } = useFetchData(
     useGetInvoicesQuery,
     {
@@ -70,26 +75,53 @@ const InvoicesListingWrapper = (props: Props) => {
         searchIn: JSON.stringify(['invoiceNumber']),
         dateFilter: JSON.stringify({
           dateFilterKey: 'createdAt',
-          startDate: dateFilter?.start_date || format(new Date(), 'yyyy-MM-dd'),
-          endDate: dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd'),
+          // startDate: dateFilter?.start_date || format(new Date(), 'yyyy-MM-dd'),
+          // endDate: dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd'),
+
+          startDate:dateFilter?.start_date || format(subMonths(new Date(), 1), 'yyyy-MM-dd'),
+          endDate:dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd')
         }),
         filterBy: JSON.stringify(appliedFilters),
       },
     },
   );
-  const [updateInvoice] = useUpdateInvoiceMutation();
-  const handleUpdate = async (_id: string) => {
+
+  const handleUpdate = async (item: any) => {
     try {
       await updateInvoice({
-        invoiceId: _id,
-        body: { status: 'refund' },
+        invoiceId: item?._id,
+        body: { status: item?.status === "" ? 'refund' : "" },
       }).unwrap();
-      alert('Invoice updated successfully!');
+      // alert('Invoice updated successfully!');
+      if (item?.status == "refund") {
+        showToast('success', 'Unrefund Process successfully!')
+
+      }
+      else {
+        showToast('success', 'Refund Process successfully!')
+      }
+
     } catch (error) {
       console.error('Error updating invoice:', error);
-      alert('Failed to update invoice.');
+      // alert('Failed to update invoice.');
+
+      showToast('error', 'Failed to update invoice.')
     }
   };
+
+  const handleCancelVoidWithConfirmation = (invoiceId: any) => {
+    updateInvoice({ body: { status: "", voidNote: "" }, invoiceId }).then((res: any) => {
+      if (res?.error) {
+        showToast('error', res?.error?.data?.message)
+      } else {
+        if (res?.data?.status) {
+          showToast('success', res?.data?.message)
+        } else {
+          showToast('error', res?.data?.message)
+        }
+      }
+    });
+  }
   const tableHeaders: TableHeader<Invoices>[] = [
     {
       fieldName: 'createdAt',
@@ -97,7 +129,7 @@ const InvoicesListingWrapper = (props: Props) => {
       flex: 'flex-[1_1_0%]',
       renderCell: (item) =>
         item?.createdAt
-          ? format(new Date(item?.createdAt), 'dd MMM yyyy')
+          ? formatZonedDate(item?.createdAt)
           : '-',
     },
     {
@@ -108,7 +140,7 @@ const InvoicesListingWrapper = (props: Props) => {
     {
       fieldName: 'customerName',
       headerName: 'Customer',
-      flex: 'flex-[1_1_0%]',
+      flex: 'flex-[3_1_0%]'
     },
 
     {
@@ -147,6 +179,35 @@ const InvoicesListingWrapper = (props: Props) => {
       ),
     },
     {
+      fieldName: "voidNote",
+      headerName: 'Note',
+      flex: 'flex-[1_1_0%]',
+      renderCell: (item) => {
+        const note = item.voidNote || '';
+        const tooltipId = `note-tooltip-${item._id}`; // Unique ID per row
+
+        return (
+          <>
+            <span
+              data-tooltip-id={tooltipId}
+              data-tooltip-content={note}
+              className="cursor-pointer hover:underline"
+            >
+              {note.length > 20 ? `${note.substring(0, 20)}...` : note}
+            </span>
+            <Tooltip
+              id={tooltipId}
+              delayShow={300}
+              className="z-50 !bg-gray-800 !text-white !text-sm !max-w-[200px] !max-h-[150px] 
+            !overflow-y-auto !whitespace-pre-wrap !px-3 !py-2"
+              place="top"
+              noArrow={true}
+            />
+          </>
+        );
+      }
+    },
+    {
       fieldName: 'action',
       headerName: 'Action',
       flex: 'flex-[1_1_0%]',
@@ -165,20 +226,24 @@ const InvoicesListingWrapper = (props: Props) => {
                 },
               },
               {
-                label: 'Refund',
+                label: item?.status === 'refund' ? 'Cancel Refund' : 'Refund',
                 icon: IconCreditCardRefund,
                 onClick: () => {
-                  handleUpdate(item?._id);
+                  handleUpdate(item);
                 },
               },
               {
-                label: 'Void',
+                label: item?.status === 'void' ? 'Cancel Void' : 'Void',
                 icon: IconCopyX,
                 onClick: () => {
-                  dispatch(setIsOpenEditDialog(true));
-                  setInvoiceId(item?._id);
+                  if (item?.status === 'void') {
+                    handleCancelVoidWithConfirmation(item._id);
+                  } else {
+                    dispatch(setIsOpenEditDialog(true));
+                    setInvoiceId(item._id);
+                  }
                 },
-              },
+              }
             ]}
           />
         </div>
@@ -235,10 +300,13 @@ const InvoicesListingWrapper = (props: Props) => {
     },
   ];
 
+  const today = new Date();
+const oneMonthAgo = subMonths(today, 1);
+
   useEffect(() => {
     if (!dateFilter?.start_date && !dateFilter?.end_date) {
       const newSearchParams = new URLSearchParams(searchParams); // Clone existing searchParams
-      newSearchParams.set('startDate', format(new Date(), 'yyyy-MM-dd') || '');
+      newSearchParams.set('startDate', format(oneMonthAgo, 'yyyy-MM-dd') || '');
       newSearchParams.set('endDate', format(new Date(), 'yyyy-MM-dd') || '');
       const existingOutlets = newSearchParams.getAll('outletId');
       const newOutletIds = outlets?.map((item) => item?._id) || [];

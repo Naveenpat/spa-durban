@@ -16,6 +16,9 @@ const createProduct = async (productBody: any): Promise<ProductDocument> => {
   if (await Product.isProductCodeAlreadyExist(productBody.productCode)) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Product code already exists!");
   }
+  if (await Product.exists({ productName: productBody.productName, isDeleted: false })) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Product name already exists!");
+  }
   return Product.create(productBody);
 };
 
@@ -62,6 +65,17 @@ const updateProductById = async (
   const product = await getProductById(productId);
   if (!product) {
     throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
+  }
+
+  // Check if productName already exists for another product
+  const existingProduct = await Product.findOne({
+    productName: product.productName,
+    _id: { $ne: productId }, // Exclude current product
+    isDeleted: false,
+  });
+
+  if (existingProduct) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Product name already exists!");
   }
 
   Object.assign(product, updateBody);

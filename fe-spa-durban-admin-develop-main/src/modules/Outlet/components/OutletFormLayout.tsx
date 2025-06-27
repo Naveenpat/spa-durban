@@ -11,6 +11,11 @@ import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCir
 import { useFetchData } from 'src/hooks/useFetchData';
 import { useGetAccountsQuery } from 'src/modules/Account/service/AccountServices';
 import { countries } from 'src/modules/Customer/components/CustomerFormLayout';
+import { useGetCompaniesQuery } from 'src/modules/AdminRole copy/service/CompanyServices';
+import { useState } from 'react';
+import { IconArrowDown, IconFoldDown, IconFoldUp } from '@tabler/icons-react';
+import { IconArrowUp } from '@tabler/icons-react';
+import { Autocomplete, FormLabel, TextField } from '@mui/material';
 
 type Props = {
   formikProps: FormikProps<OutletFormValues>;
@@ -27,6 +32,11 @@ const OutletFormLayout = ({
 }: Props) => {
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
+  const [showSMTPSettings, setShowSMTPSettings] = useState(false)
+  const { data: companyData } = useFetchData(
+    useGetCompaniesQuery
+  )
+
   const { data, isLoading: accountsLoading } = useFetchData(
     useGetAccountsQuery,
     {
@@ -164,7 +174,7 @@ const OutletFormLayout = ({
               />
             </div>
             {/*country */}
-            <div className="">
+            {/* <div className="">
               <ATMSelect
                 name="country"
                 value={values?.country}
@@ -175,7 +185,29 @@ const OutletFormLayout = ({
                 valueAccessKey="label"
                 onBlur={handleBlur}
               />
+            </div> */}
+
+            <div className="flex flex-col gap-1">
+              <FormLabel sx={{ fontSize: 14, fontWeight: 500 }}>Country</FormLabel>
+
+              <Autocomplete
+                options={countries}
+                getOptionLabel={(option) => option.label || ''}
+                value={values?.country}
+                onChange={(_, newValue) => setFieldValue('country', newValue)}
+                onBlur={handleBlur}
+                isOptionEqualToValue={(option, value) => option.label === value.label}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Select Country"
+                    size="small"
+                  />
+                )}
+                
+              />
             </div>
+
 
             {/* Tax Id */}
             <div className="">
@@ -242,9 +274,73 @@ const OutletFormLayout = ({
                 isLoading={accountsLoading}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-3 w-[70%] m-auto gap-4">
+            <div>
+              <ATMSelect
+                required
+                name="companyId"
+                value={values?.companyId}
+                onChange={(newValue) => setFieldValue('companyId', newValue)}
+                label="Company"
+                getOptionLabel={(options) => options?.companyName}
+                options={companyData}
+                valueAccessKey="_id"
+                placeholder="Please Select Company"
+              />
+            </div>
+
+            {/* <div className="">
+
+
+              <div className="relative h-36 w-36 border-2 border-dashed border-gray-400 rounded-md flex items-center justify-center overflow-hidden">
+                <input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFieldValue('logo', reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                />
+
+                {!values.logo ? (
+                  <div className="relative flex flex-col items-center justify-center">
+                    <div className="text-xs text-gray-500 mb-1">324 Px * 313 Px</div>
+                    <span className="text-4xl text-gray-400 z-0">+</span>
+                  </div>
+                ) : (
+                  <img
+                    src={values.logo}
+                    alt="Logo Preview"
+                    className="h-full w-full object-contain z-0"
+                  />
+                )}
+              </div>
+            </div> */}
+
+
+            <div className="">
+              <ATMFileUploader
+                name="logo"
+                value={values.logo}
+                onChange={(file: string) => {
+                  setFieldValue('logo', file);
+                }}
+                label="Outlet Logo"
+                accept=".jpg, .jpeg, .png, .gif"
+                folderName='outlets'
+              />
+            </div>
+            {/* </div> */}
+
+            {/* <div className="grid grid-cols-3 w-[70%] m-auto gap-4"> */}
             {/* <div className="hidden ">
           <ATMFileUploader
             required
@@ -254,7 +350,141 @@ const OutletFormLayout = ({
             label="Company Logo"
           />
         </div> */}
+            {/* </div> */}
+
+
+            <div className="col-span-3 rounded-md">
+              {/* Toggle Header */}
+              <div
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => setShowSMTPSettings((prev) => !prev)}
+              >
+                <div className="text-lg font-semibold text-blue-600">
+                  {showSMTPSettings ? (
+                    <div className="flex items-center text-sm gap-2 text-primary">
+                      <IconArrowUp size={20} /> SMTP Settings
+                    </div>
+                  ) : (
+                    <div className="flex items-center text-sm gap-2 text-primary">
+                      <IconArrowDown size={20} /> SMTP Settings
+                    </div>
+                  )}
+                </div>
+                {/* <span className="text-sm text-gray-500 italic">
+                  {showSMTPSettings ? 'Hide Settings' : 'Add SMTP Settings'}
+                </span> */}
+              </div>
+
+              {/* SMTP Form Fields */}
+              {showSMTPSettings && (
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                  {/* SMTP Host */}
+                  <ATMTextField
+                    required
+                    name="smtp.host"
+                    value={values.smtp.host}
+                    onChange={(e) => setFieldValue('smtp.host', e.target.value)}
+                    label="SMTP Host"
+                    placeholder="Enter SMTP Host"
+                    onBlur={handleBlur}
+                    isTouched={touched?.smtp?.host}
+                    errorMessage={errors?.smtp?.host}
+                    isValid={!errors?.smtp?.host}
+                  />
+
+                  {/* SMTP Port */}
+                  <ATMNumberField
+                    required
+                    name="smtp.port"
+                    value={values.smtp.port}
+                    onChange={(newValue) => setFieldValue('smtp.port', newValue)}
+                    label="SMTP Port"
+                    placeholder="Enter SMTP Port"
+                    onBlur={handleBlur}
+                    isTouched={touched?.smtp?.port}
+                    errorMessage={errors?.smtp?.port}
+                    isValid={!errors?.smtp?.port}
+                  />
+
+                  {/* SMTP Username */}
+                  <ATMTextField
+                    required
+                    name="smtp.username"
+                    value={values.smtp.username}
+                    onChange={(e) => setFieldValue('smtp.username', e.target.value)}
+                    label="SMTP Username"
+                    placeholder="Enter SMTP Username"
+                    onBlur={handleBlur}
+                    isTouched={touched?.smtp?.username}
+                    errorMessage={errors?.smtp?.username}
+                    isValid={!errors?.smtp?.username}
+                  />
+
+                  {/* SMTP Password */}
+                  <ATMTextField
+                    required
+                    name="smtp.password"
+                    value={values.smtp.password}
+                    onChange={(e) => setFieldValue('smtp.password', e.target.value)}
+                    label="SMTP Password"
+                    placeholder="Enter SMTP Password"
+                    onBlur={handleBlur}
+                    isTouched={touched?.smtp?.password}
+                    errorMessage={errors?.smtp?.password}
+                    isValid={!errors?.smtp?.password}
+                  />
+
+                  {/* Send From Email */}
+                  <ATMTextField
+                    required
+                    name="smtp.sendFrom"
+                    value={values.smtp.sendFrom}
+                    onChange={(e) => setFieldValue('smtp.sendFrom', e.target.value)}
+                    label="Send From Email"
+                    placeholder="Enter Sender Email"
+                    onBlur={handleBlur}
+                    isTouched={touched?.smtp?.sendFrom}
+                    errorMessage={errors?.smtp?.sendFrom}
+                    isValid={!errors?.smtp?.sendFrom}
+                  />
+
+                  {/* CC Emails */}
+                  <ATMTextField
+                    name="smtp.ccEmails"
+                    value={values.smtp.ccEmails}
+                    onChange={(e) => setFieldValue('smtp.ccEmails', e.target.value)}
+                    label="CC Emails"
+                    placeholder="Enter CC Emails (comma separated)"
+                    onBlur={handleBlur}
+                    isTouched={touched?.smtp?.ccEmails}
+                    errorMessage={errors?.smtp?.ccEmails}
+                    isValid={!errors?.smtp?.ccEmails}
+                  />
+
+                  {/* BCC Emails */}
+                  <ATMTextField
+                    name="smtp.bccEmails"
+                    value={values.smtp.bccEmails}
+                    onChange={(e) => setFieldValue('smtp.bccEmails', e.target.value)}
+                    label="BCC Emails"
+                    placeholder="Enter BCC Emails (comma separated)"
+                    onBlur={handleBlur}
+                    isTouched={touched?.smtp?.bccEmails}
+                    errorMessage={errors?.smtp?.bccEmails}
+                    isValid={!errors?.smtp?.bccEmails}
+                  />
+                </div>
+              )}
+            </div>
+
+
+
+
+
+
           </div>
+
+
         </div>
       )}
     </>

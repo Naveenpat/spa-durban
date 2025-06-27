@@ -5,6 +5,13 @@ import mongoose from "mongoose";
 import { RangeFilter } from "../../../utils/interface";
 import { userService } from "./../service.index";
 import { UserEnum, CustomerTypeEnum } from "../../../utils/enumUtils";
+import XLSX from 'xlsx';
+import { format, parse } from 'fast-csv';
+import { Readable } from "stream";
+import { isValid } from "date-fns";
+const dayjs = require('dayjs');
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
 
 /**
  * Create a customer
@@ -13,6 +20,22 @@ import { UserEnum, CustomerTypeEnum } from "../../../utils/enumUtils";
  */
 
 const createCustomer = async (customerBody: any): Promise<CustomerDocument> => {
+
+  const existingCustomer = await Customer.findOne({
+    $or: [
+      { customerName: customerBody.customerName },
+      { email: customerBody.email },
+      { phone: customerBody.phone }
+    ],
+  });
+
+  if (existingCustomer) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      "Customer with same name or email or phone already exists."
+    );
+  }
+
   //create a user
   customerBody["userType"] = UserEnum.Customer;
   customerBody["userName"] = customerBody.email;
@@ -29,6 +52,12 @@ const createCustomer = async (customerBody: any): Promise<CustomerDocument> => {
     );
   }
 };
+
+const getAllCustomers = async () => {
+  return await Customer.find({ isDeleted: false }).select("_id customerName");
+};
+
+
 const findCustomerByBookingId = async (bookingCustomerId: string) => {
   if (!bookingCustomerId) return null;
   const customer = await Customer.findOne({ bookingCustomerId });
@@ -209,7 +238,7 @@ const updateCustomerById = async (
   userDataToUpdate["userName"] = customerUpdated.email;
   userDataToUpdate["password"] = customerUpdated.phone;
   userDataToUpdate["name"] = customerUpdated.customerName;
-  console.log("update users data==============>",userDataToUpdate)
+  // console.log("update users data==============>",userDataToUpdate)
   // const user = await userService.updateUserById(customerId, {
   //   userDataToUpdate,
   // });
@@ -312,6 +341,141 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
   return false;
 }
 
+// const importCSV = async (file: Express.Multer.File): Promise<void> => {
+//   if (!file) throw new Error('No file uploaded');
+
+//   const stream = Readable.from(file.buffer);
+//   const customers: any[] = [];
+
+//   // Parse CSV rows
+//   await new Promise<void>((resolve, reject) => {
+//     stream
+//       .pipe(parse({ headers: true, ignoreEmpty: true, trim: true }))
+//       .on('data', (row:any) => customers.push(row))
+//       .on('end', resolve)
+//       .on('error', reject);
+//   });
+
+//   // Loop through customers
+//   for (const customer of customers) {
+//     const {
+//       email,
+//       ...restFields
+//     } = customer;
+
+//     if (!email) continue;
+
+//     const customerObj = {
+//       ...restFields,
+//       email,
+//     };
+
+//     await Customer.findOneAndUpdate(
+//       { email },
+//       { $set: customerObj },
+//       { upsert: true, new: true }
+//     );
+//   }
+// };
+
+
+const importCSV = async (file: Express.Multer.File): Promise<void> => {
+  if (!file) throw new Error('No file uploaded');
+
+  const stream = Readable.from(file.buffer);
+  const customers: any[] = [];
+
+  // Parse CSV rows
+  await new Promise<void>((resolve, reject) => {
+    stream
+      .pipe(parse({ headers: true, ignoreEmpty: true, trim: true }))
+      .on('data', (row: any) => customers.push(row))
+      .on('end', resolve)
+      .on('error', reject);
+  });
+
+  for (const customer of customers) {
+    const { email, customerName, dateOfBirth, ...restFields } = customer;
+
+    // Skip if no email or customerName
+    if (!email || !customerName) continue;
+
+    // Prepare filtered fields (remove undefined or empty strings)
+    const validFields: Record<string, any> = {};
+    for (const [key, value] of Object.entries({ email, customerName, ...restFields })) {
+      if (value !== undefined && value !== '') {
+        validFields[key] = value;
+      }
+    }
+
+    // ✅ Parse dateOfBirth safely
+    if (dateOfBirth) {
+      const parsedDOB = dayjs(dateOfBirth, ['DD/MM/YYYY', 'YYYY-MM-DD'], true);
+      if (parsedDOB.isValid()) {
+        validFields.dateOfBirth = parsedDOB.toDate();
+      } else {
+        console.warn(`⚠️ Invalid dateOfBirth "${dateOfBirth}" for ${customerName} (${email}) - Skipped DOB`);
+      }
+    }
+
+    // Check for existing by email or customerName
+    const existing = await Customer.findOne({
+      $or: [{ email }, { customerName }]
+    });
+
+    if (existing) {
+      // Update only fields passed
+      await Customer.updateOne(
+        { _id: existing._id },
+        { $set: validFields }
+      );
+    } else {
+      // Insert new customer
+      await Customer.create(validFields);
+    }
+  }
+};
+
+
+
+const exportCSV = async (): Promise<Buffer> => {
+  const customers = await Customer.find({ isDeleted: false }).limit(10).lean();
+
+  const rows = customers.map((cust) => ({
+    CustomerName: cust.customerName,
+    Phone: cust.phone,
+    Email: cust.email,
+    Address: cust.address,
+    City: cust.city,
+    Region: cust.region,
+    Country: cust.country,
+    TaxNo: cust.taxNo,
+    DateOfBirth: cust.dateOfBirth
+      ? new Date(cust.dateOfBirth).toLocaleDateString()
+      : '',
+    Gender: cust.gender,
+    LoyaltyPoints: cust.loyaltyPoints || 0,
+    CustomerType: cust.customerType,
+    IsActive: cust.isActive ? 'Active' : 'Inactive',
+    BookingCustomerId: cust.bookingCustomerId || '',
+    CashBackAmount: cust.cashBackAmount || 0
+  }));
+
+  return new Promise((resolve, reject) => {
+    const csvStream = format({ headers: true });
+    const chunks: Buffer[] = [];
+
+    csvStream.on('data', (chunk) => chunks.push(chunk));
+    csvStream.on('end', () => resolve(Buffer.concat(chunks)));
+    csvStream.on('error', reject);
+
+    rows.forEach((row) => csvStream.write(row));
+    csvStream.end();
+  });
+};
+
+
+
 export {
   createCustomer,
   queryCustomers,
@@ -322,4 +486,7 @@ export {
   isExists,
   toggleCustomerStatusById,
   findCustomerByBookingId,
+  importCSV,
+  exportCSV,
+  getAllCustomers
 };

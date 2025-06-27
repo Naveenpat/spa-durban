@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import { pick } from "../../../../utilities/pick";
 import ApiError from "../../../../utilities/apiError";
 import catchAsync from "../../../../utilities/catchAsync";
-import { registerService } from "../service.index";
+import { outletService, registerService } from "../service.index";
 import {
   getFilterQuery,
   getRangeQuery,
@@ -15,6 +15,102 @@ import { searchKeys, allowedDateFilterKeys } from "./schema.register";
 import { UserEnum } from "../../../utils/enumUtils";
 import { AuthenticatedRequest } from "../../../utils/interface";
 import Invoice from "../invoice/schema.invoice";
+import mongoose from "mongoose";
+import { Mongoose } from "mongoose";
+import puppeteer from 'puppeteer';
+import { sendEmail } from '../../../helper/sendEmail';
+
+// export const generatePDFBuffer = async (html: string): Promise<Buffer> => {
+//   const browser = await puppeteer.launch({ headless: true });
+//   const page = await browser.newPage();
+//   await page.setContent(html, { waitUntil: 'networkidle0' });
+//   const pdf = await page.pdf({ format: 'A4', printBackground: true });
+//   await browser.close();
+//   return Buffer.from(pdf); // ✅ This is now compatible with nodemailer
+// };
+
+export const generatePDFBuffer = async (html: string): Promise<Buffer> => {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'], // ✅ Fix for Ubuntu sandbox issue
+  });
+
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+
+  const pdf = await page.pdf({ format: 'A4', printBackground: true });
+
+  await browser.close();
+  return Buffer.from(pdf); // ✅ Compatible with nodemailer
+};
+
+const generateCloseRegisterHTML = (
+  closeRegister: any,
+  bankDeposit: any,
+  carryForwardBalance: any,
+  outletData: any,
+  openingBalance: any
+) => {
+  const rows = closeRegister
+    .map(
+      (item: any) => `
+        <tr>
+          <td>${item.paymentModeName}</td>
+          <td>R ${item.totalAmount}</td>
+          <td>R ${item.manual}</td>
+        </tr>
+      `
+    )
+    .join('');
+
+  return `
+    <html>
+      <head>
+        <style>
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #f2f2f2;
+          }
+          h2, p {
+            font-family: Arial, sans-serif;
+          }
+        </style>
+      </head>
+      <body>
+        <h2>Close Register Summary</h2>
+        <h3>Outlet Name: ${outletData?.name}</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Payment Mode</th>
+              <th>Total Amount</th>
+              <th>Manual Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+
+        <p><strong>Opening Balance:</strong> R ${openingBalance}</p>
+        <p><strong>Bank Deposit:</strong> R ${bankDeposit}</p>
+        <p><strong>Carry Forward Balance:</strong> R ${carryForwardBalance}</p>
+      </body>
+    </html>
+  `;
+};
+
+
 
 const createRegister = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -77,7 +173,7 @@ const createCloseRegister = catchAsync(
       throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
     }
 
-    const { outletId, date, closeRegister } = req.body;
+    const { outletId, date, closeRegister, bankDeposit = 0 } = req.body;
 
     const userId = req.userData.Id;
 
@@ -111,12 +207,51 @@ const createCloseRegister = catchAsync(
       );
     }
 
+    // Find the "cash" payment mode from closeRegister
+    const cashEntry = closeRegister.find(
+      (entry: any) => entry.paymentModeName.toLowerCase() === "cash"
+    );
+
+    const totalCash = cashEntry ? parseFloat(cashEntry.totalAmount) || 0 : 0;
+    const deposit = parseFloat(bankDeposit) || 0;
+
+    // Calculate carry forward
+    const carryForwardBalance = Math.max(totalCash - deposit, 0);
+
     // Naya register create karo
     const register = await registerService.createCloseRegister({
       ...req.body,
       createdBy: userId,
+      carryForwardBalance,
+      isActive: false,
       createdAt: new Date(), // Ensure current timestamp is stored
     });
+
+    const outletData = await outletService.getOutletById(req.body.
+      outletId
+    )
+
+
+    const htmlContent = generateCloseRegisterHTML(closeRegister,bankDeposit,carryForwardBalance, outletData,req.body.openingBalance);
+    const pdfBuffer = await generatePDFBuffer(htmlContent);
+
+  const emailData = {
+  emailSubject: `Close Register Report - ${outletData?.name} - ${new Date().toLocaleDateString('en-ZA')}`,
+  emailBody: '<p>Attached is your daily close register report.</p>',
+  sendTo: outletData?.email,
+  sendFrom: 'noreply@yourdomain.com',
+  attachments: [
+    {
+      filename: 'CloseRegister.pdf',
+      content: pdfBuffer,
+    },
+  ],
+};
+
+    await sendEmail(emailData,outletData);
+
+
+
     // return true;
     return res.status(httpStatus.CREATED).send({
       message: "Added successfully!",
@@ -279,20 +414,22 @@ const getRegisterCurentDate = catchAsync(
           createdAtDate: {
             $dateFromString: {
               dateString: "$createdAt",
-              format: "%Y-%m-%d %H:%M:%S", // Match your database format
+              format: "%Y-%m-%d %H:%M:%S",
             },
           },
         },
       },
       {
         $match: {
+          outletId: new mongoose.Types.ObjectId(outletId),
+          status:"",
           createdAtDate: {
-            $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            $lt: new Date(new Date().setHours(23, 59, 59, 999)),
+            $gte: startOfDay,
+            $lt: endOfDay,
           },
         },
       },
-      { $unwind: "$amountReceived" }, // Separate each payment entry
+      { $unwind: "$amountReceived" },
       {
         $group: {
           _id: "$amountReceived.paymentModeId",
@@ -301,23 +438,22 @@ const getRegisterCurentDate = catchAsync(
       },
       {
         $lookup: {
-          from: "paymentmodes", // 👈 This is the collection name in MongoDB
+          from: "paymentmodes",
           localField: "_id",
           foreignField: "_id",
           as: "paymentModeData",
         },
       },
-      {
-        $unwind: "$paymentModeData", // Unwind to get single object
-      },
+      { $unwind: "$paymentModeData" },
       {
         $project: {
           _id: 1,
           totalAmount: 1,
-          paymentModeName: "$paymentModeData.modeName", // 👈 Fetch name from PaymentMode
+          paymentModeName: "$paymentModeData.modeName",
         },
       },
     ];
+
 
     const result = await Invoice.aggregate(pipeline);
 
@@ -327,9 +463,52 @@ const getRegisterCurentDate = catchAsync(
       startOfDay,
       endOfDay,
     });
+
+    const closeRegister = await registerService.findCloseRegister({
+      createdBy: userId,
+      outletId,
+      startOfDay,
+      endOfDay,
+    });
+
     return res.status(httpStatus.OK).send({
       message: "Successful.",
-      data: { existingRegister, result },
+      data: { existingRegister, closeRegister, result },
+      status: true,
+      code: "OK",
+      issue: null,
+    });
+  }
+);
+
+const getRegisterPreviousDate = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.userData) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
+    }
+    const outletId = req.params.outletId;
+    const userId = req.userData.Id;
+
+
+    // ✅ Automatically calculate yesterday's date
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+
+    const startOfDay = new Date(yesterday);
+    const endOfDay = new Date(yesterday);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // ✅ Query CloseRegister for yesterday
+    const existingRegister = await registerService.findCloseRegister({
+      createdBy: userId,
+      outletId,
+      startOfDay,
+      endOfDay,
+    });
+    return res.status(httpStatus.OK).send({
+      message: "Successful.",
+      data: existingRegister,
       status: true,
       code: "OK",
       issue: null,
@@ -409,5 +588,6 @@ export {
   getRegisterById,
   getRegisterCurentDate,
   createCloseRegister,
-  getGivenChangeSum
+  getGivenChangeSum,
+  getRegisterPreviousDate
 };

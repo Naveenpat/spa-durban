@@ -327,41 +327,93 @@ const CartSummarySection = ({
       });
     }
   }, [bookingCustomer, setFieldValue]);
-  const fetchOptions = async (inputValue: any): Promise<SelectOption[]> => {
-    if (!inputValue) return [];
+  // const fetchOptions = async (inputValue: any): Promise<SelectOption[]> => {
+  //   if (!inputValue) return [];
 
-    const isNumber = /^\d+$/.test(inputValue.trim());
+  //   const isNumber = /^\d+$/.test(inputValue.trim());
 
-    try {
-      const filterBy = JSON.stringify([
-        {
-          fieldName: isNumber ? 'phone' : 'customerName',
-          value: inputValue,
+  //   try {
+  //     const filterBy = JSON.stringify([
+  //       {
+  //         fieldName: isNumber ? 'phone' : 'customerName',
+  //         value: inputValue,
+  //       },
+  //     ]);
+  //     const response = await fetch(
+  //       `${BASE_URL}/customer/pagination?isPaginationRequired=false&filterBy=${filterBy}`,
+  //       {
+  //         method: 'GET',
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //           'Content-Type': 'application/json',
+  //         },
+  //       },
+  //     );
+  //     const data = await response.json();
+  //     // console.log(data, 'data===============');
+
+  //     return data?.data?.map((item: any) => ({
+  //       label: `${item.customerName} - ${item?.phone} - ${item?.email}`,
+  //       value: item._id,
+  //       data: item,
+  //     }));
+  //   } catch (error) {
+  //     console.error('Error fetching options:', error);
+  //     return [];
+  //   }
+  // };
+
+const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
+  console.log('-------calling o');
+  if (!inputValue?.trim()) return [];
+
+  const query = inputValue.trim();
+  let filterBy: any[] = [];
+
+  const isEmail = query.includes('@'); // ✅ Check email first
+  const isNumber = /^\d+$/.test(query);
+
+  if (isEmail) {
+    filterBy = [{ fieldName: 'email', value: query }];
+  } else if (isNumber) {
+    filterBy = [{ fieldName: 'phone', value: query }];
+  } else {
+    filterBy = [{ fieldName: 'customerName', value: query }];
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/customer/pagination?isPaginationRequired=false&filterBy=${encodeURIComponent(
+        JSON.stringify(filterBy)
+      )}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-      ]);
-      const response = await fetch(
-        `${BASE_URL}/customer/pagination?isPaginationRequired=false&filterBy=${filterBy}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-      const data = await response.json();
-      // console.log(data, 'data===============');
+      }
+    );
 
-      return data?.data?.map((item: any) => ({
-        label: `${item.customerName} - ${item?.phone} - ${item?.email}`,
-        value: item._id,
-        data: item,
-      }));
-    } catch (error) {
-      console.error('Error fetching options:', error);
+    if (!response.ok) {
+      console.error(`❌ API Error: ${response.status} ${response.statusText}`);
       return [];
     }
-  };
+
+    const data = await response.json();
+
+    return (data?.data || []).map((item: any) => ({
+      label: `${item.customerName || 'Unknown'} - ${item.phone || ''} - ${item.email || ''}`,
+      value: item._id,
+      data: item,
+    }));
+  } catch (error) {
+    console.error('❌ Error fetching options:', error);
+    return [];
+  }
+};
+
+
   const debouncedLoadOptions = useDebounce(
     async (inputValue: any, callback: (arg0: any[]) => void) => {
       setLoading(true);

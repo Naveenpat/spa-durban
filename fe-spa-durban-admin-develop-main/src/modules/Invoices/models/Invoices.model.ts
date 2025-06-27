@@ -12,6 +12,7 @@ export type Invoices = {
   balanceDue: number;
   status: string;
   action?: any;
+  voidNote:any;
   _id: string;
 };
 export type SalesReport = {

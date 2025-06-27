@@ -1,5 +1,10 @@
 import apiSlice from 'src/services/ApiSlice';
 
+type GetCouponsParams = {
+  customerId: string;
+  items: string[];
+};
+
 export const promotionCouponApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getPromotionCoupons: builder.query({
@@ -59,6 +64,20 @@ export const promotionCouponApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    getAllTypeCoupons: builder.query({
+      providesTags: ['promotionCoupons'],
+      query: ({ customerId, items }) => {
+        const queryParams = new URLSearchParams();
+        queryParams.append('customerId', customerId);
+        items.forEach((id: string) => queryParams.append('items', id)); // <-- repeat `items` param
+
+        return {
+          url: `/promotioncoupon/new/all-type-coupon?${queryParams.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
+
   }),
 });
 
@@ -69,4 +88,5 @@ export const {
   useUpdatePromotionCouponMutation,
   usePromotionCouponStatusMutation,
   useDeletePromotionCouponMutation,
+  useGetAllTypeCouponsQuery
 } = promotionCouponApi;

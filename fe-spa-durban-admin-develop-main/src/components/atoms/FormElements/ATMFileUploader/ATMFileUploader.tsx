@@ -4,9 +4,9 @@ import ATMCircularProgress from '../../ATMCircularProgress/ATMCircularProgress';
 import ATMFieldLabel from '../../ATMFieldLabel/ATMFieldLabel';
 import { ErrorMessage } from 'formik';
 import ATMFieldError from '../../ATMFieldError/ATMFieldError';
-import { useAddFileUrlMutation } from '../../../../services/FileExplorer';
 import { showToast } from '../../../../utils/showToaster';
 import { FILE_MANAGER_URL } from '../../../../utils/constants';
+import { useAddFileUrlMutation } from 'src/modules/Product/service/ProductServices';
 
 type Props = {
   name: string;
@@ -15,6 +15,7 @@ type Props = {
   onChange: (file: string) => void;
   accept?: string;
   required?: boolean;
+  folderName?: string;
 };
 
 const ATMFileUploader = ({
@@ -24,6 +25,7 @@ const ATMFileUploader = ({
   onChange,
   required = false,
   accept = 'image/*',
+  folderName = 'default',
 }: Props) => {
   const [fileUrl, setFileUrl] = useState<string>('');
   const [isFileUploading, setIsFileUploading] = useState<boolean>(false);
@@ -37,16 +39,22 @@ const ATMFileUploader = ({
     fileInput.onchange = (event: any) => {
       setFileUrl(URL.createObjectURL(event.target?.files?.[0]));
       setIsFileUploading(true);
-      let formData = new FormData();
-      formData.append('bucketName', 'spa-durban-admin');
-      formData.append('file', event.target?.files?.[0]);
 
+      const safeFolder = (folderName || 'default')
+        .toLowerCase()
+        .replace(/[^a-z0-9-_]/g, '-')
+      let formData = new FormData();
+      // formData.append('bucketName', 'spa-durban-admin');
+      // formData.append('file', event.target?.files?.[0]);
+      formData.append('folder', safeFolder) // 👈 Add folder name
+      formData.append('file', event.target?.files?.[0])
       uploadFile(formData).then((res: any) => {
         if (res?.error) {
           showToast('error', res?.error?.data?.message);
         } else {
           if (res?.data) {
-            onChange(`${FILE_MANAGER_URL}/${res?.data?.file_path}`);
+            // onChange(`${FILE_MANAGER_URL}/${res?.data?.file_path}`);
+            onChange(res?.data?.file_path);
             setFileUrl('');
             setIsFileUploading(false);
           } else {
@@ -70,19 +78,20 @@ const ATMFileUploader = ({
         {required && <span className="font-semibold text-red-500"> * </span>}
       </ATMFieldLabel>
 
+
       {/* File Uploader Input */}
       <div
         onClick={handleFieldClick}
-        className={` border-2 border-gray-300 border-dashed rounded h-[200px] w-full p-2 cursor-pointer relative ${
-          isFileUploading && 'opacity-50'
-        }`}
+        className={` border-2 border-gray-300 border-dashed rounded h-[200px] w-full p-2 cursor-pointer relative ${isFileUploading && 'opacity-50'
+          }`}
       >
         {value || fileUrl ? (
           <img
-            src={fileUrl || value}
-            alt=""
-            className={`object-scale-down w-full h-full rounded`}
+            src={`${process.env.REACT_APP_BASE_URL}/${value}`}
+            alt="Prouduct Image"
+            className="object-scale-down w-full h-full rounded"
           />
+
         ) : (
           <div className="flex items-center justify-center h-full bg-gray-100 rounded">
             <IconPlus />

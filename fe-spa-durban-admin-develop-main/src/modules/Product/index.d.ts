@@ -15,6 +15,7 @@ declare global {
     isActive: boolean;
     status: any;
     _id: string;
+    createdAt:Date;
   };
   type ProductFormValues = {
     productName: string;

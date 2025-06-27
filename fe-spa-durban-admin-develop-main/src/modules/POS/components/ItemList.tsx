@@ -1,4 +1,4 @@
-import { IconX, IconPlus, IconMinus } from '@tabler/icons-react';
+import { IconX, IconPlus, IconMinus, IconPencil, IconPin } from '@tabler/icons-react';
 import { useRef, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +18,11 @@ import NoItemFound from './NoItemFound';
 import { useUpdateServiceToTopMutation } from '../../Service/service/ServiceServices';
 import { useSearchParams } from 'react-router-dom';
 import { showToast } from 'src/utils/showToaster';
+import { IconPlusEqual } from '@tabler/icons-react';
+import { IconLoader2 } from '@tabler/icons-react';
+import { IconChevronDown } from '@tabler/icons-react';
+import { IconPinFilled } from '@tabler/icons-react';
+import ProductCard from './productCard';
 
 type Props = {
   onItemClick: (item: any) => void;
@@ -46,9 +51,16 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
   const navigate = useNavigate();
   const [getProductDetails, { isLoading: isGettingProducts, isUninitialized }] =
     useGetProductByBarcodeMutation();
+
+  const [page, setPage] = useState(1);
+  const [items, setItems] = useState<any[]>([]);
+  const [showAction, setShowAction] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { data, isLoading, refetch } = useFetchData(useGetItemsQuery, {
+  const { data, isLoading, refetch, isFetching } = useFetchData(useGetItemsQuery, {
     body: {
+      page: page,            // <-- Add this
+      limit: 16,
       searchValue: searchValue,
       filterBy: JSON.stringify([
         {
@@ -62,6 +74,9 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
       skip: !isSearch,
     },
   });
+
+
+  // console.log('---------data', data)
   const { data: categoryData, isLoading: categoryLoading } = useFetchData(
     useGetCategoriesQuery,
     {
@@ -69,14 +84,42 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
     },
   );
 
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    if (data && data?.length > 0) {
+    if (page > 1 && bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [items]);
+
+  useEffect(() => {
+    if (page === 1) {
+      setItems((data as any)?.data ?? []);
+    } else {
+      setItems((prev) => [...prev, ...(data as any)?.data ?? []]);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    setPage(1);
+    setItems([]);
+    // refetch(); // re-trigger API when searchValue changes
+  }, [searchValue]);
+
+
+  const handleAction = (product: any) => {
+    addToTop(product, product?.pinned ? 'remove' : 'add');
+    setShowAction(false); // switch back to pencil
+  };
+
+  useEffect(() => {
+    if (items && items?.length > 0) {
       const prevTreatments = JSON.stringify(prevTreatmentsRef.current);
       const newTreatments = JSON.stringify(treatments);
 
       if (prevTreatments !== newTreatments) {
         if (treatments?.length > 0) {
-          const matchedObjects = data
+          const matchedObjects = items
             .filter((item) => treatments.includes(item.bookingTreatmentsId))
             .map((item) => ({
               ...item,
@@ -90,7 +133,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
         prevTreatmentsRef.current = treatments;
       }
     }
-  }, [treatments, data]);
+  }, [treatments, items]);
   useEffect(() => {
     if (selectedItems.length > 0) {
       onAllItemsProcessed(selectedItems); // Call function when array is updated
@@ -100,13 +143,13 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
     updateService({ serviceId: product?._id, body: { type } }).then(
       (res: any) => {
         if (res?.error) {
-          showToast('error', res?.error?.data?.message);
+          // showToast('error', res?.error?.data?.message);
         } else {
           if (res?.data?.status) {
-            showToast('success', res?.data?.message);
+            // showToast('success', res?.data?.message);
             refetch();
           } else {
-            showToast('error', res?.data?.message);
+            // showToast('error', res?.data?.message);
           }
         }
       },
@@ -165,14 +208,14 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
           }}
         />
 
-        <div>
+        {/* <div>
           <div
             onClick={() => navigate('/dashboard')}
             className="h-[40px] px-2 bg-red-500 text-white  rounded-md flex items-center cursor-pointer text-xs gap-1"
           >
             <IconX size={15} /> Close
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Categories Chips */}
@@ -207,7 +250,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
         })}
       </div> */}
 
-      <div className="grid h-full grid-cols-5 gap-4">
+      <div className="grid h-full  gap-4">
         {/* Category Filter */}
         {/* <div className="h-full col-span-1 py-4 border-r ">
           <div className="pb-1 text-sm font-semibold border-b">Category</div>
@@ -235,93 +278,186 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
         <div
           className="flex flex-wrap col-span-4 gap-4 py-4 h-fit"
           style={{
-            height: '510px',
+            height: '76vh', //'787px',
             overflow: 'auto',
             scrollbarWidth: 'none',
+            justifyContent: 'center'
           }}
+
         >
           {isLoading ? (
-            Array(3)
+            Array(16)
               ?.fill(null)
               ?.map((_, index) => <ItemLoadingCard key={index} />)
-          ) : data?.length === 0 ? (
+          ) : items?.length === 0 ? (
             <NoItemFound />
           ) : (
-            data?.map((product) => {
+            items?.map((product) => {
               return (
-                <div
-                  style={{
-                    position: 'relative',
-                  }}
-                >
-                  <div
-                    key={product?._id}
-                    onClick={() => onItemClick(product)}
-                    className="rounded-sm cursor-pointer min-w-[150px] max-w-[150px] shadow"
-                    style={{
-                      border: `2px solid ${product?.colorCode}`,
-                    }}
-                  >
-                    <img
-                      className="h-[80px] w-full rounded-t-sm"
-                      src={product?.itemUrl || 'no-image.jpg'}
-                      alt={product?.itemName}
-                    />
+                // <div
+                //   style={{
+                //     position: 'relative',
+                //   }}
+                //   ref={bottomRef}
+                // >
+                //   <div
+                //     key={product?._id}
+                //     onClick={() => onItemClick(product)}
+                //     className="rounded-sm cursor-pointer min-w-[150px] max-w-[150px] shadow"
+                //     style={{
+                //       border: `2px solid ${product?.colorCode}`,
+                //     }}
+                //   >
+                //     <img
+                //       className="h-[80px] w-full rounded-t-sm"
+                //       src={product?.itemUrl || 'no-image.jpg'}
+                //       alt={product?.itemName}
+                //     />
 
-                    <div className="flex flex-col gap-2 px-2 py-1 pb-2 bg-white rounded-b-sm">
-                      <div
-                        title={product?.itemName}
-                        className="text-[12px] text-slate-800 line-clamp-2 font-medium capitalize"
-                      >
-                        {product?.itemName}
-                      </div>
+                //     <div className="flex flex-col gap-2 px-2 py-1 pb-2 bg-white rounded-b-sm">
+                //       <div
+                //         title={product?.itemName}
+                //         className="text-[12px] text-slate-800 line-clamp-2 font-medium capitalize"
+                //       >
+                //         {product?.itemName}
+                //       </div>
 
-                      <div className="text-xs font-medium text-primary">
-                        {CURRENCY} {product?.sellingPrice}
-                      </div>
-                    </div>
-                  </div>
-                  {product?.pinned ? (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        right: '5px',
-                        bottom: '25px',
-                        background: 'red',
-                        color: '#fff',
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => {
-                        addToTop(product, 'remove');
-                      }}
-                    >
-                      <IconMinus size={15} />
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        right: '5px',
-                        bottom: '25px',
-                        background: 'green',
-                        color: '#fff',
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => {
-                        addToTop(product, 'add');
-                      }}
-                    >
-                      <IconPlus size={15} />
-                    </div>
-                  )}
-                </div>
+                //       <div className="text-xs font-medium text-primary">
+                //         {CURRENCY} {product?.sellingPrice}
+                //       </div>
+                //     </div>
+                //   </div>
+
+                //   <div style={{ position: 'relative' }}>
+                //     <div
+                //       style={{
+                //         position: 'absolute',
+                //         right: '5px',
+                //         bottom: '10px',
+                //         background: 'white',
+                //         color: '#fff',
+                //         borderRadius: '20px',
+                //         cursor: 'pointer',
+                //         padding: '3px',
+                //         border: '2px solid #006972'
+                //       }}
+                //       onClick={() => {
+                //         if (showAction) {
+                //           handleAction(product);
+                //         } else {
+                //           setShowAction(true); // show + or - instead of pencil
+                //         }
+                //       }}
+                //     >
+                //       {showAction ? (
+                //         product?.pinned ? (
+                //           <IconMinus color='red' size={12} />
+                //         ) : (
+                //           <IconPlus color='green' size={12} />
+                //         )
+                //       ) : (
+                //         <IconPencil color='#006972' size={12} />
+                //       )}
+                //     </div>
+                //   </div>
+                // </div>
+
+                // <div
+                //   key={product?._id}
+                //   ref={bottomRef}
+                //   className="relative w-[234px] h-[240px] rounded-sm shadow cursor-pointer"
+                //   onClick={() => onItemClick(product)}
+                //   style={{
+                //     border: `2px solid ${product?.colorCode}`,
+                //     overflow: 'hidden',
+                //     background: '#fff',
+                //   }}
+                // >
+                //   {/* Image */}
+                //   <img
+                //     className="w-full h-[150px] object-cover rounded-t-sm"
+                //     src={
+                //       product?.itemUrl
+                //         ? `${process.env.REACT_APP_BASE_URL}/${product.itemUrl}`
+                //         : 'no-image.jpg'
+                //     }
+                //     alt={product?.itemName}
+                //   />
+
+
+                //   {/* Item Name */}
+                //   <div className="px-2 py-1 text-[12px] text-slate-800 line-clamp-2 font-medium capitalize">
+                //     {product?.itemName}
+                //   </div>
+
+                //   {/* Bottom Row: Price + Action */}
+                //   <div className="absolute bottom-0 left-0 w-full px-2 py-[6px] flex items-center justify-between bg-white">
+                //     <div className="text-xs font-semibold text-primary">
+                //       {CURRENCY} {product?.sellingPrice}
+                //     </div>
+
+                //     <div
+                //       onClick={(e) => {
+                //         e.stopPropagation(); // prevent card click
+                //         if (showAction) {
+                //           handleAction(product);
+                //         } else {
+                //           setShowAction(true);
+                //         }
+                //       }}
+                //       style={{
+                //         background: 'white',
+                //         border: '2px solid #006972',
+                //         borderRadius: '50%',
+                //         padding: '3px',
+                //         cursor: 'pointer',
+                //         display: 'flex',
+                //         alignItems: 'center',
+                //         justifyContent: 'center',
+                //       }}
+                //     >
+                //       {showAction ? (
+                //         product?.pinned ? (
+                //           <IconPinFilled size={12} />
+                //         ) : (
+                //           <IconPin size={12} color="#006972" />
+                //         )
+                //       ) : (
+                //         <IconPencil size={12} color="#006972" />
+                //       )}
+
+
+                //     </div>
+                //   </div>
+                // </div>
+                <ProductCard product={product} onItemClick={onItemClick} handleAction={handleAction}/>
               );
             })
           )}
         </div>
       </div>
+
+      {(data as any)?.pagination?.totalItems > items.length && (
+        <div className="flex justify-center mt-4">
+          {isFetching ? (
+            <IconLoader2 color='#006972' size={28} className="animate-spin text-blue-600" />
+          ) : (
+            <div className="flex flex-col items-center mt-4">
+              <span className="text-sm font-small" style={{ color: '#006972' }}>
+                Load More
+              </span>
+              <IconChevronDown
+                color='#006972'
+                size={28}
+                className="text-blue-600 cursor-pointer hover:text-blue-800 transition"
+                onClick={() => setPage((prev) => prev + 1)}
+              />
+            </div>
+
+          )}
+        </div>
+      )}
+
       <audio controls ref={audioRef} className="hidden">
         <source src="/beep.mp3" type="audio/mpeg" />
         <source src="/beep.ogg" type="audio/ogg" />

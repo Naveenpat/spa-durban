@@ -89,6 +89,7 @@ const RegisterListingWrapper = (props: Props) => {
       {isOpenAddDialog && (
         <AddRegisterFormWrapper
           onClose={() => dispatch(setIsOpenAddDialog(false))}
+          opningData={null}
         />
       )}
       {isOpenEditDialog && (

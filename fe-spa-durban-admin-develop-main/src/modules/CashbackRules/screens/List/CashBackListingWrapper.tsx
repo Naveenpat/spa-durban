@@ -15,7 +15,7 @@ import ATMSwitch from 'src/components/atoms/FormElements/ATMSwitch/ATMSwitch';
 import { useNavigate, useParams } from 'react-router-dom';
 import { showToast } from 'src/utils/showToaster';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 type Props = {};
 
 const CashBackListingWrapper = (props: Props) => {
@@ -53,6 +53,16 @@ const CashBackListingWrapper = (props: Props) => {
       setIsLoading(false);
     });
   };
+
+  const formatTo12Hour = (time: string) => {
+    try {
+      const parsed = parse(time, 'HH:mm', new Date());
+      return format(parsed, 'hh:mm a'); // e.g., 01:30 PM
+    } catch (error) {
+      return time;
+    }
+  };
+
   const tableHeaders: TableHeader<CashBack>[] = [
     {
       fieldName: 'cashBackRulesName',
@@ -71,13 +81,47 @@ const CashBackListingWrapper = (props: Props) => {
     },
     {
       fieldName: 'cashBackDate',
-      headerName: 'Date',
+      headerName: 'Start Date',
       // sortKey: 'serialNumber',
       flex: 'flex-[1_0_0%]',
       renderCell(item) {
-        return <div>{format(new Date(item?.cashBackDate), 'dd MMM yyyy')}</div>;
+        return <div>{item?.cashBackDate ? format(new Date(item.cashBackDate), 'dd/MM/yyyy') : '--'}</div>;
       },
     },
+    {
+      fieldName: 'cashBackEndDate',
+      headerName: 'End Date',
+      // sortKey: 'serialNumber',
+      flex: 'flex-[1_0_0%]',
+      renderCell(item) {
+        return <div>{item?.cashBackEndDate ? format(new Date(item.cashBackEndDate), 'dd/MM/yyyy') : '--'}</div>;
+      },
+    },
+    {
+      fieldName: 'activeDays',
+      headerName: 'Active Days',
+      flex: 'flex-[1_0_0%]',
+      renderCell(item) {
+        return (
+          <div>
+            {item?.activeDays?.length > 0
+              ? item.activeDays.join(', ') // e.g., "Monday, Wednesday"
+              : '--'}
+          </div>
+        );
+      },
+    },
+    {
+      fieldName: 'timing',
+      headerName: 'Timing',
+      flex: 'flex-[1_0_0%]',
+      renderCell(item) {
+        const start = item?.startTime ? formatTo12Hour(item.startTime) : '--';
+        const end = item?.endTime ? formatTo12Hour(item.endTime) : '--';
+        return <div>{`${start} - ${end}`}</div>;
+      },
+    }
+    ,
     {
       fieldName: 'status',
       headerName: 'status',

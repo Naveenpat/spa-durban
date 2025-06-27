@@ -3,6 +3,7 @@ import Outlet, { OutletDocument } from "./schema.outlet"; // Adjust OutletDocume
 import ApiError from "../../../../utilities/apiError";
 import mongoose from "mongoose";
 import { RangeFilter } from "../../../utils/interface";
+import Company from "../company/schema.company";
 
 /**
  * Create a outlet
@@ -12,6 +13,11 @@ import { RangeFilter } from "../../../utils/interface";
 const createOutlet = async (outletBody: any): Promise<OutletDocument> => {
   return Outlet.create(outletBody);
 };
+
+const getOutletsByCompanyId = async (companyId: string) => {
+  return Outlet.find({ companyId });
+};
+
 
 /**
  * Query for outlets
@@ -41,6 +47,28 @@ const queryOutlets = async (
   rangeFilterBy: RangeFilter | undefined;
   isPaginationRequired: boolean | undefined;
 }> => {
+  options.additionalQuery = [{
+    $lookup: {
+      from: "companies", // MongoDB collection name
+      localField: "companyId",
+      foreignField: "_id",
+      as: "companyDetails",
+      pipeline: [
+        {
+          $project: {
+            companyName: 1,
+          },
+        },
+      ],
+    },
+  },
+  {
+    $addFields: {
+      companyName: { $arrayElemAt: ["$companyDetails.companyName", 0] },
+    },
+  },
+  { $unset: ["companyDetails"] },
+  ];
   const outlets = await Outlet.paginate(filter, options);
   return outlets;
 };
@@ -248,4 +276,5 @@ export {
   getOutletAggrigate,
   getOutletsWithAggrigate,
   getOutletByBookingStoreId,
+  getOutletsByCompanyId
 };
