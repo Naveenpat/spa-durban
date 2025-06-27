@@ -163,6 +163,18 @@
         {
           "featureId": "CUSTOMER_ACTIVE_DEACTIVE",
           "featureName": "Activate/Deactivate Customer"
+        },
+        {
+          "featureId": "CUSTOMER_SALES_REPORT",
+          "featureName": "See Customer Sales Report"
+        },
+        {
+          "featureId": "CUSTOMER_IMPORT_BUTTON",
+          "featureName": "Import Customer"
+        },
+        {
+          "featureId": "CUSTOMER_EXPORT_BUTTON",
+          "featureName": "Export Customer"
         }
       ],
       "dependencies": [
@@ -170,7 +182,10 @@
         "CUSTOMER_ADD",
         "CUSTOMER_UPDATE",
         "CUSTOMER_DELETE",
-        "CUSTOMER_ACTIVE_DEACTIVE"
+        "CUSTOMER_ACTIVE_DEACTIVE",
+        "CUSTOMER_SALES_REPORT",
+        "CUSTOMER_IMPORT_BUTTON",
+        "CUSTOMER_EXPORT_BUTTON"
       ],
       "fields": []
     },
@@ -471,6 +486,14 @@
         {
           "featureId": "EMPLOYEE_ACTIVE_DEACTIVE",
           "featureName": "Activate/Deactivate Employee"
+        },
+        {
+          "featureId": "EMPLOYEE_IMPORT_BUTTON",
+          "featureName": "Import Employee"
+        },
+        {
+          "featureId": "EMPLOYEE_EXPORT_BUTTON",
+          "featureName": "Export Employee"
         }
       ],
       "dependencies": [
@@ -478,7 +501,9 @@
         "EMPLOYEE_ADD",
         "EMPLOYEE_UPDATE",
         "EMPLOYEE_DELETE",
-        "EMPLOYEE_ACTIVE_DEACTIVE"
+        "EMPLOYEE_ACTIVE_DEACTIVE",
+        "EMPLOYEE_IMPORT_BUTTON",
+        "EMPLOYEE_EXPORT_BUTTON"
       ],
       "fields": []
     },
@@ -615,6 +640,10 @@
         {
           "featureId": "OUTLET_ACTIVE_DEACTIVE",
           "featureName": "Activate/Deactivate Outlets"
+        },
+        {
+          "featureId": "OUTLET_SALES_REPORT",
+          "featureName": "See Outlet Sales Report"
         }
       ],
       "dependencies": [
@@ -622,7 +651,8 @@
         "OUTLET_ADD",
         "OUTLET_UPDATE",
         "OUTLET_DELETE",
-        "OUTLET_ACTIVE_DEACTIVE"
+        "OUTLET_ACTIVE_DEACTIVE",
+        "OUTLET_SALES_REPORT"
       ],
       "fields": []
     },

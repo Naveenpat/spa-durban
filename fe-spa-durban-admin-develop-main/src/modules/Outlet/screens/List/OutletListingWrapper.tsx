@@ -80,7 +80,7 @@ const OutletListingWrapper = (props: Props) => {
     {
       fieldName: 'name',
       headerName: 'Name',
-      flex: 'flex-[1_0_0%]',
+      flex: 'flex-[3_0_0%]',
     },
     {
       fieldName: 'phone',

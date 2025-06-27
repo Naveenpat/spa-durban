@@ -8,6 +8,10 @@ import { UserEnum, CustomerTypeEnum } from "../../../utils/enumUtils";
 import XLSX from 'xlsx';
 import { format, parse } from 'fast-csv';
 import { Readable } from "stream";
+import { isValid } from "date-fns";
+const dayjs = require('dayjs');
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
 
 /**
  * Create a customer
@@ -17,11 +21,11 @@ import { Readable } from "stream";
 
 const createCustomer = async (customerBody: any): Promise<CustomerDocument> => {
 
-    const existingCustomer = await Customer.findOne({
+  const existingCustomer = await Customer.findOne({
     $or: [
       { customerName: customerBody.customerName },
       { email: customerBody.email },
-      {phone: customerBody.phone}
+      { phone: customerBody.phone }
     ],
   });
 
@@ -337,6 +341,44 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
   return false;
 }
 
+// const importCSV = async (file: Express.Multer.File): Promise<void> => {
+//   if (!file) throw new Error('No file uploaded');
+
+//   const stream = Readable.from(file.buffer);
+//   const customers: any[] = [];
+
+//   // Parse CSV rows
+//   await new Promise<void>((resolve, reject) => {
+//     stream
+//       .pipe(parse({ headers: true, ignoreEmpty: true, trim: true }))
+//       .on('data', (row:any) => customers.push(row))
+//       .on('end', resolve)
+//       .on('error', reject);
+//   });
+
+//   // Loop through customers
+//   for (const customer of customers) {
+//     const {
+//       email,
+//       ...restFields
+//     } = customer;
+
+//     if (!email) continue;
+
+//     const customerObj = {
+//       ...restFields,
+//       email,
+//     };
+
+//     await Customer.findOneAndUpdate(
+//       { email },
+//       { $set: customerObj },
+//       { upsert: true, new: true }
+//     );
+//   }
+// };
+
+
 const importCSV = async (file: Express.Multer.File): Promise<void> => {
   if (!file) throw new Error('No file uploaded');
 
@@ -347,32 +389,54 @@ const importCSV = async (file: Express.Multer.File): Promise<void> => {
   await new Promise<void>((resolve, reject) => {
     stream
       .pipe(parse({ headers: true, ignoreEmpty: true, trim: true }))
-      .on('data', (row:any) => customers.push(row))
+      .on('data', (row: any) => customers.push(row))
       .on('end', resolve)
       .on('error', reject);
   });
 
-  // Loop through customers
   for (const customer of customers) {
-    const {
-      email,
-      ...restFields
-    } = customer;
+    const { email, customerName, dateOfBirth, ...restFields } = customer;
 
-    if (!email) continue;
+    // Skip if no email or customerName
+    if (!email || !customerName) continue;
 
-    const customerObj = {
-      ...restFields,
-      email,
-    };
+    // Prepare filtered fields (remove undefined or empty strings)
+    const validFields: Record<string, any> = {};
+    for (const [key, value] of Object.entries({ email, customerName, ...restFields })) {
+      if (value !== undefined && value !== '') {
+        validFields[key] = value;
+      }
+    }
 
-    await Customer.findOneAndUpdate(
-      { email },
-      { $set: customerObj },
-      { upsert: true, new: true }
-    );
+    // ✅ Parse dateOfBirth safely
+    if (dateOfBirth) {
+      const parsedDOB = dayjs(dateOfBirth, ['DD/MM/YYYY', 'YYYY-MM-DD'], true);
+      if (parsedDOB.isValid()) {
+        validFields.dateOfBirth = parsedDOB.toDate();
+      } else {
+        console.warn(`⚠️ Invalid dateOfBirth "${dateOfBirth}" for ${customerName} (${email}) - Skipped DOB`);
+      }
+    }
+
+    // Check for existing by email or customerName
+    const existing = await Customer.findOne({
+      $or: [{ email }, { customerName }]
+    });
+
+    if (existing) {
+      // Update only fields passed
+      await Customer.updateOne(
+        { _id: existing._id },
+        { $set: validFields }
+      );
+    } else {
+      // Insert new customer
+      await Customer.create(validFields);
+    }
   }
 };
+
+
 
 const exportCSV = async (): Promise<Buffer> => {
   const customers = await Customer.find({ isDeleted: false }).limit(10).lean();

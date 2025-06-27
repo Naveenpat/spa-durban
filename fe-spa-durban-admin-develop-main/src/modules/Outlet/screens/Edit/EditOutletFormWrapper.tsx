@@ -81,7 +81,7 @@ const EditOutletFormWrapper = () => {
         showToast('error', res?.error?.data?.message);
       } else {
         if (res?.data?.status) {
-          showToast('success', res?.data?.message);
+          showToast('success', 'Outlet updated successfully');
           resetForm();
           navigate('/outlets');
         } else {

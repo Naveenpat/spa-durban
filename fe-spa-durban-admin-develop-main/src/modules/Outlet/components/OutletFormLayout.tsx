@@ -15,6 +15,7 @@ import { useGetCompaniesQuery } from 'src/modules/AdminRole copy/service/Company
 import { useState } from 'react';
 import { IconArrowDown, IconFoldDown, IconFoldUp } from '@tabler/icons-react';
 import { IconArrowUp } from '@tabler/icons-react';
+import { Autocomplete, FormLabel, TextField } from '@mui/material';
 
 type Props = {
   formikProps: FormikProps<OutletFormValues>;
@@ -173,7 +174,7 @@ const OutletFormLayout = ({
               />
             </div>
             {/*country */}
-            <div className="">
+            {/* <div className="">
               <ATMSelect
                 name="country"
                 value={values?.country}
@@ -184,7 +185,29 @@ const OutletFormLayout = ({
                 valueAccessKey="label"
                 onBlur={handleBlur}
               />
+            </div> */}
+
+            <div className="flex flex-col gap-1">
+              <FormLabel sx={{ fontSize: 14, fontWeight: 500 }}>Country</FormLabel>
+
+              <Autocomplete
+                options={countries}
+                getOptionLabel={(option) => option.label || ''}
+                value={values?.country}
+                onChange={(_, newValue) => setFieldValue('country', newValue)}
+                onBlur={handleBlur}
+                isOptionEqualToValue={(option, value) => option.label === value.label}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Select Country"
+                    size="small"
+                  />
+                )}
+                
+              />
             </div>
+
 
             {/* Tax Id */}
             <div className="">
@@ -315,7 +338,7 @@ const OutletFormLayout = ({
                 folderName='outlets'
               />
             </div>
-          {/* </div> */}
+            {/* </div> */}
 
             {/* <div className="grid grid-cols-3 w-[70%] m-auto gap-4"> */}
             {/* <div className="hidden ">

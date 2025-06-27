@@ -44,16 +44,17 @@ const AddOutletFormWrapper = () => {
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
         'Please enter a valid email address with a supported domain',
       ),
-    // address: string().required('Please enter address'),
-    // city: string().required('Please enter city'),
-    // region: string().required('Please enter region'),
-    // country: object().required('Please enter country'),
-    // taxID: string().required('Please enter tax id'),
-    // invoicePrefix: string()
-    //   .matches(/^[A-Z]+$/, 'Invoice prefix must contain only letters A-Z')
-    //   .required('Please enter invoice prefix'),
-    // invoiceNumber: string().required('Please enter invoice number'),
-    // onlinePaymentAccountId: object().required('Please select bank account'),
+    address: string().required('Please enter address'),
+    city: string().required('Please enter city'),
+    region: string().required('Please enter region'),
+    country: object().required('Please enter country'),
+    taxID: string().required('Please enter tax id'),
+    invoicePrefix: string()
+      .matches(/^[A-Z]+$/, 'Invoice prefix must contain only letters A-Z')
+      .required('Please enter invoice prefix'),
+    invoiceNumber: string().required('Please enter invoice number'),
+    onlinePaymentAccountId: object().required('Please select bank account'),
+    companyId:object().required('Please select company')
   });
 
   const handleSubmit = (
@@ -71,7 +72,7 @@ const AddOutletFormWrapper = () => {
         showToast('error', res?.error?.data?.message);
       } else {
         if (res?.data?.status) {
-          showToast('success', res?.data?.message);
+          showToast('success', 'Outlet added successfully');
           resetForm();
           navigate('/outlets');
         } else {

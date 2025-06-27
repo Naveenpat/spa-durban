@@ -42,7 +42,7 @@ const EditPaymentModeFormWrapper = ({ onClose, paymetModeId }: Props) => {
         showToast("error", res?.error?.data?.message);
       } else {
         if (res?.data?.status) {
-          showToast("success", res?.data?.message);
+          showToast("success", 'Payment mode updated Successfully');
           resetForm();
           onClose();
         } else {

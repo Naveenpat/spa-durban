@@ -11,6 +11,25 @@ type Props = {
   formType: 'Add' | 'Update';
   isLoading?: boolean;
 };
+// const typeOption = [
+//   {
+//     label: 'Cash',
+//     value: 'cash',
+//   },
+//   {
+//     label: 'Referral',
+//     value: 'referral',
+//   },
+//   {
+//     label: 'Bank',
+//     value: 'bank',
+//   },
+//   {
+//     label: 'Credit Card',
+//     value: 'Credit Card',
+//   },
+// ];
+
 const typeOption = [
   {
     label: 'Cash',
@@ -21,14 +40,47 @@ const typeOption = [
     value: 'referral',
   },
   {
-    label: 'Bank',
+    label: 'Bank Transfer',
     value: 'bank',
   },
   {
     label: 'Credit Card',
-    value: 'Credit Card',
+    value: 'credit_card',
+  },
+  {
+    label: 'Debit Card',
+    value: 'debit_card',
+  },
+  {
+    label: 'UPI',
+    value: 'upi',
+  },
+  {
+    label: 'Wallet',
+    value: 'wallet',
+  },
+  {
+    label: 'Cheque',
+    value: 'cheque',
+  },
+  {
+    label: 'Gift Card',
+    value: 'gift_card',
+  },
+  {
+    label: 'EMI',
+    value: 'emi',
+  },
+  {
+    label: 'Pay Later',
+    value: 'pay_later',
+  },
+  {
+    label: 'Crypto',
+    value: 'crypto',
   },
 ];
+
 
 const PaymentModeFormLayout = ({
   formikProps,

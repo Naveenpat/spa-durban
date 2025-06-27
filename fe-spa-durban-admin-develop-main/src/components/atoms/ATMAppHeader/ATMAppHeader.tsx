@@ -447,7 +447,7 @@ const ATMAppHeader = ({
               if (canNavigate) {
                 navigate(isPOS ? '/dashboard' : '/pos');
               } else {
-                showToast("success", 'You are not authorized to access this page.');
+                showToast("error", 'You are not authorized to access this page.');
               }
             }}
             type="button"

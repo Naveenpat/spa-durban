@@ -2,7 +2,7 @@ import { Formik, FormikHelpers, Form } from "formik";
 import React from "react";
 import { AccountFormValues } from "../../models/Account.model";
 import AccountFormLayout from "../../components/AccountFormLayout";
-import { object, string } from "yup";
+import { number, object, string } from "yup";
 import { useGetAccountbyIdQuery, useUpdateAccountMutation } from "../../service/AccountServices";
 import { useFetchData } from "src/hooks/useFetchData";
 import { showToast } from "src/utils/showToaster";
@@ -26,6 +26,7 @@ const EditAccountFormWrapper = ({ onClose, accountId }: Props) => {
 
     const validationSchema = object().shape({
         accountName: string().required("Please enter account name"),
+        accountNumber: number().required('Please enter account number')
     });
     const handleSubmit = (
         values: AccountFormValues,

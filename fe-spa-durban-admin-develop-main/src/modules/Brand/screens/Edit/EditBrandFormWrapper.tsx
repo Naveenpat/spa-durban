@@ -30,7 +30,7 @@ const EditBrandFormWrapper = ({ onClose, selectedBrandId }: Props) => {
 
   const validationSchema = object().shape({
     brandName: string().required('Please enter brand name'),
-    description: string(),
+    description: string().required('Please enter description'),
   });
 
   const handleSubmit = (
@@ -42,7 +42,7 @@ const EditBrandFormWrapper = ({ onClose, selectedBrandId }: Props) => {
         showToast('error', res?.error?.data?.message);
       } else {
         if (res?.data?.status) {
-          showToast('success', res?.data?.message);
+          showToast('success', 'Brand updated successfully');
           resetForm();
           onClose();
         } else {

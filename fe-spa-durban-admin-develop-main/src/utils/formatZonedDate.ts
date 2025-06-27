@@ -9,7 +9,16 @@ export const formatZonedDate = (
   formatStr: string = 'dd MMM yyyy hh:mm a',
   timeZone: string = DEFAULT_TIMEZONE
 ): string => {
-  if (!date) return '-';
-  const zonedDate = toZonedTime(new Date(date), timeZone);
-  return format(zonedDate, formatStr);
+  try {
+    if (!date) return '-';
+
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) return '-'; // Invalid date check
+
+    const zonedDate = toZonedTime(parsedDate, timeZone);
+    return format(zonedDate, formatStr);
+  } catch (error) {
+    console.error('formatZonedDate error:', error);
+    return '-';
+  }
 };

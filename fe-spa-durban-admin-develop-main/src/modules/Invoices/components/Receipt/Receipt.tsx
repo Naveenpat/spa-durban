@@ -28,10 +28,11 @@ const Receipt = () => {
     dataType: 'VIEW',
   });
 
+  console.log('-------data ssss',(data as any)?.data)
 
   const { data: companyData } = useGetCompanyByIdQuery((data as any)?.data?.companyId)
   const { data: outletData } = useGetOutletsByCompanyIdQuery((data as any)?.data?.companyId);
-  //  console.log('----get all outlet by com id',outletData)
+   console.log('----get all outlet by com id',companyData)
   const { data: outletsData } = useFetchData(useGetOutletsQuery, {
     body: {
       isPaginationRequired: false,
@@ -169,7 +170,7 @@ const Receipt = () => {
     <>
       <div ref={printRef} className="py-2 mx-auto receipt-print w-[50%]">
         <div className="flex justify-center px-2 mb-2">
-          <img className="h-20 w-30" src={`${process.env.REACT_APP_BASE_URL}/${companyData?.logo} || "/spadurbanLogo.jpeg"`} alt="Logo" />
+          <img className="h-20 w-30" src={`${process.env.REACT_APP_BASE_URL}/${companyData?.data?.logo}`} alt="Logo" />
         </div>
         <div className="px-2 text-[11px] font-medium text-center text-slate-600 ">
           {toTitleCase(invoiceData?.outletName)}

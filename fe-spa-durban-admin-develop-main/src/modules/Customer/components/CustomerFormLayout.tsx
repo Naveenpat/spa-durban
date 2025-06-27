@@ -415,7 +415,7 @@ const CustomerFormLayout = ({
                 name="customerGroup"
                 value={values?.customerGroup}
                 onChange={(newValue) => setFieldValue('customerGroup', newValue)}
-                label="Gender"
+                label="Customer Group"
                 placeholder="Select Customer Group"
                 options={customerGroupOptions}
                 valueAccessKey="value"

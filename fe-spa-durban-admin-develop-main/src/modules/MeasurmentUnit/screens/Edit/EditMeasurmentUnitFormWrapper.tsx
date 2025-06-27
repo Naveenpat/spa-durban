@@ -49,7 +49,7 @@ const EditMeasurmentUnitFormWrapper = ({
         showToast('error', res?.error?.data?.message);
       } else {
         if (res?.data?.status) {
-          showToast('success', res?.data?.message);
+          showToast('success', 'Measurment updated successfully');
           resetForm();
           onClose();
         } else {

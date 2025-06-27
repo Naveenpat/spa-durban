@@ -22,6 +22,7 @@ import { IconPlusEqual } from '@tabler/icons-react';
 import { IconLoader2 } from '@tabler/icons-react';
 import { IconChevronDown } from '@tabler/icons-react';
 import { IconPinFilled } from '@tabler/icons-react';
+import ProductCard from './productCard';
 
 type Props = {
   onItemClick: (item: any) => void;
@@ -59,7 +60,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
   const { data, isLoading, refetch, isFetching } = useFetchData(useGetItemsQuery, {
     body: {
       page: page,            // <-- Add this
-      limit: 25,
+      limit: 16,
       searchValue: searchValue,
       filterBy: JSON.stringify([
         {
@@ -142,13 +143,13 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
     updateService({ serviceId: product?._id, body: { type } }).then(
       (res: any) => {
         if (res?.error) {
-          showToast('error', res?.error?.data?.message);
+          // showToast('error', res?.error?.data?.message);
         } else {
           if (res?.data?.status) {
-            showToast('success', res?.data?.message);
+            // showToast('success', res?.data?.message);
             refetch();
           } else {
-            showToast('error', res?.data?.message);
+            // showToast('error', res?.data?.message);
           }
         }
       },
@@ -285,7 +286,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
 
         >
           {isLoading ? (
-            Array(20)
+            Array(16)
               ?.fill(null)
               ?.map((_, index) => <ItemLoadingCard key={index} />)
           ) : items?.length === 0 ? (
@@ -361,75 +362,75 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
                 //   </div>
                 // </div>
 
-                <div
-                  key={product?._id}
-                  ref={bottomRef}
-                  className="relative w-[170px] h-[170px] rounded-sm shadow cursor-pointer"
-                  onClick={() => onItemClick(product)}
-                  style={{
-                    border: `2px solid ${product?.colorCode}`,
-                    overflow: 'hidden',
-                    background: '#fff',
-                  }}
-                >
-                  {/* Image */}
-                  <img
-                    className="w-full h-[80px] object-cover rounded-t-sm"
-                    src={
-                      product?.itemUrl
-                        ? `${process.env.REACT_APP_BASE_URL}/${product.itemUrl}`
-                        : 'no-image.jpg'
-                    }
-                    alt={product?.itemName}
-                  />
+                // <div
+                //   key={product?._id}
+                //   ref={bottomRef}
+                //   className="relative w-[234px] h-[240px] rounded-sm shadow cursor-pointer"
+                //   onClick={() => onItemClick(product)}
+                //   style={{
+                //     border: `2px solid ${product?.colorCode}`,
+                //     overflow: 'hidden',
+                //     background: '#fff',
+                //   }}
+                // >
+                //   {/* Image */}
+                //   <img
+                //     className="w-full h-[150px] object-cover rounded-t-sm"
+                //     src={
+                //       product?.itemUrl
+                //         ? `${process.env.REACT_APP_BASE_URL}/${product.itemUrl}`
+                //         : 'no-image.jpg'
+                //     }
+                //     alt={product?.itemName}
+                //   />
 
 
-                  {/* Item Name */}
-                  <div className="px-2 py-1 text-[12px] text-slate-800 line-clamp-2 font-medium capitalize">
-                    {product?.itemName}
-                  </div>
+                //   {/* Item Name */}
+                //   <div className="px-2 py-1 text-[12px] text-slate-800 line-clamp-2 font-medium capitalize">
+                //     {product?.itemName}
+                //   </div>
 
-                  {/* Bottom Row: Price + Action */}
-                  <div className="absolute bottom-0 left-0 w-full px-2 py-[6px] flex items-center justify-between bg-white">
-                    <div className="text-xs font-semibold text-primary">
-                      {CURRENCY} {product?.sellingPrice}
-                    </div>
+                //   {/* Bottom Row: Price + Action */}
+                //   <div className="absolute bottom-0 left-0 w-full px-2 py-[6px] flex items-center justify-between bg-white">
+                //     <div className="text-xs font-semibold text-primary">
+                //       {CURRENCY} {product?.sellingPrice}
+                //     </div>
 
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation(); // prevent card click
-                        if (showAction) {
-                          handleAction(product);
-                        } else {
-                          setShowAction(true);
-                        }
-                      }}
-                      style={{
-                        background: 'white',
-                        border: '2px solid #006972',
-                        borderRadius: '50%',
-                        padding: '3px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {showAction ? (
-                        product?.pinned ? (
-                          <IconPinFilled size={12} />
-                        ) : (
-                          <IconPin size={12} color="#006972" />
-                        )
-                      ) : (
-                        <IconPencil size={12} color="#006972" />
-                      )}
+                //     <div
+                //       onClick={(e) => {
+                //         e.stopPropagation(); // prevent card click
+                //         if (showAction) {
+                //           handleAction(product);
+                //         } else {
+                //           setShowAction(true);
+                //         }
+                //       }}
+                //       style={{
+                //         background: 'white',
+                //         border: '2px solid #006972',
+                //         borderRadius: '50%',
+                //         padding: '3px',
+                //         cursor: 'pointer',
+                //         display: 'flex',
+                //         alignItems: 'center',
+                //         justifyContent: 'center',
+                //       }}
+                //     >
+                //       {showAction ? (
+                //         product?.pinned ? (
+                //           <IconPinFilled size={12} />
+                //         ) : (
+                //           <IconPin size={12} color="#006972" />
+                //         )
+                //       ) : (
+                //         <IconPencil size={12} color="#006972" />
+                //       )}
 
 
-                    </div>
-                  </div>
-                </div>
-
+                //     </div>
+                //   </div>
+                // </div>
+                <ProductCard product={product} onItemClick={onItemClick} handleAction={handleAction}/>
               );
             })
           )}

@@ -66,14 +66,17 @@ const EmployeeListing = ({
 
               </div>
               {/* Right Side: Import/Export Buttons */}
-              <div>
-                <GlobalImportExport
-                  onImport={(file: any) => importEmployeeExcelSheet(file)}
-                  onExport={() => exportEmployeeExcelSheet()}
-                  showImport={true}
-                  showExport={true}
-                />
-              </div>
+              {isAuthorized('EMPLOYEE_IMPORT_BUTTON') && (
+                <div>
+                  <GlobalImportExport
+                    onImport={(file: any) => importEmployeeExcelSheet(file)}
+                    onExport={() => exportEmployeeExcelSheet()}
+                    showImport={true}
+                    showExport={true}
+                  />
+                </div>
+              )}
+
             </div>
 
 

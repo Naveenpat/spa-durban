@@ -58,14 +58,15 @@ const CustomerListing = ({
 
               </div>
               {/* Right Side: Import/Export Buttons */}
-              <div>
-                <GlobalImportExport
-                  onImport={(file: any) => importEmployeeExcelSheet(file)}
-                  onExport={() => exportEmployeeExcelSheet()}
-                  showImport={true}
-                  showExport={true}
-                />
-              </div>
+              {isAuthorized('CUSTOMER_EXPORT_BUTTON') && (
+                <div>
+                  <GlobalImportExport
+                    onImport={(file: any) => importEmployeeExcelSheet(file)}
+                    onExport={() => exportEmployeeExcelSheet()}
+                    showImport={true}
+                    showExport={true}
+                  />
+                </div>)}
             </div>
 
             <div className="flex-1 overflow-auto">

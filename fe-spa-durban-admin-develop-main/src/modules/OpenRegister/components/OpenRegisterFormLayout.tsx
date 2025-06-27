@@ -61,7 +61,7 @@ const OpenRegisterFormLayout = ({
               placeholder="Please Select Register"
             />
           </div> */}
-          {opningData?.carryForwardBalance && (
+          {opningData?.carryForwardBalance !== 0 && (
             <div>
               <h6 className="text-sm text-blue-600 font-medium">
                 Previous Carry Forword Balance: R {opningData.carryForwardBalance}
@@ -89,7 +89,7 @@ const OpenRegisterFormLayout = ({
               isValid={!errors?.openingBalance}
             />
 
-            {opningData?.carryForwardBalance && (
+            {opningData?.carryForwardBalance !== 0 && (
               <>
                 {Number(values.openingBalance) < Number(opningData.carryForwardBalance) && (
                   <p className="text-sm text-red-600 mt-1">

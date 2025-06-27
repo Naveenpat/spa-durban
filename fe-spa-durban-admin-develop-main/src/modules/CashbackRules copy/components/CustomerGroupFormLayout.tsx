@@ -82,11 +82,11 @@ const CustomerGroupFormLayout = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <ATMTextField
               required
-              label="Cash Back Rules Name"
+              label="Customer Group Name"
               name="customerGroupName"
               value={values.customerGroupName}
               onChange={(e) => setFieldValue('customerGroupName', e.target.value)}
-              placeholder="Enter Cash Back Rules Name"
+              placeholder="Enter customer group name"
               onBlur={handleBlur}
               isTouched={touched.customerGroupName}
               errorMessage={errors.customerGroupName}

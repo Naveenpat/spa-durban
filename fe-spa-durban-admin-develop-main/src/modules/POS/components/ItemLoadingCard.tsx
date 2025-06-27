@@ -4,19 +4,19 @@ type Props = {};
 
 const ItemLoadingCard = () => {
   return (
-    <div className="w-[150px] h-[170px] rounded-sm shadow animate-pulse bg-white overflow-hidden">
+    <div className="w-[230px] h-[260px] rounded-lg shadow animate-pulse bg-white overflow-hidden border border-gray-200">
       {/* Image Skeleton */}
-      <div className="h-[80px] w-full bg-gray-200"></div>
+      <div className="h-[150px] w-full bg-gray-200"></div>
 
       {/* Text Skeleton */}
-      <div className="flex flex-col justify-between px-2 py-2 h-[90px]">
-        <div className="h-[14px] bg-gray-200 rounded w-full mb-2"></div>
-        <div className="h-[14px] bg-gray-200 rounded w-[70%]"></div>
+      <div className="flex flex-col justify-between px-3 py-3 h-[110px]">
+        <div className="h-[16px] bg-gray-300 rounded w-full mb-2"></div>
+        <div className="h-[14px] bg-gray-200 rounded w-[60%] mb-2"></div>
+        <div className="h-[14px] bg-gray-200 rounded w-[40%]"></div>
       </div>
     </div>
   );
 };
-
 
 export default ItemLoadingCard;
 

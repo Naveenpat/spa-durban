@@ -129,7 +129,7 @@ export const createMailOptions = async (emailData: {
 
 
     const mailOptions: SendMailOptions = {
-      from: outletSendFrom || sendFrom || 'info4@spadurban.co.za',
+      from: outletSendFrom || 'info4@spadurban.co.za',
       to: sendTo,
       subject: emailSubject,
       html: emailBody,

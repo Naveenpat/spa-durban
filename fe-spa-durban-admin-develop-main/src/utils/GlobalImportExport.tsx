@@ -10,6 +10,7 @@ interface GlobalImportExportProps {
   showExport?: boolean;
   importLabel?: string;
   exportLabel?: string;
+  isLoading?: boolean;
 }
 
 const GlobalImportExport: React.FC<GlobalImportExportProps> = ({
@@ -19,6 +20,7 @@ const GlobalImportExport: React.FC<GlobalImportExportProps> = ({
   showExport = true,
   importLabel = 'Import',
   exportLabel = 'Export',
+  isLoading= false
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -44,7 +46,7 @@ const GlobalImportExport: React.FC<GlobalImportExportProps> = ({
             <ATMButton
               color="primary"
               onClick={() => fileInputRef.current?.click()}
-
+              isLoading={isLoading}
             >
               {/* <IconUpload className="h-4 w-4" /> */}
               {importLabel}

@@ -18,6 +18,7 @@ import ShowConfirmation from 'src/utils/ShowConfirmation';
 import { useEffect, useState } from 'react';
 import { EmptyPointSettings } from '@syncfusion/ej2-react-charts';
 import toast from 'react-hot-toast';
+import { isAuthorized } from 'src/utils/authorization';
 
 type Props = {};
 
@@ -86,7 +87,7 @@ const CustomerListingWrapper = (props: Props) => {
       setIsLoading(false);
     });
   };
-
+  const [loading, setLoading] = useState(false);
   const [startExport, setStartExport] = useState(false)
   const { data: exportData, isLoading: isExporting } = useExportCustomerExcelQuery(undefined, {
     skip: !startExport, // trigger only when needed
@@ -112,11 +113,14 @@ const CustomerListingWrapper = (props: Props) => {
     }
   }, [exportData]);
 
-  const importEmployeeExcelSheet = async (file: any) => {
+  const importCustomerExcelSheet = async (file: any) => {
     try {
+      setLoading(true)
       await importEmployeeExcel(file).unwrap();
-      toast.success('Employees imported successfully!');
+      setLoading(false)
+      toast.success('Customer imported successfully!');
     } catch (err) {
+      setLoading(false)
       toast.error('Failed to import employees');
     }
   }
@@ -131,13 +135,13 @@ const CustomerListingWrapper = (props: Props) => {
       headerName: 'Name',
       flex: 'flex-[2_0_0%]',
       renderCell: (row) => (
-      <span
-        className="text-black-600 cursor-pointer"
-        onClick={() => navigate(`/customer/view/${row._id}`)}
-      >
-        {row.customerName}
-      </span>
-    ),
+        <span
+          className="text-black-600 cursor-pointer"
+          onClick={() => navigate(`/customer/view/${row._id}`)}
+        >
+          {row.customerName}
+        </span>
+      ),
     },
     {
       fieldName: 'phone',
@@ -252,7 +256,11 @@ const CustomerListingWrapper = (props: Props) => {
       flex: 'flex-[0_0_150px]',
       renderCell: (row: any) => (
         <button
-          onClick={() => handleViewSalesReport(row)}
+          onClick={() => {
+            if (!isAuthorized('CUSTOMER_SALES_REPORT')) {
+              showToast('error', 'You are not authorized to access this page.')
+            } else { handleViewSalesReport(row) }
+          }}
           className="text-white px-3 py-1 rounded hover:opacity-90"
           style={{ backgroundColor: '#006972' }}
         >
@@ -317,7 +325,7 @@ const CustomerListingWrapper = (props: Props) => {
           totalPages: totalPages,
         }}
         isLoading={isLoading}
-        importEmployeeExcelSheet={importEmployeeExcelSheet}
+        importEmployeeExcelSheet={importCustomerExcelSheet}
         exportEmployeeExcelSheet={exportEmployeeExcelSheet}
       />
     </>

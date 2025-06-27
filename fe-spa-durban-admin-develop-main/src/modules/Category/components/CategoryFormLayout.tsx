@@ -54,7 +54,7 @@ const CategoryFormLayout = ({
               name="description"
               value={values.description}
               onChange={(e) => setFieldValue('description', e.target.value)}
-              label="Description"
+              label="Description (optional)"
               placeholder="Enter Description"
               onBlur={handleBlur}
               isTouched={touched?.description}

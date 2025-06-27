@@ -53,6 +53,8 @@ const EditCustomerFormWrapper = () => {
       customerGroup: values?.customerGroup?.value,
       country: values?.country?.label,
     };
+
+  
     updateCustomer({ body: formattedValues, customerId }).then((res: any) => {
       if (res?.error) {
         showToast('error', res?.error?.data?.message);
