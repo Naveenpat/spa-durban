@@ -34,6 +34,7 @@ import toast from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip'
 import { showToast } from 'src/utils/showToaster';
 import { formatZonedDate } from 'src/utils/formatZonedDate';
+import ShowConfirmation from 'src/utils/ShowConfirmation';
 type Props = {};
 
 const InvoicesListingWrapper = (props: Props) => {
@@ -41,7 +42,7 @@ const InvoicesListingWrapper = (props: Props) => {
 
   const { searchQuery, limit, page, dateFilter, appliedFilters } =
     useFilterPagination(['outletId', 'customerId']);
-    
+
   const navigate = useNavigate();
   const location = useLocation();
   const { outlets } = useSelector((state: RootState) => state.auth);
@@ -65,6 +66,7 @@ const InvoicesListingWrapper = (props: Props) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [invoiceId, setInvoiceId] = useState('');
   const [updateInvoice] = useUpdateInvoiceMutation();
+  const [invoiceStatus, setInvoiceStatus] = useState('');
   const { data, isLoading, totalData, totalPages } = useFetchData(
     useGetInvoicesQuery,
     {
@@ -78,8 +80,8 @@ const InvoicesListingWrapper = (props: Props) => {
           // startDate: dateFilter?.start_date || format(new Date(), 'yyyy-MM-dd'),
           // endDate: dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd'),
 
-          startDate:dateFilter?.start_date || format(subMonths(new Date(), 1), 'yyyy-MM-dd'),
-          endDate:dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd')
+          startDate: dateFilter?.start_date || format(subMonths(new Date(), 1), 'yyyy-MM-dd'),
+          endDate: dateFilter?.end_date || format(new Date(), 'yyyy-MM-dd')
         }),
         filterBy: JSON.stringify(appliedFilters),
       },
@@ -90,7 +92,7 @@ const InvoicesListingWrapper = (props: Props) => {
     try {
       await updateInvoice({
         invoiceId: item?._id,
-        body: { status: item?.status === "" ? 'refund' : "" },
+        body: { status: item?.status === "" ? 'refund' : "", voidNote: "" },
       }).unwrap();
       // alert('Invoice updated successfully!');
       if (item?.status == "refund") {
@@ -229,7 +231,25 @@ const InvoicesListingWrapper = (props: Props) => {
                 label: item?.status === 'refund' ? 'Cancel Refund' : 'Refund',
                 icon: IconCreditCardRefund,
                 onClick: () => {
-                  handleUpdate(item);
+                  if (item?.status === 'refund') {
+
+
+                    ShowConfirmation({
+                      type: 'INFO',
+                      title: 'Are you sure?',
+                      message: 'Do you want to refund on this invoice?',
+                      onConfirm: (closeDialog) => {
+                        handleUpdate(item);   // ✅ Your actual update logic
+                        closeDialog();          // ✅ Closes the confirmation modal
+                      },
+                      confirmationText: `${item?.status === 'refund' ? 'Cancel Refund' : 'Refund'}`
+                    })
+                  } else {
+                    dispatch(setIsOpenEditDialog(true));
+                    setInvoiceId(item._id);
+                    setInvoiceStatus('refund')
+                  }
+                  // handleUpdate(item);
                 },
               },
               {
@@ -237,10 +257,21 @@ const InvoicesListingWrapper = (props: Props) => {
                 icon: IconCopyX,
                 onClick: () => {
                   if (item?.status === 'void') {
-                    handleCancelVoidWithConfirmation(item._id);
+                    ShowConfirmation({
+                      type: 'INFO',
+                      title: 'Are you sure?',
+                      message: 'Do you want to undo void on this invoice?',
+                      onConfirm: (closeDialog) => {
+                        handleCancelVoidWithConfirmation(item._id);  // ✅ Your actual update logic
+                        closeDialog();          // ✅ Closes the confirmation modal
+                      },
+                      confirmationText: `${item?.status === 'void' ? 'Cancel void' : 'void'}`
+                    })
+
                   } else {
                     dispatch(setIsOpenEditDialog(true));
                     setInvoiceId(item._id);
+                    setInvoiceStatus('void')
                   }
                 },
               }
@@ -301,7 +332,7 @@ const InvoicesListingWrapper = (props: Props) => {
   ];
 
   const today = new Date();
-const oneMonthAgo = subMonths(today, 1);
+  const oneMonthAgo = subMonths(today, 1);
 
   useEffect(() => {
     if (!dateFilter?.start_date && !dateFilter?.end_date) {
@@ -336,6 +367,7 @@ const oneMonthAgo = subMonths(today, 1);
         <EditCategoryFormWrapper
           onClose={() => dispatch(setIsOpenEditDialog(false))}
           invoiceId={invoiceId}
+          invoiceStatus={invoiceStatus}
         />
       )}
     </>

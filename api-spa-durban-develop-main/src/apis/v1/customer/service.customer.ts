@@ -41,6 +41,7 @@ const createCustomer = async (customerBody: any): Promise<CustomerDocument> => {
   customerBody["userName"] = customerBody.email;
   customerBody["password"] = customerBody.phone;
   customerBody["name"] = customerBody.customerName;
+  customerBody['customerGroup'] = 'new user'
   const user = await userService.createUser(customerBody);
   if (user) {
     customerBody["_id"] = user._id;

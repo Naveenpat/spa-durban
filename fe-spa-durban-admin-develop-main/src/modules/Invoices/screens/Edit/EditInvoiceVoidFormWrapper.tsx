@@ -16,9 +16,10 @@ import toast from 'react-hot-toast';
 type Props = {
   onClose: () => void;
   invoiceId: string;
+  invoiceStatus:string;
 };
 
-const EditInvoiceVoidFormWrapper = ({ onClose, invoiceId }: Props) => {
+const EditInvoiceVoidFormWrapper = ({ onClose, invoiceId,invoiceStatus }: Props) => {
   const [updateInvoice] = useUpdateInvoiceMutation();
   const { data, isLoading } = useFetchData(useGetInvoiceQuery, {
     body: invoiceId,
@@ -38,7 +39,7 @@ const EditInvoiceVoidFormWrapper = ({ onClose, invoiceId }: Props) => {
     values: InvoicesFormValues,
     { resetForm, setSubmitting }: FormikHelpers<InvoicesFormValues>,
   ) => {
-    values.status = 'void';
+    values.status = invoiceStatus || 'void';
     updateInvoice({ body: values, invoiceId }).then((res: any) => {
       if (res?.error) {
         showToast('error',res?.error?.data?.message)

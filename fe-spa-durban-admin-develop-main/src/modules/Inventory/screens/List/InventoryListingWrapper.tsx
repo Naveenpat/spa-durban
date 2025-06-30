@@ -12,43 +12,9 @@ import { useGetInventoriesQuery } from '../../service/InventoryServices';
 import InventoryListing from './InventoryListing';
 import { format } from 'date-fns';
 import { formatZonedDate } from 'src/utils/formatZonedDate';
+import { useEffect } from 'react';
 
-const tableHeaders: TableHeader<Inventory>[] = [
-  {
-    fieldName: 'productName',
-    headerName: 'Product',
-    highlight: true,
-    flex: 'flex-[1_1_0%]',
-  },
 
-  {
-    fieldName: 'availableQunatity',
-    headerName: 'Available Qty.',
-    flex: 'flex-[1_0_0%]',
-  },
-  {
-    fieldName: 'totalPrice',
-    headerName: 'STOCK VALUE',
-    flex: 'flex-[1_0_0%]',
-    renderCell: (item) => (
-      <div>
-        {CURRENCY} {Number(item?.totalPrice).toFixed(2)}
-      </div>
-    ),
-  },
-  {
-    fieldName: 'createdAt',
-    headerName: 'Date',
-    flex: 'flex-[1_1_0%]',
-    extraClasses: () => '',
-    stopPropagation: true,
-    render: (row: any) => {
-      const date = row.createdAt ? new Date(row.createdAt) : null;
-      // return date ? format(date, 'dd-MM-yyyy') : '-';
-      return date ? formatZonedDate(date) : '-';
-    },
-  }
-];
 
 const InventoryListingWrapper = () => {
   const { isOpenAddDialog, isOpenEditDialog } = useSelector(
@@ -63,18 +29,25 @@ const InventoryListingWrapper = () => {
       isPaginationRequired: false,
     },
   });
-  const { appliedFilters } = useFilterPagination(['productId', 'outletId']);
+  const { searchQuery, limit, page, dateFilter, appliedFilters } =
+    useFilterPagination(['outletId', 'customerId']);
 
-  const { data, isLoading, totalData, totalPages } = useFetchData(
+  const { data, isLoading, totalData, totalPages,refetch } = useFetchData(
     useGetInventoriesQuery,
     {
       body: {
-        isPaginationRequired: false,
+        limit,
+        page,
         searchIn: JSON.stringify(['productName']),
         filterBy: JSON.stringify(appliedFilters),
       },
     },
   );
+
+  useEffect(()=>{
+    refetch()
+  },[])
+  console.log('----data', data)
   const filters: FilterType[] = [
     {
       filterType: 'multi-select',
@@ -109,6 +82,53 @@ const InventoryListingWrapper = () => {
       },
     },
   ];
+
+  const tableHeaders: TableHeader<Inventory>[] = [
+    {
+      fieldName: 'productName',
+      headerName: 'Product',
+      highlight: true,
+      flex: 'flex-[1_1_0%]',
+    },
+    {
+      fieldName: 'outletName',
+      headerName: 'Outlet Name',
+      flex: 'flex-[1_1_0%]',
+    },
+    {
+      fieldName: 'invoiceNumber',
+      headerName: 'Invoice Number',
+      flex: 'flex-[1_1_0%]',
+    },
+    {
+      fieldName: 'availableQunatity',
+      headerName: 'Available Qty.',
+      flex: 'flex-[1_0_0%]',
+    },
+    {
+      fieldName: 'totalPrice',
+      headerName: 'STOCK VALUE',
+      flex: 'flex-[1_0_0%]',
+      renderCell: (item) => (
+        <div>
+          {CURRENCY} {Number(item?.totalPrice).toFixed(2)}
+        </div>
+      ),
+    },
+    {
+      fieldName: 'createdAt',
+      headerName: 'Date',
+      flex: 'flex-[1_1_0%]',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        // return date ? format(date, 'dd-MM-yyyy') : '-';
+        return date ? formatZonedDate(date) : '-';
+      },
+    }
+  ];
+
   return (
     <>
       <InventoryListing
@@ -116,6 +136,10 @@ const InventoryListingWrapper = () => {
         rowData={data as Inventory[]}
         filters={filters}
         isLoading={isLoading}
+        filterPaginationData={{
+          totalCount: totalData,
+          totalPages: totalPages,
+        }}
       />
     </>
   );

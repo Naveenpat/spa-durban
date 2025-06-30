@@ -313,7 +313,7 @@ const CartSummarySection = ({
 
       return null; // No customer found
     } catch (error) {
-      console.error('Error fetching customer by booking ID:', error);
+      // console.error('Error fetching customer by booking ID:', error);
       return null;
     }
   };
@@ -364,7 +364,7 @@ const CartSummarySection = ({
   // };
 
 const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
-  console.log('-------calling o');
+  // console.log('-------calling o');
   if (!inputValue?.trim()) return [];
 
   const query = inputValue.trim();
@@ -396,7 +396,7 @@ const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
     );
 
     if (!response.ok) {
-      console.error(`❌ API Error: ${response.status} ${response.statusText}`);
+      // console.error(`❌ API Error: ${response.status} ${response.statusText}`);
       return [];
     }
 
@@ -408,7 +408,7 @@ const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
       data: item,
     }));
   } catch (error) {
-    console.error('❌ Error fetching options:', error);
+    // console.error('❌ Error fetching options:', error);
     return [];
   }
 };

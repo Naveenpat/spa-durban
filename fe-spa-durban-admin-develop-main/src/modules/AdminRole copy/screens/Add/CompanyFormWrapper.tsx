@@ -23,6 +23,10 @@ const CompanyFormWrapper = (props: Props) => {
 
   const validationSchema = object().shape({
     companyName: string().required('Please enter name'),
+    email: string().required('Please enter email'),
+    phone: string().required('Please enter phone'),
+    logo:string().required('Please select logo'),
+    websiteUrl:string().required('Please enter websiteUrl')
   });
 
   const handleSubmit = (

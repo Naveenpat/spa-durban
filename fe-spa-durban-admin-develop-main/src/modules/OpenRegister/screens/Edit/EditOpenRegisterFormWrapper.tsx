@@ -1,5 +1,5 @@
 import { Formik, FormikHelpers, Form } from 'formik';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { OpenRegisterFormValues } from '../../models/OpenRegister.model';
 import OpenRegisterFormLayout from '../../components/OpenRegisterFormLayout';
 import { object, number } from 'yup';
@@ -17,11 +17,12 @@ type Props = {
 
 const EditRegisterFormWrapper = ({ onClose, registerId }: Props) => {
   const [updateRegister] = useUpdateRegisterMutation();
-  const { data, isLoading } = useFetchData(useGetRegisterByIdQuery, {
+  const { data, isLoading,refetch } = useFetchData(useGetRegisterByIdQuery, {
     body: registerId,
     dataType: 'VIEW',
   });
 
+ 
   // console.log('----',data)
   const initialValues: OpenRegisterFormValues = {
     registerId: (data as any)?.data?.registerId,

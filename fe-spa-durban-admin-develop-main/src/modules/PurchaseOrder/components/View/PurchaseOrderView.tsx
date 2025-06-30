@@ -16,11 +16,24 @@ const PurchaseOrderView = () => {
     dataType: 'VIEW',
   });
 
+  // const grandTotal =
+  //   (data as any)?.data?.payableAmount -
+  //   (data as any)?.data?.totalTax +
+  //   (data as any)?.data?.totalDiscount +
+  //   (data as any)?.data?.shippingCharges;
+
   const grandTotal =
-    (data as any)?.data?.payableAmount -
-    (data as any)?.data?.totalTax +
-    (data as any)?.data?.totalDiscount +
-    (data as any)?.data?.shippingCharges;
+    parseFloat(
+      (
+        (data as any)?.data?.payableAmount -
+        (data as any)?.data?.totalTax +
+        (data as any)?.data?.totalDiscount +
+        (data as any)?.data?.shippingCharges
+      ).toFixed(2)
+    );
+  const balanceDue =
+    (data as any)?.data?.payableAmount - (data as any)?.data?.amountPaid
+
   return (
     <>
       {isLoading ? (
@@ -43,9 +56,9 @@ const PurchaseOrderView = () => {
                   Date :
                   {(data as any)?.data?.createdAt
                     ? format(
-                        new Date((data as any)?.data?.createdAt),
-                        'dd MMM yyyy',
-                      )
+                      new Date((data as any)?.data?.createdAt),
+                      'dd MMM yyyy',
+                    )
                     : null}
                 </div>
                 <div>Invoice Number : {(data as any)?.data?.invoiceNumber}</div>
@@ -74,7 +87,7 @@ const PurchaseOrderView = () => {
                       {calculateDiscount({
                         amount:
                           Number(product?.rate || 0) *
-                            Number(product?.quantity || 0) +
+                          Number(product?.quantity || 0) +
                           calculateTaxAmount({
                             amount:
                               (product?.rate || 0) * (product?.quantity || 0),
@@ -85,7 +98,12 @@ const PurchaseOrderView = () => {
                         discount: product?.discount,
                       })}
                     </div>
-                    <div>{product?.taxType}</div>
+                    <div>{CURRENCY}{' '}{`${calculateTaxAmount({
+                      amount:
+                        (product?.rate || 0) * (product?.quantity || 0),
+                      discountAmount: 0,
+                      taxPercent: product?.taxPercent || 0,
+                    })} (${product?.taxType})`}</div>
                     <div>
                       {CURRENCY} {product?.amount}
                     </div>
@@ -104,7 +122,7 @@ const PurchaseOrderView = () => {
                     return (
                       sum +
                       Number(product?.quantity || 0) *
-                        Number(product?.rate || 0)
+                      Number(product?.rate || 0)
                     );
                   },
                   0,
@@ -143,8 +161,11 @@ const PurchaseOrderView = () => {
             </div>
             <div className="flex justify-between text-red-500">
               <div>Balance amount</div>
-              <div>
+              {/* <div>
                 {CURRENCY} {grandTotal - (data as any)?.data?.amountPaid}
+              </div> */}
+              <div>
+                {CURRENCY} {balanceDue < 0 ? 0 : balanceDue}
               </div>
             </div>
           </div>

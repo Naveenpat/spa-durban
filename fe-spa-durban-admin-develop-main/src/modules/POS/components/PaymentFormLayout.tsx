@@ -85,6 +85,7 @@ const PaymentFormLayout = ({
     );
   }, [values.amountReceived]);
 
+  console.log('-------calculateTotalReceived', calculateTotalReceived())
   const isLastPaymentModeFilled = () => {
     if (values?.amountReceived?.length === 0) {
       return true;
@@ -127,13 +128,15 @@ const PaymentFormLayout = ({
     refetch()
   }, [])
 
+  const balanceDuee = previewData?.invoiceData?.totalAmount -
+          calculateTotalReceived();
   return (
     <>
       <MOLFormDialog
         title="Payment"
         onClose={onClose}
         isSubmitting={isSubmitting}
-        isSubmitButtonDisabled={false}
+        isSubmitButtonDisabled={balanceDuee !== 0}
         isDraftSubmitting={isDraftSubmitting}
         draftbtn
         onDraft={() => onDraft(values)}
@@ -295,7 +298,7 @@ const PaymentFormLayout = ({
                     />
                   )}
                 </div>
-                
+
                 {/* Loyalty Point */}
                 <div className="">
                   {isPreviewed ? (
@@ -535,7 +538,7 @@ const PaymentFormLayout = ({
                         handleApplyPayment(values, setFieldValue);
                       }}
                       isLoading={previewIsLoading}
-                      disabled={values?.usedCashBackAmount > payAbleAmount}
+                      disabled={values?.usedCashBackAmount > payAbleAmount || payAbleAmount === 0}
                     >
                       Apply
                     </ATMButton>

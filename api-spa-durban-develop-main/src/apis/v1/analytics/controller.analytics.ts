@@ -249,7 +249,7 @@ const getOutletDailyReport = catchAsync(
 
 const getSalesReportByOutlet = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { outletId, page = 1, limit = 10, startDate, endDate } = req.query;
-  console.log('-----req.query',req.query)
+  // console.log('-----req.query',req.query)
   if (!mongoose.Types.ObjectId.isValid(outletId as string)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid outletId');
   }
@@ -276,7 +276,7 @@ if (sortOrderParam === 'asc' || sortOrderParam === 1 || sortOrderParam === '1') 
   sortOrder = 1;
 }
 
-  console.log('-----',invoiceDateFilter)
+  // console.log('-----',invoiceDateFilter)
   const pipeline: PipelineStage[] = [
     {
       $match: {

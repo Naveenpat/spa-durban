@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from 'src/store';
 import PaymentInFormWrapper from '../../components/PaymentIn/PaymentInFormWrapper';
 import { setIsOpenAddDialog } from '../../slice/PurchaseOrderSlice';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CURRENCY } from 'src/utils/constants';
 import ATMTooltip from 'src/components/atoms/ATMToolTip/ATMToolTip';
 
@@ -151,7 +151,7 @@ const PurchaseOrderListingWrapper = (props: Props) => {
 
   const { limit, page, searchQuery } = useFilterPagination();
 
-  const { data, isLoading, totalData, totalPages } = useFetchData(
+  const { data, isLoading, totalData, totalPages,refetch } = useFetchData(
     useGetPurchaseOrdersQuery,
     {
       body: {
@@ -162,6 +162,10 @@ const PurchaseOrderListingWrapper = (props: Props) => {
       },
     },
   );
+
+  useEffect(()=>{
+    refetch()
+  },[])
 
   return (
     <>

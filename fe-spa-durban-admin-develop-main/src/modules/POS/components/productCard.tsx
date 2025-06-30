@@ -18,6 +18,8 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onItemClick, handleAction }) => {
+
+    console.log('------product', product)
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     const handleMenuClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -36,8 +38,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onItemClick, handleA
     return (
         <div
             key={product._id}
-            className="w-[230px] h-[260px] rounded-lg overflow-hidden border hover:shadow-md transition cursor-pointer relative bg-white"
-            onClick={() => onItemClick(product)}
+            className="w-[208px] h-[233px] rounded-lg overflow-hidden border hover:shadow-md transition cursor-pointer relative bg-white"
+            onClick={() => {
+                const price = product?.sellingPrice ?? 0;
+                if (price > 0) {
+                    onItemClick(product);
+                }
+            }}
             style={{
                 borderColor: product.pinned ? '#006972' : (product.colorCode || '#ccc'),
                 borderWidth: '2px',
@@ -46,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onItemClick, handleA
 
         >
             {/* Image */}
-            <div className="w-full h-[150px] bg-gray-100 relative">
+            <div className="w-full h-[130px] bg-gray-100 relative">
                 <img
                     src={
                         product.itemUrl
@@ -81,7 +88,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onItemClick, handleA
                             gap: 1, // spacing between icon and text
                             fontSize: '0.875rem', // small text (14px)
                             paddingY: 1,
-                            paddingX: 2,    
+                            paddingX: 2,
                         }}
                     >
                         {product.pinned ? (

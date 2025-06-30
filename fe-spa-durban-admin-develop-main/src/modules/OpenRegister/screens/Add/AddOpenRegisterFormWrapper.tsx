@@ -1,5 +1,5 @@
 import { Formik, FormikHelpers, Form } from 'formik';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { OpenRegisterFormValues } from '../../models/OpenRegister.model';
 import OpenRegisterFormLayout from '../../components/OpenRegisterFormLayout';
 import { object, number, string } from 'yup';
@@ -27,7 +27,7 @@ const formattedDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
     (state: RootState) => state.auth,
   );
 
-  const { data, isLoading } = useGetRegisterByDateQuery({
+  const { data, isLoading,refetch } = useGetRegisterByDateQuery({
   outletId: (outlet as any)._id,
   date: formattedDate, // e.g., '2025-06-08'
 });
@@ -35,6 +35,10 @@ const formattedDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
     registerId: '', // Ensure validation accounts for this
     openingBalance: '',
   };
+
+   useEffect(()=>{
+    refetch()
+  },[])
 
   const validationSchema = object().shape({
     openingBalance: number()

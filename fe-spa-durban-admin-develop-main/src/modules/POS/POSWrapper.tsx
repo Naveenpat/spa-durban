@@ -271,7 +271,7 @@ const POSWrapper = (props: Props) => {
         showToast('error', res?.data?.message);
       }
     } catch (error) {
-      console.error("Submit Error:", error);
+      // console.error("Submit Error:", error);
       showToast('error', 'Something went wrong while submitting the invoice.');
     } finally {
       setSubmitting(false);

@@ -1,5 +1,5 @@
 import { Formik, FormikHelpers, Form } from 'formik';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PaymentMode } from '../../models/OpenRegister.model';
 // import OpenRegisterFormLayout from '../../components/OpenRegisterFormLayout';
 import CloseRegisterFormLayout from '../../components/CloseRegisterFormLayout';
@@ -16,6 +16,7 @@ import { useFetchData } from 'src/hooks/useFetchData';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
+import ShowConfirmation from 'src/utils/ShowConfirmation';
 
 type Props = {
   onClose: () => void;
@@ -27,7 +28,7 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
   const { userData, outlet, outlets } = useSelector(
     (state: RootState) => state.auth,
   );
-  const { data, isLoading,refetch } = useFetchData(useGetRegisterByCurrentDateQuery, {
+  const { data, isLoading, refetch } = useFetchData(useGetRegisterByCurrentDateQuery, {
     body: outlet && (outlet as any)._id,
     dataType: 'VIEW',
   });
@@ -41,6 +42,11 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
     manual: {},
     bankDeposit: 0
   };
+
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   // const validationSchema = object().shape({
   //   openingBalance: number()
@@ -172,22 +178,56 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
   };
 
   return (
+    // <Formik<PaymentMode>
+    //   initialValues={initialValues}
+    //   onSubmit={handleSubmit}
+    // // validationSchema={validationSchema}
+    // >
+    //   {(formikProps) => (
+    //     <Form>
+    //       <CloseRegisterFormLayout
+    //         formikProps={formikProps}
+    //         onClose={onClose}
+    //         formType="OPEN"
+    //         opningData={(data as any)?.data}
+    //         isLoading={isLoading}
+    //       />
+    //     </Form>
+    //   )}
+    // </Formik>
+
     <Formik<PaymentMode>
       initialValues={initialValues}
       onSubmit={handleSubmit}
-    // validationSchema={validationSchema}
     >
-      {(formikProps) => (
-        <Form>
-          <CloseRegisterFormLayout
-            formikProps={formikProps}
-            onClose={onClose}
-            formType="OPEN"
-            opningData={(data as any)?.data}
-            isLoading={isLoading}
-          />
-        </Form>
-      )}
+      {(formikProps) => {
+        const handleCloseRegisterSubmit = (e: React.FormEvent) => {
+          e.preventDefault();
+
+          ShowConfirmation({
+            type: 'INFO',
+            title: 'Are you sure?',
+            message: 'Do you really want to close the register?',
+            onConfirm: (closeDialog: any) => {
+              formikProps.submitForm(); // ✅ call Formik's built-in submit
+              closeDialog();
+            },
+            confirmationText: 'Submit'
+          });
+        };
+
+        return (
+          <form onSubmit={handleCloseRegisterSubmit}>
+            <CloseRegisterFormLayout
+              formikProps={formikProps}
+              onClose={onClose}
+              formType="OPEN"
+              opningData={(data as any)?.data}
+              isLoading={isLoading}
+            />
+          </form>
+        );
+      }}
     </Formik>
   );
 };

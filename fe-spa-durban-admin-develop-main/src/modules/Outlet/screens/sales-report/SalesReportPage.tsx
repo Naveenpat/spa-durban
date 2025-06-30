@@ -62,7 +62,7 @@ const SalesReportPage = () => {
   const salesByPaymentMode = chartData?.data?.salesByPaymentMode || [];
   const topCustomers = chartData?.data?.topCustomers || [];
 
-  console.log('----chartData', chartData)
+  // console.log('----chartData', chartData)
 
 
   const tableHeaders: TableHeader<SalesReport>[] = [

@@ -61,10 +61,10 @@ const OpenRegisterFormLayout = ({
               placeholder="Please Select Register"
             />
           </div> */}
-          {opningData?.carryForwardBalance !== 0 && (
+          {opningData && opningData?.carryForwardBalance !== 0 && (
             <div>
               <h6 className="text-sm text-blue-600 font-medium">
-                Previous Carry Forword Balance: R {opningData.carryForwardBalance}
+                Previous Carry Forword Balance: R {opningData?.carryForwardBalance}
               </h6>
             </div>
           )}
@@ -89,15 +89,15 @@ const OpenRegisterFormLayout = ({
               isValid={!errors?.openingBalance}
             />
 
-            {opningData?.carryForwardBalance !== 0 && (
+            {opningData && opningData?.carryForwardBalance !== 0 && (
               <>
-                {Number(values.openingBalance) < Number(opningData.carryForwardBalance) && (
+                {Number(values.openingBalance) < Number(opningData?.carryForwardBalance) && (
                   <p className="text-sm text-red-600 mt-1">
                     Opening balance is less than previous carry forward balance.
                   </p>
                 )}
 
-                {Number(values.openingBalance) > Number(opningData.carryForwardBalance) && (
+                {Number(values.openingBalance) > Number(opningData?.carryForwardBalance) && (
                   <p className="text-sm text-green-600 mt-1">
                     Extra amount will be added to the float cash.
                   </p>

@@ -41,6 +41,7 @@ import { showToast } from 'src/utils/showToaster';
 import { IconArrowRight } from '@tabler/icons-react';
 import { isAuthorized } from 'src/utils/authorization';
 import { Tooltip } from '@mui/material';
+import ShowConfirmation from 'src/utils/ShowConfirmation';
 type Props = {
   hideCollapseMenuButton?: boolean;
   showOutletDropdown?: boolean;
@@ -258,7 +259,8 @@ const ATMAppHeader = ({
     {
       fieldName: 'invoiceNumber',
       headerName: 'invoice',
-      flex: 'flex-[1_1_0%]',
+      flex: 'flex-[3_1_0%]',
+      renderCell: (row: any) => <Tooltip title={row?.invoiceNumber}>{row?.invoiceNumber}</Tooltip>
     },
     {
       fieldName: 'customerName',
@@ -337,7 +339,19 @@ const ATMAppHeader = ({
           <Tooltip title={item?.status === 'refund' ? 'Cancel Refund' : 'Refund'} arrow>
             <button
               type="button"
-              onClick={() => handleUpdate(item)}
+              onClick={() =>
+                ShowConfirmation({
+                  type: 'INFO',
+                  title: 'Are you sure?',
+                  message: 'Do you want to refund on this invoice?',
+                  onConfirm: (closeDialog) => {
+                    handleUpdate(item);     // ✅ Your actual update logic
+                    closeDialog();          // ✅ Closes the confirmation modal
+                  },
+                  confirmationText: `${item?.status === 'refund' ? 'Cancel Refund' : 'Refund'}`
+                })
+              }
+
               className="text-green-600 hover:text-green-800"
             >
               <IconCreditCardRefund size={18} />

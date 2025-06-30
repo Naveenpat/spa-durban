@@ -6,6 +6,7 @@ export type Company = {
   websiteUrl: string;
   createdAt: Date;
   _id: string;
+  viewSalesReport?:any;
 };
 
 export type CompanyFormValues = {

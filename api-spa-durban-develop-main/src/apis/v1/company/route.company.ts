@@ -14,7 +14,10 @@ import {
   updateByIdCompanys,
   removeCompanys,
   toggleStatusCompanys,
-  getComponies
+  getComponies,
+  getCompanySalesSummary,
+  getCompanySalesReportPaginated,
+  getCompanySalesChartData
 } from "./controller.company";
 import { parseBodyAndQuery } from "../../../middleware/parseBodyAndQuery"
 import { getAllFilter } from "../category/validation.category";
@@ -161,4 +164,26 @@ router.delete(
   // validate(deleteCompany), // Optional: validate ObjectId format
   removeCompanys
 );
+
+router.get(
+  "/:id/sales-summary",
+  authenticate([UserEnum.Admin], TokenEnum.Access),
+  getCompanySalesSummary
+);
+
+router.get(
+  "/company-sales-report/pagination",
+  parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  // validate(getAllFilter),
+  getCompanySalesReportPaginated
+);
+
+router.get(
+  "/:id/sales-chart-data",
+  authenticate([UserEnum.Admin], TokenEnum.Access),
+  getCompanySalesChartData
+);
+
+
 export default router;

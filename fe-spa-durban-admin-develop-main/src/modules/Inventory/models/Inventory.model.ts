@@ -6,6 +6,8 @@ export type Inventory = {
   availableQunatity: number;
   _id: string;
   createdAt:Date;
+  outletName:string;
+  invoiceNumber:any;
 };
 
 export type InventoryFormValues = {

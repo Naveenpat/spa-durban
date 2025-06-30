@@ -27,7 +27,7 @@ const CustomerListingWrapper = (props: Props) => {
   const [deleteCustomer] = useDeleteCustomerMutation();
   const [status] = useCustomerStatusMutation();
   const { searchQuery, limit, page } = useFilterPagination();
-  console.log('------searchQuery', searchQuery)
+  // console.log('------searchQuery', searchQuery)
   // const { data, isLoading, totalData, totalPages } = useFetchData(
   //   useGetCustomersQuery,
   //   {

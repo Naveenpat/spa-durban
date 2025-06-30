@@ -39,6 +39,12 @@ const CloseRegisterFormLayout = ({
     // console.log(updatedResult);
   }
 
+  const cashRow = updatedResult.find(
+    (item) => item.paymentModeName?.toLowerCase() === 'cash'
+  );
+  const cashId = cashRow?._id;
+  const manualCashValue = parseFloat(values.manual?.[cashId]) || 0;
+
 
   // Place this inside your component, before return
   const cashTotal = Array.isArray(updatedResult)
@@ -52,12 +58,15 @@ const CloseRegisterFormLayout = ({
     : 0;
 
 
-  // console.log('----cloedRegistered', cloedRegistered)
+  console.log('----opningData', opningData)
   return (
     <MOLFormDialog
       title={formHeading}
       onClose={onClose}
       isSubmitting={isSubmitting}
+      isSubmitButtonDisabled={
+        !opningData?.result?.length || cloedRegistered?.isActive === false
+      }
     >
       {isLoading ? (
         <div className="flex justify-center items-center max-w-[500px] h-[140px]">
@@ -106,8 +115,9 @@ const CloseRegisterFormLayout = ({
                                   <ATMTextField
                                     name={`manual.${row._id}`}
                                     value={values.manual[row._id] || ''}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                       setFieldValue(`manual.${row._id}`, e.target.value)
+                                    }
                                     }
                                     onBlur={handleBlur}
                                     className="w-full p-2 border border-gray-300 rounded-md text-sm"
@@ -138,43 +148,58 @@ const CloseRegisterFormLayout = ({
                         <label className="block mb-2 font-semibold text-gray-800 text-base">
                           Enter Cash to Deposit in Bank
                         </label>
-                        <ATMTextField
-                          name="bankDeposit"
-                          value={values.bankDeposit}
-                          onChange={(e) => {
-                            const input = e.target.value;
-                            const num = parseFloat(input);
 
-                            if (!isNaN(num) && num <= cashTotal) {
-                              setFieldValue('bankDeposit', input);
-                            } else if (input === '') {
-                              setFieldValue('bankDeposit', '');
-                            }
-                          }}
-                          onBlur={handleBlur}
-                          placeholder="Enter amount"
-                          className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                        />
+                        {/** Get manual cash value for validation */}
+                        {(() => {
+                          const cashRow = updatedResult.find(
+                            (item) => item.paymentModeName?.toLowerCase() === 'cash'
+                          );
+                          const cashId = cashRow?._id;
+                          const manualCashValue = parseFloat(values.manual?.[cashId]) || 0;
 
-                        {values.bankDeposit !== "" &&
-                          parseFloat(values.bankDeposit) > cashTotal && (
-                            <div className="text-red-600 text-sm mt-2">
-                              You cannot deposit more than R {cashTotal.toFixed(2)}
-                            </div>
-                          )}
+                          return (
+                            <>
+                              <ATMTextField
+                                name="bankDeposit"
+                                value={values.bankDeposit}
+                                onChange={(e) => {
+                                  const input = e.target.value;
+                                  const num = parseFloat(input);
 
-                        {values.bankDeposit > 0 && (
-                          <div className="mt-3 text-sm text-blue-700 font-semibold">
-                            Carry Forward to Next Day Opening Balance: R{' '}
-                            {(() => {
-                              const deposit = parseFloat(values.bankDeposit) || 0;
-                              const carryForward = Math.max(cashTotal - deposit, 0);
-                              return carryForward.toFixed(2);
-                            })()}
-                          </div>
-                        )}
+                                  if (!isNaN(num) && num <= manualCashValue) {
+                                    setFieldValue('bankDeposit', input);
+                                  } else if (input === '') {
+                                    setFieldValue('bankDeposit', '');
+                                  }
+                                }}
+                                onBlur={handleBlur}
+                                placeholder="Enter amount"
+                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                              />
+
+                              {values.bankDeposit !== '' &&
+                                parseFloat(values.bankDeposit) > manualCashValue && (
+                                  <div className="text-red-600 text-sm mt-2">
+                                    You cannot deposit more than R {manualCashValue.toFixed(2)}
+                                  </div>
+                                )}
+
+                              {values.bankDeposit > 0 && (
+                                <div className="mt-3 text-sm text-blue-700 font-semibold">
+                                  Carry Forward to Next Day Opening Balance: R{' '}
+                                  {(() => {
+                                    const deposit = parseFloat(values.bankDeposit) || 0;
+                                    const carryForward = Math.max(manualCashValue - deposit, 0);
+                                    return carryForward.toFixed(2);
+                                  })()}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
+
                   </div>
                 </div>
               </div>

@@ -175,6 +175,7 @@ const createCloseRegister = catchAsync(
 
     const { outletId, date, closeRegister, bankDeposit = 0 } = req.body;
 
+
     const userId = req.userData.Id;
 
     // Agar date na ho, to aaj ki date lo
@@ -191,6 +192,20 @@ const createCloseRegister = catchAsync(
 
     const endOfDay = new Date(inputDate);
     endOfDay.setHours(23, 59, 59, 999);
+
+    const openingRegister = await registerService.findRegister({
+      createdBy: userId,
+      outletId,
+      startOfDay,
+      endOfDay,
+    });
+
+    if (!openingRegister) {
+      throw new ApiError(
+        httpStatus.CONFLICT,
+        "Please create the opening register first for today before closing."
+      );
+    }
 
     // Check karo agar aaj ka register pehle se exist karta hai
     const existingRegister = await registerService.findCloseRegister({
@@ -212,11 +227,17 @@ const createCloseRegister = catchAsync(
       (entry: any) => entry.paymentModeName.toLowerCase() === "cash"
     );
 
-    const totalCash = cashEntry ? parseFloat(cashEntry.totalAmount) || 0 : 0;
+    const totalCash = cashEntry ? parseFloat(cashEntry.manual) || 0 : 0;
     const deposit = parseFloat(bankDeposit) || 0;
 
     // Calculate carry forward
     const carryForwardBalance = Math.max(totalCash - deposit, 0);
+    if (deposit > totalCash) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        `Bank deposit (R ${deposit}) cannot be greater than total cash (R ${totalCash})`
+      );
+    }
 
     // Naya register create karo
     const register = await registerService.createCloseRegister({
@@ -224,6 +245,7 @@ const createCloseRegister = catchAsync(
       createdBy: userId,
       carryForwardBalance,
       isActive: false,
+      openRegisterId: openingRegister?._id,
       createdAt: new Date(), // Ensure current timestamp is stored
     });
 
@@ -232,23 +254,23 @@ const createCloseRegister = catchAsync(
     )
 
 
-    const htmlContent = generateCloseRegisterHTML(closeRegister,bankDeposit,carryForwardBalance, outletData,req.body.openingBalance);
+    const htmlContent = generateCloseRegisterHTML(closeRegister, bankDeposit, carryForwardBalance, outletData, req.body.openingBalance);
     const pdfBuffer = await generatePDFBuffer(htmlContent);
 
-  const emailData = {
-  emailSubject: `Close Register Report - ${outletData?.name} - ${new Date().toLocaleDateString('en-ZA')}`,
-  emailBody: '<p>Attached is your daily close register report.</p>',
-  sendTo: outletData?.email,
-  sendFrom: 'noreply@yourdomain.com',
-  attachments: [
-    {
-      filename: 'CloseRegister.pdf',
-      content: pdfBuffer,
-    },
-  ],
-};
+    const emailData = {
+      emailSubject: `Close Register Report - ${outletData?.name} - ${new Date().toLocaleDateString('en-ZA')}`,
+      emailBody: '<p>Attached is your daily close register report.</p>',
+      sendTo: outletData?.email,
+      sendFrom: 'noreply@yourdomain.com',
+      attachments: [
+        {
+          filename: 'CloseRegister.pdf',
+          content: pdfBuffer,
+        },
+      ],
+    };
 
-    await sendEmail(emailData,outletData);
+    await sendEmail(emailData, outletData);
 
 
 
@@ -422,7 +444,7 @@ const getRegisterCurentDate = catchAsync(
       {
         $match: {
           outletId: new mongoose.Types.ObjectId(outletId),
-          status:"",
+          status: "",
           createdAtDate: {
             $gte: startOfDay,
             $lt: endOfDay,

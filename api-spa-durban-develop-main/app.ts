@@ -29,13 +29,17 @@ runRewardCheck()
  * Routes setup
  */
 app.use("/public", express.static(path.join(__dirname, "/public")))
-app.use('/v1/uploads', express.static(path.join(__dirname, '/public/uploads'), {
+app.use('/v1/uploads', express.static(path.join(__dirname, 'public/uploads'), {
   setHeaders: (res) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // 👈 Important
   },
 }));
 app.use(`/v1`, routes)
+app.use('/v1/uploads', (req, res, next) => {
+  console.log('Trying to access:', req.url);
+  next();
+});
 
 
 // Root endpoint

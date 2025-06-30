@@ -4,7 +4,7 @@ type Props = {};
 
 const ItemLoadingCard = () => {
   return (
-    <div className="w-[230px] h-[260px] rounded-lg shadow animate-pulse bg-white overflow-hidden border border-gray-200">
+    <div className="w-[208px] h-[260px] rounded-lg shadow animate-pulse bg-white overflow-hidden border border-gray-200">
       {/* Image Skeleton */}
       <div className="h-[150px] w-full bg-gray-200"></div>
 

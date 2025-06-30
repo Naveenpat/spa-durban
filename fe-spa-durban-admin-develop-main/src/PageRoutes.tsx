@@ -75,6 +75,7 @@ import EditCustomerGroupFormWrapper from './modules/CashbackRules copy/screens/E
 import SalesReportPage from './modules/Outlet/screens/sales-report/SalesReportPage';
 import CustomerSalesReportPage from './modules/Customer/screens/customer-sales-report/CustomerSalesReportPage';
 import ViewCustomerFormWrapper from './modules/Customer/screens/View/ViewCustomerFormWrapper';
+import CompanySalesReportPage from './modules/AdminRole copy/screens/customer-sales-report/CompanySalesReportPage';
 
 type Props = {};
 
@@ -134,6 +135,7 @@ const PageRoutes = (props: Props) => {
           path: '/company/add-company',
           element: <CompanyFormWrapper />,
         },
+        { path: '/company/sales-report/:id', element: <CompanySalesReportPage /> },
         {
           path: '/admin-role/add-admin-role',
           element: <AddAdminRoleFormWrapper />,

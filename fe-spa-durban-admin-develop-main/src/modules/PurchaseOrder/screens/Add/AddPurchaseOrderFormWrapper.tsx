@@ -6,10 +6,11 @@ import { array, object, string } from 'yup';
 import { format } from 'date-fns';
 import { showToast } from 'src/utils/showToaster';
 import { useAddPurchaseOrderMutation } from '../../service/PurchaseOrderServices';
+import { useNavigate } from 'react-router-dom';
 
 const AddPurchaseOrderFormWrapper = () => {
   const [addPurchaseOrder] = useAddPurchaseOrderMutation();
-
+  const navigate = useNavigate();
   const initialValues: PurchaseOrderFormValues = {
     supplier: '',
     orderDate: null,
@@ -67,6 +68,7 @@ const AddPurchaseOrderFormWrapper = () => {
       } else {
         if (res?.data?.status) {
           showToast('success', res?.data?.message);
+          navigate('/purchase-order')
           resetForm();
         } else {
           showToast('error', res?.data?.message);

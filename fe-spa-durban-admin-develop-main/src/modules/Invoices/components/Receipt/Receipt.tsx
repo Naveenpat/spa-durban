@@ -28,11 +28,11 @@ const Receipt = () => {
     dataType: 'VIEW',
   });
 
-  console.log('-------data ssss',(data as any)?.data)
+  // console.log('-------data ssss',(data as any)?.data)
 
   const { data: companyData } = useGetCompanyByIdQuery((data as any)?.data?.companyId)
   const { data: outletData } = useGetOutletsByCompanyIdQuery((data as any)?.data?.companyId);
-   console.log('----get all outlet by com id',companyData)
+  //  console.log('----get all outlet by com id',companyData)
   const { data: outletsData } = useFetchData(useGetOutletsQuery, {
     body: {
       isPaginationRequired: false,
@@ -141,7 +141,7 @@ const Receipt = () => {
           }
         });
       } catch (error) {
-        console.error('Error generating PDF:', error);
+        // console.error('Error generating PDF:', error);
         showToast('error', 'Failed to generate or send PDF.');
       }
     }
@@ -165,6 +165,7 @@ const Receipt = () => {
       .map((word: any) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
+      // console.log('-----',`${process.env.REACT_APP_BASE_URL}/${companyData?.data?.logo}`)
 
   return (
     <>

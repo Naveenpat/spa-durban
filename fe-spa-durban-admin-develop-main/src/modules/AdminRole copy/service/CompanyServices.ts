@@ -3,14 +3,14 @@ import apiSlice from '../../../services/ApiSlice';
 export const companyApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // GET companies with pagination / filters
-   getCompanies: builder.query({
-  providesTags: ['companies'],
-  query: (body) => ({
-    url: '/company/pagination',
-    method: 'GET',
-    params:body // ✅ move body to params
-  }),
-}),
+    getCompanies: builder.query({
+      providesTags: ['companies'],
+      query: (body) => ({
+        url: '/company/pagination',
+        method: 'GET',
+        params: body // ✅ move body to params
+      }),
+    }),
 
 
     // GET company by ID
@@ -59,6 +59,57 @@ export const companyApi = apiSlice.injectEndpoints({
         method: 'PATCH',
       }),
     }),
+    getCompanySalesReportPaginated: builder.query({
+      query: ({ companyId, outletId, startDate, endDate, page = 1, limit = 10, sortBy, sortOrder }) => {
+        const params = new URLSearchParams({
+          companyId,
+          outletId,
+          startDate,
+          endDate,
+          page: String(page),
+          limit: String(limit),
+          sortBy,
+          sortOrder
+        });
+
+        return {
+          url: `/company/company-sales-report/pagination?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
+    getCompanySalesSummary: builder.query({
+      providesTags: ['company'],
+      query: (companyId) => ({
+        url: `/company/${companyId}/sales-summary`,
+        method: 'GET',
+      }),
+    }),
+    // getCompanySalesChartData: builder.query({
+    //   providesTags: ['company'],
+    //   query: (companyId) => ({
+    //     url: `/company/${companyId}/sales-chart-data`,
+    //     method: 'GET',
+    //   }),
+    // }),
+    getCompanySalesChartData: builder.query({
+      providesTags: ['company'],
+      query: ({ companyId, outletId, startDate, endDate, reportDuration }) => {
+        const params = new URLSearchParams();
+
+        if (outletId) params.append('outletId', outletId);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        if (reportDuration) params.append('reportDuration', reportDuration);
+
+        return {
+          url: `/company/${companyId}/sales-chart-data?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
+
+
   }),
 });
 
@@ -69,4 +120,7 @@ export const {
   useUpdateCompanyMutation,
   useDeleteCompanyMutation,
   useToggleCompanyStatusMutation,
+  useGetCompanySalesReportPaginatedQuery,
+  useGetCompanySalesSummaryQuery,
+  useGetCompanySalesChartDataQuery
 } = companyApi;

@@ -72,16 +72,27 @@ const createPurchaseOrder = catchAsync(
       products,
       shippingCharges
     )
-
+    let payableAmounts = parseFloat(
+      Number(paymentCalculation.myPayableAmount).toFixed(2)
+    );
     // payment status
     let paymentStatus = PaymentStatusTypeEnum.pending
-    if (amountPaid === paymentCalculation.myPayableAmount) {
-      paymentStatus = PaymentStatusTypeEnum.completed
-    } else if (amountPaid > paymentCalculation.myPayableAmount) {
+    // if (amountPaid === paymentCalculation.myPayableAmount) {
+    //   paymentStatus = PaymentStatusTypeEnum.completed
+    // } else if (amountPaid > paymentCalculation.myPayableAmount) {
+    //   throw new ApiError(
+    //     httpStatus.NOT_ACCEPTABLE,
+    //     "Amount paid can't be greater than payable amount!"
+    //   )
+    // }
+    let amountPaidNum = parseFloat(amountPaid);
+    if (Number(amountPaidNum.toFixed(2)) === payableAmounts) {
+      paymentStatus = PaymentStatusTypeEnum.completed;
+    } else if (amountPaidNum > payableAmounts) {
       throw new ApiError(
         httpStatus.NOT_ACCEPTABLE,
         "Amount paid can't be greater than payable amount!"
-      )
+      );
     }
     const purchaseOrder = await purchaseOrderService.createPurchaseOrder({
       ...req.body,

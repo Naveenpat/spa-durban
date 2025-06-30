@@ -13,6 +13,10 @@ type Props = {
   tableHeaders: TableHeader<Inventory>[];
   filters: any;
   isLoading: boolean;
+  filterPaginationData: {
+    totalCount: number;
+    totalPages: number;
+  };
 };
 
 const InventoryListing = ({
@@ -20,6 +24,7 @@ const InventoryListing = ({
   rowData,
   filters,
   isLoading = false,
+  filterPaginationData: { totalCount, totalPages },
 }: Props) => {
   return (
     <>
@@ -42,6 +47,12 @@ const InventoryListing = ({
                 isLoading={isLoading}
               />
             </div>
+
+            <ATMPagination
+              totalPages={totalPages}
+              rowCount={totalCount}
+              rows={rowData}
+            />
           </div>
         </Authorization>
       </div>

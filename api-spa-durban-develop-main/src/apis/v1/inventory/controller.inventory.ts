@@ -345,22 +345,27 @@ const getInventorys = catchAsync(
         $unset: ["outletData", "productData", "POData"],
       },
       {
-        $group: {
-          _id: "$productId",
-          productId: { $first: "$productId" },
-          productName: { $first: "$productName" },
-          totalQuantity: { $sum: "$quantity" },
-          totalPrice: { $sum: "$totalPrice" },
-          isDeleted: { $first: "$isDeleted" },
-          isActive: { $first: "$isActive" },
-          outletName: { $first: "$outletName" },
-          outletId: { $first: "$outletId" },
-          invoiceNumber: { $first: "$invoiceNumber" },
-          createdByName: { $first: "$createdByName" },
-          saleQuantity: { $sum: "$saleQuantity" },
-          availableQunatity: { $sum: "$availableQunatity" },
-        },
-      },
+  $group: {
+    _id: {
+      productId: "$productId",
+      outletId: "$outletId",
+    },
+    productId: { $first: "$productId" },
+    outletId: { $first: "$outletId" },
+    productName: { $first: "$productName" },
+    outletName: { $first: "$outletName" },
+    totalQuantity: { $sum: "$quantity" },
+    saleQuantity: { $sum: "$saleQuantity" },
+    availableQunatity: { $sum: "$availableQunatity" },
+    totalPrice: { $sum: "$totalPrice" },
+    invoiceNumber: { $first: "$invoiceNumber" },
+    createdByName: { $first: "$createdByName" },
+    isDeleted: { $first: "$isDeleted" },
+    isActive: { $first: "$isActive" },
+    createdAt: { $first: "$createdAt" }
+  },
+}
+
     ]
 
     options["additionalQuery"] = additionalQuery as any

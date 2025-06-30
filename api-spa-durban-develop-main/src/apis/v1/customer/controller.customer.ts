@@ -34,11 +34,11 @@ const createCustomer = catchAsync(
 const createCustomerByBooking = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { bookingCustomerId } = req.body;
-
+  console.log('-------bookingCustomerId',bookingCustomerId)
     const existingCustomer = await customerService.findCustomerByBookingId(
       bookingCustomerId
     );
-    // console.log(bookingCustomerId, "existingCustomer=====", existingCustomer);
+    console.log(bookingCustomerId, "existingCustomer=====", existingCustomer);
 
     if (existingCustomer) {
       return res.status(httpStatus.CONFLICT).send({
