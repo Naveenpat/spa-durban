@@ -77,6 +77,8 @@ import CustomerSalesReportPage from './modules/Customer/screens/customer-sales-r
 import ViewCustomerFormWrapper from './modules/Customer/screens/View/ViewCustomerFormWrapper';
 import CompanySalesReportPage from './modules/AdminRole copy/screens/customer-sales-report/CompanySalesReportPage';
 import ViewOutletRegisterPage from './modules/Outlet/screens/view-register/ViewOutletRegisterPage';
+import EditPurchaseOrderFormWrapper from './modules/PurchaseOrder/screens/Edit/EditPurchaseOrderFormWrapper';
+import InventoryEditFormWrapper from './modules/PurchaseOrder/components/InventoryForm/InventoryEditFormWrapper';
 
 type Props = {};
 
@@ -241,6 +243,10 @@ const PageRoutes = (props: Props) => {
           path: '/purchase-order/add',
           element: <AddPurchaseOrderFormWrapper />,
         },
+          {
+          path: '/purchase-order/edit/:id',
+          element: <EditPurchaseOrderFormWrapper />,
+        },
         {
           path: '/purchase-order/view/:id',
           element: <PurchaseOrderView />,
@@ -248,6 +254,10 @@ const PageRoutes = (props: Props) => {
         {
           path: '/productform/:id',
           element: <InventoryFormWrapper />,
+        },
+         {
+          path: '/productform/edit/:id',
+          element: <InventoryEditFormWrapper />,
         },
         {
           path: '/supplier',

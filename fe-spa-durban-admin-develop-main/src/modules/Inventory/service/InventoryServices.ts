@@ -22,7 +22,26 @@ export const inventoryApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    // Get Inventory by Purchase Order Id
+getInventoryByPurchaseOrderId: builder.query({
+  query: (purchaseOrderId) => {
+    return {
+      url: `/inventory/by-purchase-order/${purchaseOrderId}`,
+      method: 'GET',
+    };
+  },
+  // providesTags: ['inventory'],
+}),
+updateInventory: builder.mutation({
+  query: ({ inventoryId, body }) => ({
+    url: `/inventory/${inventoryId}`,
+    method: 'PATCH', // or 'PUT' based on your API convention
+    body,
+  }),
+  // Optionally invalidate cache if you're using tags
+  // invalidatesTags: ['Inventory'],
+}),
   }),
 });
 
-export const { useGetInventoriesQuery, useAddInventoryMutation } = inventoryApi;
+export const { useGetInventoriesQuery, useAddInventoryMutation,useGetInventoryByPurchaseOrderIdQuery,useUpdateInventoryMutation } = inventoryApi;

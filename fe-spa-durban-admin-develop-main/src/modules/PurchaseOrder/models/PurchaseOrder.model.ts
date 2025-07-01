@@ -56,6 +56,9 @@ export type PurchaseOrderFormValues = {
     rate: string;
     discount: string;
     discountType: 'FLAT' | 'PERCENT';
+      // ✅ Add these two lines
+    taxPercent?: number;
+    taxType?: string;
   }[];
 };
 

@@ -4,7 +4,7 @@ import { TableHeader } from 'src/components/molecules/MOLTable/MOLTable';
 import { useFetchData } from 'src/hooks/useFetchData';
 import { useFilterPagination } from 'src/hooks/useFilterPagination';
 import { PaymentStatus, PurchaseOrder } from '../../models/PurchaseOrder.model';
-import { useGetPurchaseOrdersQuery } from '../../service/PurchaseOrderServices';
+import { useDeletePurchaseOrderMutation, useGetPurchaseOrdersQuery } from '../../service/PurchaseOrderServices';
 import PurchaseOrderListing from './PurchaseOrderListing';
 import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
 import { IconCreditCardPay, IconInfoCircle } from '@tabler/icons-react';
@@ -15,6 +15,7 @@ import { setIsOpenAddDialog } from '../../slice/PurchaseOrderSlice';
 import { useEffect, useState } from 'react';
 import { CURRENCY } from 'src/utils/constants';
 import ATMTooltip from 'src/components/atoms/ATMToolTip/ATMToolTip';
+import { showToast } from 'src/utils/showToaster';
 
 type Props = {};
 
@@ -49,6 +50,7 @@ const PurchaseOrderListingWrapper = (props: Props) => {
   const { isOpenAddDialog, isOpenEditDialog } = useSelector(
     (state: RootState) => state?.purchaseorder,
   );
+  const [deletePurchaseOrder] = useDeletePurchaseOrderMutation();
   const dispatch = useDispatch<AppDispatch>();
   const tableHeaders: TableHeader<PurchaseOrder>[] = [
     {
@@ -135,7 +137,14 @@ const PurchaseOrderListingWrapper = (props: Props) => {
       flex: 'flex-[1_0_0%]',
       stopPropagation: true,
       renderCell: (item) => {
-        return item?.isInventoryIn ? null : (
+        return item?.isInventoryIn ? ( <div className="text-xs w-fit">
+            <ATMButton
+              onClick={() => navigate(`/productform/edit/${item?._id}`)}
+              size="small"
+            >
+              Edit Inventory
+            </ATMButton>
+          </div>) : (
           <div className="text-xs w-fit">
             <ATMButton
               onClick={() => navigate(`/productform/${item?._id}`)}
@@ -146,12 +155,12 @@ const PurchaseOrderListingWrapper = (props: Props) => {
           </div>
         );
       },
-    },
+    }
   ];
 
   const { limit, page, searchQuery } = useFilterPagination();
 
-  const { data, isLoading, totalData, totalPages,refetch } = useFetchData(
+  const { data, isLoading, totalData, totalPages, refetch } = useFetchData(
     useGetPurchaseOrdersQuery,
     {
       body: {
@@ -163,9 +172,24 @@ const PurchaseOrderListingWrapper = (props: Props) => {
     },
   );
 
-  useEffect(()=>{
+  useEffect(() => {
     refetch()
-  },[])
+  }, [])
+
+  const handleDelete = (item: any, closeDialog: () => void) => {
+    deletePurchaseOrder(item?._id)
+      .unwrap()
+      .then((res:any) => {
+        if(res?.status === true){
+          showToast('success','Purchase order deleted successfully')
+        }
+        closeDialog()
+      })
+      .catch((err:any) => {
+       console.log('--------err',err)
+       closeDialog()
+      });
+  }
 
   return (
     <>
@@ -173,6 +197,8 @@ const PurchaseOrderListingWrapper = (props: Props) => {
         tableHeaders={tableHeaders}
         rowData={data as PurchaseOrder[]}
         onAddNew={() => navigate('/purchase-order/add')}
+        onEdit={(item) => navigate(`/purchase-order/edit/${item?._id}`)}
+        onDelete={handleDelete}
         filterPaginationData={{
           totalCount: totalData,
           totalPages: totalPages,

@@ -6,10 +6,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGetPurchaseOrderbyIdQuery } from '../../service/PurchaseOrderServices';
 import { useFetchData } from 'src/hooks/useFetchData';
 import { PurchaseOrder } from '../../models/PurchaseOrder.model';
-import { useAddInventoryMutation } from 'src/modules/Inventory/service/InventoryServices';
+import { useAddInventoryMutation, useGetInventoryByPurchaseOrderIdQuery } from 'src/modules/Inventory/service/InventoryServices';
 import { showToast } from 'src/utils/showToaster';
 
-const InventoryFormWrapper = () => {
+const InventoryEditFormWrapper = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { data, isLoading } = useFetchData(useGetPurchaseOrderbyIdQuery, {
@@ -17,19 +17,40 @@ const InventoryFormWrapper = () => {
     dataType: 'VIEW',
   });
 
+  const { data: inventorydata } = useGetInventoryByPurchaseOrderIdQuery(id);
+
+  console.log('-------', data)
+
   const [addInventory] = useAddInventoryMutation();
 
-  const initialValues: any = {
-    products: (data as any)?.data?.products?.map((product: any) => ({
-      product: product,
-      inventories: [
-        {
-          outlet: null,
-          quantity: 0,
-        },
-      ],
-    })),
+  const purchaseOrderId = (data as any)?.data?._id;
+
+  const initialValues = {
+    products: (data as any)?.data?.products?.map((product: any) => {
+      const inventories = inventorydata?.data
+        ?.filter((inv: any) =>
+          inv.POId === purchaseOrderId
+        )
+        ?.map((inv: any) => ({
+          outlet: inv.outletId,
+          quantity: inv.quantity,
+        })) || [
+          {
+            outlet: '',
+            quantity: 0,
+          },
+        ];
+
+      return {
+        product,
+        inventories,
+      };
+    }),
   };
+
+
+  console.log('----initialValues', initialValues)
+
   const validationSchema = object().shape({});
 
   const getFormattedData = (data: any[]) => {
@@ -83,7 +104,7 @@ const InventoryFormWrapper = () => {
             onCancel={() => navigate('/purchase-order')}
             isLoading={isLoading}
             data={data}
-            formType="ADD"
+            formType="EDIT"
           />
         </Form>
       )}
@@ -91,4 +112,4 @@ const InventoryFormWrapper = () => {
   );
 };
 
-export default InventoryFormWrapper;
+export default InventoryEditFormWrapper;

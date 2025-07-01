@@ -44,7 +44,7 @@ export const purchaseOrderApi = apiSlice.injectEndpoints({
         purchaseOrderId,
         body,
       }: {
-        purchaseOrderId: string;
+        purchaseOrderId: any;
         body: any;
       }) => {
         return {
@@ -71,6 +71,15 @@ export const purchaseOrderApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    // Delete Purchase Order
+deletePurchaseOrder: builder.mutation({
+  invalidatesTags: ['purchase-order'],
+  query: (purchaseOrderId: string) => ({
+    url: `/purchase-order/${purchaseOrderId}`,
+    method: 'DELETE',
+  }),
+}),
+
   }),
 });
 
@@ -80,4 +89,5 @@ export const {
   useAddPurchaseOrderMutation,
   useUpdatePurchaseOrderMutation,
   useUpdatePoPaymentMutation,
+  useDeletePurchaseOrderMutation
 } = purchaseOrderApi;

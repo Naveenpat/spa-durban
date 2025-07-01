@@ -86,7 +86,10 @@ const AddPurchaseOrderFormWrapper = () => {
     >
       {(formikProps) => (
         <Form className="h-full ">
-          <PurchaseOrderFormLayout formikProps={formikProps} />
+          <PurchaseOrderFormLayout formikProps={formikProps}
+            oncancel={() => navigate('/purchase-order')}
+            formType="ADD"
+          />
         </Form>
       )}
     </Formik>

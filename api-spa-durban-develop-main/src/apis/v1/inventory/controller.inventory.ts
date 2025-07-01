@@ -21,7 +21,7 @@ import {
   checkInvalidParams,
   getDateFilterQuery,
 } from "../../../utils/utils"
-import { searchKeys, allowedDateFilterKeys } from "./schema.inventory"
+import Inventory, { searchKeys, allowedDateFilterKeys } from "./schema.inventory"
 import { ObjectId } from "mongoose"
 import { checkQuantitiesMatch, groupAndSumQuantities } from "./helper.inventory"
 import { UserEnum } from "../../../utils/enumUtils"
@@ -349,6 +349,7 @@ const getInventorys = catchAsync(
     _id: {
       productId: "$productId",
       outletId: "$outletId",
+      _id:"$_id"
     },
     productId: { $first: "$productId" },
     outletId: { $first: "$outletId" },
@@ -358,6 +359,7 @@ const getInventorys = catchAsync(
     saleQuantity: { $sum: "$saleQuantity" },
     availableQunatity: { $sum: "$availableQunatity" },
     totalPrice: { $sum: "$totalPrice" },
+    POId:{$first: "$POId"},
     invoiceNumber: { $first: "$invoiceNumber" },
     createdByName: { $first: "$createdByName" },
     isDeleted: { $first: "$isDeleted" },
@@ -445,10 +447,32 @@ const deleteInventory = catchAsync(
   }
 )
 
+
+const getInventoryByPurchaseOrderId = catchAsync(async (req: Request, res: Response) => {
+  const { purchaseOrderId } = req.params;
+
+  if (!purchaseOrderId) {
+    return res.status(400).json({ status: false, message: "purchaseOrderId is required" });
+  }
+
+  const inventories = await Inventory.find({
+    POId:purchaseOrderId,
+    isDeleted: false, // if soft delete is used
+  });
+
+  res.status(200).json({
+    status: true,
+    message: 'Inventories fetched successfully',
+    data: inventories,
+  });
+});
+
+
 export {
   createInventory,
   getInventorys,
   getInventory,
   updateInventory,
   deleteInventory,
+  getInventoryByPurchaseOrderId
 }

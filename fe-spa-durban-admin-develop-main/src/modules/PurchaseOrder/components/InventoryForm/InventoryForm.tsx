@@ -12,6 +12,7 @@ type Props = {
   onCancel: () => void;
   isLoading?: boolean;
   data: any;
+  formType: "ADD" | "EDIT" | "VIEW";
 };
 
 const InventoryForm = ({
@@ -19,6 +20,7 @@ const InventoryForm = ({
   onCancel,
   isLoading = false,
   data,
+  formType
 }: Props) => {
   const { values, setFieldValue, isSubmitting } = formikProps;
   const { data: outletData, isLoading: outletLoading } = useFetchData(
@@ -44,7 +46,7 @@ const InventoryForm = ({
       ) : (
         <div className="flex flex-col gap-2 p-4">
           <div className="flex items-center justify-between w-[70%] m-auto">
-            <div className="font-semibold ">Inventory</div>
+            <div className="font-semibold ">{formType === "ADD" ? "Add Inventory" : "Edit Inventory"}</div>
             <div className="flex items-center gap-2">
               <div>
                 <ATMButton
@@ -57,7 +59,7 @@ const InventoryForm = ({
                 <ATMButton
                   type="submit"
                   isLoading={isLoading}
-                  children="Submit"
+                  children={`${formType === "ADD" ? "Submit" : "Update"}`}
                 />
               </div>
             </div>

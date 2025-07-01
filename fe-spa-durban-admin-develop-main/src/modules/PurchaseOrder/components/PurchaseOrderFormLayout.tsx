@@ -7,7 +7,7 @@ import ATMTextArea from 'src/components/atoms/FormElements/ATMTextArea/ATMTextAr
 import ATMTextField from 'src/components/atoms/FormElements/ATMTextField/ATMTextField';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
 import { PurchaseOrderFormValues } from '../models/PurchaseOrder.model';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useFetchData } from 'src/hooks/useFetchData';
 import { useGetSupplierListingQuery } from 'src/modules/Supplier/service/SupplierServices';
 import { useGetProductsQuery } from 'src/modules/Product/service/ProductServices';
@@ -18,6 +18,9 @@ import ATMNumberField from 'src/components/atoms/FormElements/ATMNumberField/ATM
 
 type Props = {
   formikProps: FormikProps<PurchaseOrderFormValues>;
+  oncancel: () => void;
+  formType: 'ADD' | 'EDIT';
+  isLoading?: boolean;
 };
 export const calculateDiscount = ({
   amount,
@@ -72,11 +75,14 @@ const SupplierDetailField = ({
   );
 };
 
-const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
+const PurchaseOrderFormLayout = ({ formikProps,
+  oncancel,
+  formType,
+  isLoading = false }: Props) => {
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
 
-  const { data: suppliers, isLoading: isSuppliersLoading } = useFetchData(
+  const { data: suppliers, isLoading: isSuppliersLoading, refetch } = useFetchData(
     useGetSupplierListingQuery,
     {
       body: {
@@ -90,6 +96,10 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
       },
     },
   );
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   const { data: products, isLoading: isProductsLoading } = useFetchData(
     useGetProductsQuery,
@@ -109,10 +119,21 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
   return (
     <div className="flex flex-col h-full overflow-auto ">
       <div className="flex items-center justify-between px-4 py-2 bg-white border-b">
-        <span className="text-lg font-semibold text-slate-700">
+        {/* <span className="text-lg font-semibold text-slate-700">
           Add Purchase Order
-        </span>
+        </span> */}
+        <div className="font-semibold ">
+          {formType === 'ADD' ? 'Add Purchase Order' : 'Edit Purchase Order'}
+        </div>
+        <div>
+          <ATMButton
+            children="Cancel"
+            variant="outlined"
+            onClick={oncancel}
+          />
+        </div>
       </div>
+
       <div className="flex flex-1 gap-4 p-4 overflow-auto">
         {/* Left Section */}
         <div className="flex flex-col flex-1 h-full gap-5 overflow-auto divide-y divide-gray-400 rounded divide-dashed hide-scrollbar">
@@ -330,7 +351,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                                 discountAmount: calculateDiscount({
                                   amount:
                                     (product?.rate || 0) *
-                                      (product?.quantity || 0) +
+                                    (product?.quantity || 0) +
                                     calculateTaxAmount({
                                       amount:
                                         (product?.rate || 0) *
@@ -352,7 +373,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                               {calculateDiscount({
                                 amount:
                                   (product?.rate || 0) *
-                                    (product?.quantity || 0) +
+                                  (product?.quantity || 0) +
                                   calculateTaxAmount({
                                     amount:
                                       (product?.rate || 0) *
@@ -375,7 +396,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                                 discountAmount: calculateDiscount({
                                   amount:
                                     (product?.rate || 0) *
-                                      (product?.quantity || 0) +
+                                    (product?.quantity || 0) +
                                     calculateTaxAmount({
                                       amount:
                                         (product?.rate || 0) *
@@ -394,7 +415,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                                   discountAmount: calculateDiscount({
                                     amount:
                                       (product?.rate || 0) *
-                                        (product?.quantity || 0) +
+                                      (product?.quantity || 0) +
                                       calculateTaxAmount({
                                         amount:
                                           (product?.rate || 0) *
@@ -474,7 +495,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                       discountAmount: calculateDiscount({
                         amount:
                           Number(product?.rate || 0) *
-                            Number(product?.quantity || 0) +
+                          Number(product?.quantity || 0) +
                           calculateTaxAmount({
                             amount:
                               Number(product?.rate || 0) *
@@ -503,7 +524,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                     calculateDiscount({
                       amount:
                         Number(product?.rate || 0) *
-                          Number(product?.quantity || 0) +
+                        Number(product?.quantity || 0) +
                         calculateTaxAmount({
                           amount:
                             Number(product?.rate || 0) *
@@ -551,7 +572,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                       discountAmount: calculateDiscount({
                         amount:
                           Number(product?.rate || 0) *
-                            Number(product?.quantity || 0) +
+                          Number(product?.quantity || 0) +
                           calculateTaxAmount({
                             amount:
                               Number(product?.rate || 0) *
@@ -570,7 +591,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                         discountAmount: calculateDiscount({
                           amount:
                             Number(product?.rate || 0) *
-                              Number(product?.quantity || 0) +
+                            Number(product?.quantity || 0) +
                             calculateTaxAmount({
                               amount:
                                 Number(product?.rate || 0) *
@@ -616,7 +637,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                     discountAmount: calculateDiscount({
                       amount:
                         Number(product?.rate || 0) *
-                          Number(product?.quantity || 0) +
+                        Number(product?.quantity || 0) +
                         calculateTaxAmount({
                           amount:
                             Number(product?.rate || 0) *
@@ -635,7 +656,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                       discountAmount: calculateDiscount({
                         amount:
                           Number(product?.rate || 0) *
-                            Number(product?.quantity || 0) +
+                          Number(product?.quantity || 0) +
                           calculateTaxAmount({
                             amount:
                               Number(product?.rate || 0) *
@@ -652,12 +673,12 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                   })
                 );
               }, 0) +
-                Number(values?.shippingCharges || 0) && (
-              <p className="text-xs font-medium text-red-500">
-                {' '}
-                Paid amount can not greater than Payable amount{' '}
-              </p>
-            )}
+              Number(values?.shippingCharges || 0) && (
+                <p className="text-xs font-medium text-red-500">
+                  {' '}
+                  Paid amount can not greater than Payable amount{' '}
+                </p>
+              )}
 
             <div className="flex justify-between gap-4 font-medium text-red-600 text-md">
               <span className="">Balance Amount</span>
@@ -673,7 +694,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                       discountAmount: calculateDiscount({
                         amount:
                           Number(product?.rate || 0) *
-                            Number(product?.quantity || 0) +
+                          Number(product?.quantity || 0) +
                           calculateTaxAmount({
                             amount:
                               Number(product?.rate || 0) *
@@ -692,7 +713,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                         discountAmount: calculateDiscount({
                           amount:
                             Number(product?.rate || 0) *
-                              Number(product?.quantity || 0) +
+                            Number(product?.quantity || 0) +
                             calculateTaxAmount({
                               amount:
                                 Number(product?.rate || 0) *
@@ -730,7 +751,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                       discountAmount: calculateDiscount({
                         amount:
                           Number(product?.rate || 0) *
-                            Number(product?.quantity || 0) +
+                          Number(product?.quantity || 0) +
                           calculateTaxAmount({
                             amount:
                               Number(product?.rate || 0) *
@@ -749,7 +770,7 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                         discountAmount: calculateDiscount({
                           amount:
                             Number(product?.rate || 0) *
-                              Number(product?.quantity || 0) +
+                            Number(product?.quantity || 0) +
                             calculateTaxAmount({
                               amount:
                                 Number(product?.rate || 0) *
@@ -766,10 +787,11 @@ const PurchaseOrderFormLayout = ({ formikProps }: Props) => {
                     })
                   );
                 }, 0) +
-                  Number(values?.shippingCharges || 0)
+                Number(values?.shippingCharges || 0)
               }
             >
-              Generate Order
+              {/* Generate Order */}
+              {formType === 'ADD' ? 'Generate Order' : 'Update Order'}
             </ATMButton>
           </div>
         </div>

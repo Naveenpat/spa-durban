@@ -5,6 +5,7 @@ import {
   getInventory,
   updateInventory,
   deleteInventory,
+  getInventoryByPurchaseOrderId,
 } from "./controller.inventory"
 import validate from "../../../middleware/validate"
 import {
@@ -272,5 +273,12 @@ router.delete(
   validate(deleteDocument),
   deleteInventory
 )
+
+// GET /inventory/by-purchase-order/:purchaseOrderId
+router.get(
+  "/by-purchase-order/:purchaseOrderId",
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  getInventoryByPurchaseOrderId
+);
 
 export default router

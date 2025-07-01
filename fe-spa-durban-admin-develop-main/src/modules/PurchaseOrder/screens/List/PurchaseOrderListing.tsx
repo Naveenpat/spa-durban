@@ -12,6 +12,8 @@ import Authorization from 'src/components/Authorization/Authorization';
 
 type Props = {
   onAddNew: () => void;
+  onEdit: (item: PurchaseOrder) => void;
+  onDelete: (item: PurchaseOrder, closeDialog: () => void) => void;
   rowData: PurchaseOrder[];
   tableHeaders: TableHeader<PurchaseOrder>[];
   filterPaginationData: {
@@ -23,6 +25,8 @@ type Props = {
 
 const PurchaseOrderListing = ({
   onAddNew,
+    onEdit,
+  onDelete,
   tableHeaders,
   rowData,
   filterPaginationData: { totalCount, totalPages },
@@ -57,6 +61,8 @@ const PurchaseOrderListing = ({
                     ? (item) => navigate(`/purchase-order/view/${item?._id}`)
                     : undefined
                 }
+                onEdit={isAuthorized('OUTLET_UPDATE') ? onEdit : undefined}
+                onDelete={isAuthorized('OUTLET_DELETE') ? onDelete : undefined}
               />
             </div>
 
