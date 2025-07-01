@@ -128,6 +128,7 @@ type Props = {
   onRemove: (itemId: string) => void;
   onQuantityChange: (itemId: string, type: 'INCREMENT' | 'DECREMENT') => void;
   formikProps: FormikProps<any>;
+  isDisabled:boolean;
 };
 const useDebounce = (callback: Function, delay: number) => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -147,6 +148,7 @@ const CartSummarySection = ({
   onRemove,
   onQuantityChange,
   formikProps,
+  isDisabled
 }: Props) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const bookingCustomer = searchParams.get('customer');
@@ -425,7 +427,7 @@ const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
   );
 
   return (
-    <div className="flex flex-col w-full h-full gap-2 py-4">
+    <div className={`flex flex-col w-full h-full gap-2 py-4 ${isDisabled ? 'pointer-events-none opacity-30' : ''}`}>
       <div className="flex flex-col gap-4 px-4">
         {/* select outlet  */}
         {/* {userData?.userType === 'ADMIN' && (

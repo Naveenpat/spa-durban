@@ -28,6 +28,7 @@ export const create: { body: ObjectSchema } = {
       Joi.object().keys({
         paymentModeId: Joi.string().required().custom(objectId),
         amount: Joi.number().required(),
+        txnNumber: Joi.string().allow("")
       })
     ),
     giftCardCode: Joi.string().allow(""),

@@ -5,6 +5,7 @@ import { PaymentMode } from '../models/OpenRegister.model';
 import ATMNumberField from 'src/components/atoms/FormElements/ATMNumberField/ATMNumberField';
 import ATMSelect from 'src/components/atoms/FormElements/ATMSelect/ATMSelect';
 import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCircularProgress';
+import { useState } from 'react';
 
 type Props = {
   formikProps: FormikProps<PaymentMode>;
@@ -56,6 +57,10 @@ const CloseRegisterFormLayout = ({
       )
       .reduce((sum, item) => sum + (parseFloat(item.totalAmount) || 0), 0)
     : 0;
+
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [reasonText, setReasonText] = useState('');
 
 
   console.log('----opningData', opningData)
@@ -123,7 +128,7 @@ const CloseRegisterFormLayout = ({
                                     className="w-full p-2 border border-gray-300 rounded-md text-sm"
                                     placeholder="Enter amount"
                                   />
-                                  {values.manual[row._id] && (
+                                  {/* {values.manual[row._id] && (
                                     <div className="text-xs font-medium">
                                       {parseFloat(values.manual[row._id]) === row.totalAmount ? (
                                         <span className="text-green-600">✅ Success</span>
@@ -133,7 +138,29 @@ const CloseRegisterFormLayout = ({
                                         <span className="text-orange-600">⬇ Less</span>
                                       )}
                                     </div>
+                                  )} */}
+
+                                  {values.manual[row._id] && (
+                                    <div className="text-xs font-medium">
+                                      {parseFloat(values.manual[row._id]) === row.totalAmount ? (
+                                        <span className="text-green-600">✅ Success</span>
+                                      ) : (
+                                        <>
+                                          <span
+                                            onClick={() => {
+                                              setActiveRowId(row._id);
+                                              setShowReasonModal(true);
+                                              setReasonText(values.reasons?.[row._id] || '');
+                                            }}
+                                            className={`cursor-pointer underline ${parseFloat(values.manual[row._id]) > row.totalAmount ? 'text-red-600' : 'text-orange-600'}`}
+                                          >
+                                            {parseFloat(values.manual[row._id]) > row.totalAmount ? '⬆ Greater' : '⬇ Less'} – Add Reason
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
                                   )}
+
                                 </div>
                               ) : null}
                             </td>
@@ -208,6 +235,47 @@ const CloseRegisterFormLayout = ({
         </>
       )}
 
+      {showReasonModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-md w-full max-w-sm p-4">
+            <h3 className="text-lg font-semibold mb-3">Reason Required</h3>
+            <textarea
+              value={reasonText}
+              onChange={(e) => setReasonText(e.target.value)}
+              placeholder="Enter reason for discrepancy"
+              className="w-full border border-gray-300 p-2 rounded h-24 resize-none"
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={() => {
+                  setShowReasonModal(false);
+                  setReasonText('');
+                  setActiveRowId(null);
+                }}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!reasonText.trim()) {
+                    alert('Reason is required');
+                    return;
+                  }
+
+                  setFieldValue(`reasons.${activeRowId}`, reasonText);
+                  setShowReasonModal(false);
+                  setReasonText('');
+                  setActiveRowId(null);
+                }}
+                className="bg-primary-60 hover:bg-primary-70 text-white px-4 py-1 rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
 

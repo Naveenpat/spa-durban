@@ -11,6 +11,7 @@ import { useFetchData } from 'src/hooks/useFetchData';
 import { useGetPaymntModesQuery } from 'src/modules/PaymentMode/service/PaymentModeServices';
 import { useGetAllTypeCouponsQuery } from 'src/modules/PromotionCoupons/service/PromotionCouponsServices';
 import { CURRENCY } from 'src/utils/constants';
+import { showToast } from 'src/utils/showToaster';
 
 type Props = {
   formikProps: FormikProps<any>;
@@ -54,6 +55,11 @@ const PaymentFormLayout = ({
   const customerId = values?.customer?._id;
   const serviceIds = values?.items.map((item: any) => item._id);
   const { data: allCoupans, isLoading, refetch } = useGetAllTypeCouponsQuery({ customerId, items: serviceIds });
+
+
+  const [showEFTModal, setShowEFTModal] = useState(false);
+  const [currentIndexForEFT, setCurrentIndexForEFT] = useState<number | null>(null);
+  const [eftTxnNumber, setEftTxnNumber] = useState('');
 
   const { data: paymentData, isLoading: paymentLoading } = useFetchData(
     useGetPaymntModesQuery,
@@ -129,7 +135,10 @@ const PaymentFormLayout = ({
   }, [])
 
   const balanceDuee = previewData?.invoiceData?.totalAmount -
-          calculateTotalReceived();
+    calculateTotalReceived();
+
+
+  console.log('--------------v', values?.amountReceived)
   return (
     <>
       <MOLFormDialog
@@ -579,7 +588,12 @@ const PaymentFormLayout = ({
                                   }
                                   onChange={(newValue) => {
                                     // console.log(newValue, 'new value');
+                                    const selectedMode = newValue?.modeName?.toLowerCase();
 
+                                    if (selectedMode === 'eft') {
+                                      setCurrentIndexForEFT(index);        // Track which row this EFT is for
+                                      setShowEFTModal(true);               // Open modal
+                                    }
                                     setFieldValue(
                                       `amountReceived.${index}.paymentModeId`,
                                       newValue,
@@ -712,6 +726,56 @@ const PaymentFormLayout = ({
               </div>
             </div>
           )}
+
+          {showEFTModal && currentIndexForEFT !== null && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+              <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+                <h2 className="text-lg font-semibold mb-3">Enter EFT Transaction Number</h2>
+                <input
+                  required
+                  type="text"
+                  className="w-full border rounded px-3 py-2"
+                  placeholder="Txn / UTR / Reference Number"
+                  value={eftTxnNumber}
+                  onChange={(e) => setEftTxnNumber(e.target.value)}
+                />
+
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    onClick={() => {
+                      setShowEFTModal(false);
+                      setEftTxnNumber('');
+                      setCurrentIndexForEFT(null);
+                    }}
+                    className="bg-gray-500 text-white px-4 py-1 rounded"
+                  >
+                    Cancel
+                  </button>
+
+                  <ATMButton
+                    onClick={() => {
+                      if (!eftTxnNumber.trim()) {
+                        showToast("error", "Transaction number is required for EFT.");
+                        return;
+                      }
+                      console.log('--------------currentIndexForEFT-----', currentIndexForEFT)
+
+                      // Set the value in Formik
+                      setFieldValue(`amountReceived.${currentIndexForEFT}.txnNumber`, eftTxnNumber);
+
+                      setShowEFTModal(false);
+                      setCurrentIndexForEFT(null);
+                      setEftTxnNumber('');
+                    }}
+
+                  >
+                    Save
+                  </ATMButton>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </MOLFormDialog>
     </>

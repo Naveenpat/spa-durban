@@ -46,6 +46,7 @@ const POSWrapper = (props: Props) => {
       {
         paymentModeId: '',
         amount: 0,
+        txnNumber:''
       },
     ],
     giftCardCode: '',
@@ -202,6 +203,7 @@ const POSWrapper = (props: Props) => {
     values: any,
     { resetForm, setSubmitting }: FormikHelpers<any>,
   ) => {
+
     let formattedValues = {
       customerId: values?.customer?._id,
       items: values?.items?.map((item: any) => ({
@@ -214,6 +216,7 @@ const POSWrapper = (props: Props) => {
       amountReceived: values?.amountReceived?.map((el: any) => ({
         paymentModeId: el?.paymentModeId?._id,
         amount: el?.amount,
+        txnNumber:el?.txnNumber
       })),
       giftCardCode: values?.giftCardCode,
       promotionCoupanCode: values?.promotionCoupanCode,
@@ -257,7 +260,7 @@ const POSWrapper = (props: Props) => {
           await updateGivenChange(givenChangePayload);
         }
 
-        showToast('success', res?.data?.message);
+        showToast('success', 'Invoice Create Successfuly');
         resetForm();
         dispatch(setIsOpenAddDialog(false));
         navigate(`/invoice/receipt/${createdInvoiceId}`);

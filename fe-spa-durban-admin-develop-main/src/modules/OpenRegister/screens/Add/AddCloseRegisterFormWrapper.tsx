@@ -40,6 +40,7 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
     totalAmount: 0,
     paymentModeName: '',
     manual: {},
+    reasons:{},
     bankDeposit: 0
   };
 
@@ -140,6 +141,7 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
         (item: { _id: string | number }) => ({
           ...item,
           manual: values.manual[item._id] || '', // Add manual key, default empty string if not found
+          reason:values.reasons[item._id] || ''
         }),
       );
 
@@ -157,8 +159,8 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
         bankDeposit: Number(values.bankDeposit),
         openingBalance: (data as any)?.data?.existingRegister?.openingBalance
       };
-      // console.log('formattedValues=======', formattedValues);
-
+      console.log('formattedValues=======', formattedValues);
+     
       const res = await closeRegister(formattedValues).unwrap(); // Proper async handling
 
       if (res?.status) {

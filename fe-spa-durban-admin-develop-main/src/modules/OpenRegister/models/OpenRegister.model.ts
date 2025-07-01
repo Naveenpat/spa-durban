@@ -15,4 +15,5 @@ export type PaymentMode = {
   totalAmount: number;
   paymentModeName: string;
   bankDeposit:any;
+  reasons:any;
 };

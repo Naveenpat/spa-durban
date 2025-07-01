@@ -65,14 +65,12 @@ const ATMAppHeader = ({
     (state: RootState) => state?.invoices,
   );
 
-
-  // console.log('-----userData', userData)
-
-
   const [storeOutletId, setStoreOutletId] = useState<string>();
   const [invoiceId, setInvoiceId] = useState('');
   const [isSearch, setIsSearch] = useState(true);
-  // console.log('--isSearch', isSearch)
+
+  const [openRefundModal, setOpenRefundModal] = useState(false);
+  const [notes, setNotes] = useState('');
   // const [getSalesReportDaily] = useGetSalesReportDailyQuery();
   // const { data, isLoading, totalData, totalPages } = useFetchData(
   //   useGetSalesReportDailyQuery,
@@ -212,15 +210,22 @@ const ATMAppHeader = ({
   //   ),
   // );
 
-  const handleUpdate = async (item: any) => {
+  const handleUpdate = async (input: string | { id: string; status?: string }) => {
     try {
+
+      const id = typeof input === 'string' ? input : input.id;
+      const status = typeof input === 'string' ? undefined : input.status;
       await updateInvoice({
-        invoiceId: item?._id,
-        body: { status: item?.status === "" ? 'refund' : "" },
+        invoiceId: id,
+        body: {
+          status: status === "" || status === undefined ? "refund" : "",
+          notes: notes !== "" ? notes : "",
+        }
+
       }).unwrap();
       // alert('Invoice updated successfully!');
       refetch();
-      if (item?.status == "refund") {
+      if (status == "refund") {
         showToast('success', 'Unrefund Process successfully!')
 
       }
@@ -339,17 +344,23 @@ const ATMAppHeader = ({
           <Tooltip title={item?.status === 'refund' ? 'Cancel Refund' : 'Refund'} arrow>
             <button
               type="button"
-              onClick={() =>
-                ShowConfirmation({
-                  type: 'INFO',
-                  title: 'Are you sure?',
-                  message: 'Do you want to refund on this invoice?',
-                  onConfirm: (closeDialog) => {
-                    handleUpdate(item);     // ✅ Your actual update logic
-                    closeDialog();          // ✅ Closes the confirmation modal
-                  },
-                  confirmationText: `${item?.status === 'refund' ? 'Cancel Refund' : 'Refund'}`
-                })
+              onClick={() => {
+                if (item?.status === 'refund') {
+                  ShowConfirmation({
+                    type: 'INFO',
+                    title: 'Are you sure?',
+                    message: 'Do you want to Unrefund on this invoice?',
+                    onConfirm: (closeDialog) => {
+                      handleUpdate({ id: item?._id, status: item?.status });     // ✅ Your actual update logic
+                      closeDialog();          // ✅ Closes the confirmation modal
+                    },
+                    confirmationText: `${item?.status === 'refund' ? 'Cancel Refund' : 'Refund'}`
+                  })
+                } else {
+                  setInvoiceId(item?._id)
+                  setOpenRefundModal(true)
+                }
+              }
               }
 
               className="text-green-600 hover:text-green-800"
@@ -566,6 +577,17 @@ const ATMAppHeader = ({
           }}
           filter={undefined}
           isLoading={false}
+          openRefundModal={openRefundModal}
+          setOpenRefundModal={setOpenRefundModal}
+          setNotes={setNotes}
+          notes={notes}
+          onRefundNoteSave={() => {
+            // Perform refund with notes
+            if (!notes.trim()) return showToast('error', "Note is required");
+            handleUpdate(invoiceId)
+            setOpenRefundModal(false);
+            setNotes('');
+          }}
         />
       )}
 

@@ -38,7 +38,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onItemClick, handleA
     return (
         <div
             key={product._id}
-            className="w-[208px] h-[233px] rounded-lg overflow-hidden border hover:shadow-md transition cursor-pointer relative bg-white"
+            className="w-[208px] h-[225px] rounded-lg overflow-hidden border hover:shadow-md transition cursor-pointer relative bg-white"
             onClick={() => {
                 const price = product?.sellingPrice ?? 0;
                 if (price > 0) {
@@ -108,7 +108,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onItemClick, handleA
             </div>
 
             {/* Item Name */}
-            <div className="p-2 text-[14px] font-medium text-gray-800 line-clamp-2 min-h-[75px]">
+            <div className="p-2 text-[14px] font-medium text-gray-800 line-clamp-2 min-h-[67px]">
                 {product.itemName}
             </div>
 

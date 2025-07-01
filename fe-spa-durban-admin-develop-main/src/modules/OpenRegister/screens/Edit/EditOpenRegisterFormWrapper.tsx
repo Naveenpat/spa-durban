@@ -76,6 +76,7 @@ const EditRegisterFormWrapper = ({ onClose, registerId }: Props) => {
             onClose={onClose}
             formType="EDIT"
             isLoading={isLoading}
+             openRegister={{}}
           />
         </Form>
       )}

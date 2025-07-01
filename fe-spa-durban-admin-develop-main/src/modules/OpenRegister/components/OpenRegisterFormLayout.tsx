@@ -12,6 +12,7 @@ type Props = {
   formType: 'OPEN' | 'EDIT';
   isLoading?: boolean;
   opningData?: any;
+  openRegister:any;
 };
 
 const registerOptions = [
@@ -30,18 +31,20 @@ const OpenRegisterFormLayout = ({
   onClose,
   formType,
   isLoading = false,
-  opningData
+  opningData,
+  openRegister
 }: Props) => {
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
   const formHeading = formType === 'OPEN' ? 'Open Register' : 'Edit Register';
 
-  // console.log('-----', opningData)
+  console.log('----openRegister-', openRegister)
   return (
     <MOLFormDialog
       title={formHeading}
       onClose={onClose}
       isSubmitting={isSubmitting}
+      isSubmitButtonDisabled={openRegister}
     >
       {isLoading ? (
         <div className="flex justify-center items-center max-w-[500px] h-[140px]">
@@ -61,7 +64,7 @@ const OpenRegisterFormLayout = ({
               placeholder="Please Select Register"
             />
           </div> */}
-          {opningData && opningData?.carryForwardBalance !== 0 && (
+          {!openRegister && opningData && opningData?.carryForwardBalance !== 0 && (
             <div>
               <h6 className="text-sm text-blue-600 font-medium">
                 Previous Carry Forword Balance: R {opningData?.carryForwardBalance}
@@ -89,7 +92,7 @@ const OpenRegisterFormLayout = ({
               isValid={!errors?.openingBalance}
             />
 
-            {opningData && opningData?.carryForwardBalance !== 0 && (
+            {!openRegister && opningData && opningData?.carryForwardBalance !== 0 && (
               <>
                 {Number(values.openingBalance) < Number(opningData?.carryForwardBalance) && (
                   <p className="text-sm text-red-600 mt-1">

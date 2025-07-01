@@ -8,6 +8,7 @@ import MOLTable, {
 import { SalesComparisonList } from '../models/SalesComparison.model';
 import Authorization from 'src/components/Authorization/Authorization';
 import MOLFormDialog from 'src/components/molecules/MOLFormDialog/MOLFormDialog';
+import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
 
 type Props = {
   rowData: {
@@ -24,6 +25,11 @@ type Props = {
   filter: any;
   isLoading: boolean;
   onClose: () => void;
+  openRefundModal: boolean;
+  setOpenRefundModal: any;
+  setNotes: any;
+  notes: string;
+   onRefundNoteSave: () => void;
 };
 
 const SalseReportLayoutWrapper = ({
@@ -32,7 +38,12 @@ const SalseReportLayoutWrapper = ({
   filterPaginationData: { totalCount, totalPages },
   filter,
   isLoading,
-  onClose
+  onClose,
+  openRefundModal,
+  setOpenRefundModal,
+  setNotes,
+  notes,
+  onRefundNoteSave
 }: Props) => {
   const da = rowData?.sales;
   return (
@@ -73,6 +84,35 @@ const SalseReportLayoutWrapper = ({
             /> */}
           </div>
 
+          {openRefundModal && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+              <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+                <h2 className="text-lg font-semibold mb-3">Enter Refund Reason</h2>
+                <input
+                  required
+                  type="text"
+                  className="w-full border rounded px-3 py-2"
+                  placeholder="Enter reason for refund"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    onClick={() => {
+                      setOpenRefundModal(false);
+                      setNotes('');
+                    }}
+                    className="bg-gray-500 text-white px-4 py-1 rounded"
+                  >
+                    Cancel
+                  </button>
+
+                  <ATMButton onClick={onRefundNoteSave}>Save</ATMButton>
+                </div>
+              </div>
+            </div>
+          )}
         </Authorization>
       </div>
     </MOLFormDialog>

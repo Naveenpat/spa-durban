@@ -18,6 +18,7 @@ export interface CloseRegisterDocument extends Document {
     totalAmount: number;
     paymentModeName: string;
     manual: string;
+    reason:string;
   }[];
   openRegisterId:ObjectId;
   isDeleted: boolean;
@@ -73,6 +74,7 @@ const CloseRegisterSchema = new mongoose.Schema<CloseRegisterDocument>(
         totalAmount: { type: Number, required: true, min: 0 },
         paymentModeName: { type: String, required: true },
         manual: { type: String, required: true },
+        reason: { type: String,default:'' }
       },
     ],
     openRegisterId: {

@@ -27,9 +27,10 @@ import ProductCard from './productCard';
 type Props = {
   onItemClick: (item: any) => void;
   onAllItemsProcessed: (item: any) => void;
+  isDisabled: boolean;
 };
 
-const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
+const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
   const [updateService] = useUpdateServiceToTopMutation();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -156,8 +157,13 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
     );
   }
   return (
-    <div className="flex flex-col w-full h-full gap-2 p-4 overflow-auto">
+    <div className={`flex flex-col w-full h-full gap-2 p-4 overflow-auto ${isDisabled ? 'pointer-events-none opacity-30' : ''}`}>
       {/* Search Box */}
+      {isDisabled && (
+        <div className="absolute inset-0 bg-white bg-opacity-70 z-10 flex items-center justify-center text-red-600 font-bold text-lg">
+          Register Closed
+        </div>
+      )}
       <div className="flex items-stretch gap-2">
         <ATMSearchBox
           value={searchValue}
@@ -292,9 +298,9 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
           ) : items?.length === 0 ? (
             <NoItemFound />
           ) : (
-            items?.map((product,index) => {
+            items?.map((product, index) => {
               return (
-                <ProductCard key={index} product={product} onItemClick={onItemClick} handleAction={handleAction}/>
+                <ProductCard key={index} product={product} onItemClick={onItemClick} handleAction={handleAction} />
               );
             })
           )}
@@ -302,7 +308,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed }: Props) => {
       </div>
 
       {(data as any)?.pagination?.totalItems > items.length && (
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center">
           {isFetching ? (
             <IconLoader2 color='#006972' size={28} className="animate-spin text-blue-600" />
           ) : (

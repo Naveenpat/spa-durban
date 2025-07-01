@@ -76,6 +76,7 @@ import SalesReportPage from './modules/Outlet/screens/sales-report/SalesReportPa
 import CustomerSalesReportPage from './modules/Customer/screens/customer-sales-report/CustomerSalesReportPage';
 import ViewCustomerFormWrapper from './modules/Customer/screens/View/ViewCustomerFormWrapper';
 import CompanySalesReportPage from './modules/AdminRole copy/screens/customer-sales-report/CompanySalesReportPage';
+import ViewOutletRegisterPage from './modules/Outlet/screens/view-register/ViewOutletRegisterPage';
 
 type Props = {};
 
@@ -146,6 +147,7 @@ const PageRoutes = (props: Props) => {
         { path: '/outlet/add', element: <AddOutletFormWrapper /> },
         { path: '/outlet/edit/:id', element: <EditOutletFormWrapper /> },
         { path: '/outlet/sales-report/:id', element: <SalesReportPage /> },
+        { path: '/outlet/view-register/:id', element: <ViewOutletRegisterPage /> },
         {
           path: '/brand',
           element: (

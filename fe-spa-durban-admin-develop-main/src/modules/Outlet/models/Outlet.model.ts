@@ -14,6 +14,7 @@ export type Outlet = {
   companyName:any;
   createdAt:Date;
   viewSalesReport:string;
+  viewOutletRegister:string;
 };
 
 export type OutletFormValues = {

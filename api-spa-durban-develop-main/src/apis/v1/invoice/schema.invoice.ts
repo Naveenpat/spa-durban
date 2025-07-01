@@ -223,6 +223,10 @@ const InvoiceSchema = new mongoose.Schema<InvoiceDocument>(
             required: true,
             trim: true,
           },
+          txnNumber:{
+            type:String,
+            default:''
+          }
         },
       ],
       required: true,

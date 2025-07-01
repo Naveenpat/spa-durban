@@ -58,6 +58,11 @@ const OutletListingWrapper = (props: Props) => {
   const handleViewSalesReport = (row: any) => {
     navigate(`/outlet/sales-report/${row._id}`);
   }
+
+  const handleViewRegister = (row: any) => {
+    navigate(`/outlet/view-register/${row._id}`);
+  }
+
   const tableHeaders: TableHeader<Outlet>[] = [
     // {
     //   fieldName: 'companyLogo',
@@ -124,6 +129,21 @@ const OutletListingWrapper = (props: Props) => {
           style={{ backgroundColor: '#006972' }}
         >
           View Report
+        </button>
+
+      ),
+    },
+    {
+      fieldName: 'viewOutletRegister',
+      headerName: 'View Register',
+      flex: 'flex-[0_0_150px]',
+      renderCell: (row: any) => (
+        <button
+          onClick={() => handleViewRegister(row)}
+          className="text-white px-3 py-1 rounded hover:opacity-90"
+          style={{ backgroundColor: '#006972' }}
+        >
+         View Register
         </button>
 
       ),

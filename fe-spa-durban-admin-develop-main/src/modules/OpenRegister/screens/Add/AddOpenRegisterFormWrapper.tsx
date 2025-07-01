@@ -7,6 +7,7 @@ import { useAddRegisterMutation, useGetRegisterByCurrentDateQuery, useGetRegiste
 import { showToast } from 'src/utils/showToaster';
 import { RootState } from 'src/store';
 import { useSelector } from 'react-redux';
+import { useFetchData } from 'src/hooks/useFetchData';
 
 type Props = {
   onClose: () => void;
@@ -31,6 +32,14 @@ const formattedDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
   outletId: (outlet as any)._id,
   date: formattedDate, // e.g., '2025-06-08'
 });
+
+const { data:openRegisterData, refetch:isRefetch } = useFetchData(useGetRegisterByCurrentDateQuery, {
+    body: (outlet as any)._id,
+    dataType: 'VIEW',
+  });
+
+  console.log('------openRegisterData',openRegisterData)
+
   const initialValues: OpenRegisterFormValues = {
     registerId: '', // Ensure validation accounts for this
     openingBalance: '',
@@ -88,6 +97,7 @@ const formattedDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
             onClose={onClose}
             formType="OPEN"
             opningData={(data as any)?.data}
+            openRegister={(openRegisterData as any)?.data?.existingRegister}
           />
         </Form>
       )}

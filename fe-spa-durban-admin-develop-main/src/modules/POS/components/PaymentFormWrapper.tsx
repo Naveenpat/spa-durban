@@ -54,6 +54,10 @@ const PaymentFormWrapper = ({
       referralCode: '',
       outletId: (outlet as any)?._id,
     };
+
+
+    console.log('-----formattedValues',formattedValues)
+
     previewInvoice(formattedValues).then((res: any) => {
       if (res?.error) {
         showToast('error', res?.error?.data?.message);
@@ -97,6 +101,7 @@ const PaymentFormWrapper = ({
       referralCode: '',
       outletId: (outlet as any)?._id,
     };
+
     addDraft(formattedValues).then((res: any) => {
       if (res?.error) {
         showToast('error', res?.error?.data?.message);
