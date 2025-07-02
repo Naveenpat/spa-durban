@@ -165,7 +165,7 @@ const Receipt = () => {
       .map((word: any) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
-      // console.log('-----',`${process.env.REACT_APP_BASE_URL}/${companyData?.data?.logo}`)
+  // console.log('-----',`${process.env.REACT_APP_BASE_URL}/${companyData?.data?.logo}`)
 
   return (
     <>
@@ -191,7 +191,7 @@ const Receipt = () => {
           <div className="">
             {/* {format(new Date(invoiceData?.createdAt), 'dd MMM yyyy hh:mm a')}
              */}
-             {formatZonedDate(invoiceData?.invoiceDate)}
+            {formatZonedDate(invoiceData?.invoiceDate)}
           </div>
         </div>
         <div className="mt-2 border-t border-dashed"></div>
@@ -288,14 +288,38 @@ const Receipt = () => {
             </div>
             <div className="mt-2 mb-1 border-t"></div>
             <div>
-              {invoiceData?.amountReceived?.map((payment: any) => {
+              {/* {invoiceData?.amountReceived?.map((payment: any) => {
                 return (
-                  <div className="flex justify-between px-2">
-                    <div>{payment?.modeName}</div>
-                    <div>{payment?.amount?.toFixed(2)}</div>
+                  <div>
+                    <div className="flex justify-between px-2">
+                      <div>{payment?.modeName}</div>
+                      <div>{payment?.amount?.toFixed(2)}</div>
+                    </div>
+                    {payment?.modeName?.toLowerCase() === 'eft' && payment?.txnNumber && (
+                      <div className="text-sm text-gray-500 pl-2">
+                        Txn No: {payment.txnNumber}
+                      </div>
+                    )}
+                  </div>
+                );
+              })} */}
+              {invoiceData?.amountReceived?.map((payment: any, index: number) => {
+                return (
+                  <div key={index} className="flex flex-col px-2">
+                    <div className="flex justify-between">
+                      <div>{payment?.modeName}</div>
+                      <div>{payment?.amount?.toFixed(2)}</div>
+                    </div>
+                    {payment?.modeName?.toLowerCase() === 'eft' && payment?.txnNumber && (
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <div className='text-xs'>Txn No</div>
+                        <div className='text-xs'>{payment.txnNumber}</div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
+
               <div className="flex justify-between px-2 text-sm font-bold text-slate-700">
                 <div>You Paid</div>
                 <div>{youPay?.toFixed(2)}</div>

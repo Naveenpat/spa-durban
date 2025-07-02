@@ -239,9 +239,9 @@ router.get(
  *         description: Internal Server Error
  */
 router.put(
-  "/:inventoryId",
+  "/",
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  validate(update),
+  // validate(update),
   updateInventory
 )
 

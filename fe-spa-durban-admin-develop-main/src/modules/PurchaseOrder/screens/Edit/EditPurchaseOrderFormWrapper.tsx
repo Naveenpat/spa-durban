@@ -33,10 +33,10 @@ const EditPurchaseOrderFormWrapper = () => {
   (data as any)?.data?.products?.map((prod: any) => ({
     product: {
       _id: prod?.productId?._id || prod?.productId,
-      productName: prod?.productId?.productName || '',
+      productName: prod?.productName || '',
       taxPercent: prod?.taxPercent || prod?.taxPercent || 0,
       taxType: prod?.taxType || prod?.taxType || 'PERCENT',
-      tax: prod?.productId?.taxId || '',
+      tax: prod?.tax || '',
       purchasePrice: prod?.rate || '',
     },
     rate: prod.rate || '',
@@ -45,10 +45,23 @@ const EditPurchaseOrderFormWrapper = () => {
     discountType: prod.discountType || 'PERCENT',
     taxPercent: prod.taxPercent || prod?.taxPercent || 0,
     taxType: prod.taxType || prod?.taxType || '',
+    
   })) || [ /* fallback array */ ],
+
+  // productDetails:(data as any)?.data?.products?.map((prod: any) => ({
+  //  product:prod?.productId,
+  //  rate: prod.rate || '',
+  // quantity: prod.quantity || '',
+  // discount: prod.discount || '',
+  // discountType: prod.discountType || 'PERCENT',
+  // taxPercent: prod.taxPercent || prod?.taxPercent || 0,
+  // tax: prod?.taxId || '',
+  // taxType: prod.taxType || prod?.taxType || '',
+  // })),
 
   shippingCharges: (data as any)?.data?.shippingCharges || '',
   amountPaid: (data as any)?.data?.amountPaid || '',
+  amountReceived:(data as any)?.data?.amountReceived || '',
 };
 
 
@@ -69,21 +82,28 @@ const EditPurchaseOrderFormWrapper = () => {
     values: PurchaseOrderFormValues,
     { resetForm, setSubmitting }: FormikHelpers<PurchaseOrderFormValues>,
   ) => {
-    const formattedValues = {
-         supplierId: values?.supplier?._id,
-         invoiceNumber: values?.invoiceNumber,
-         orderDate: format(new Date(values?.orderDate || ''), 'yyyy-MM-dd'),
-         amountPaid: values?.amountPaid,
-         shippingCharges: values?.shippingCharges || 0,
-         products: values?.productDetails?.map((product) => ({
-           productId: product?.product?._id,
-           quantity: product?.quantity,
-           rate: product?.rate,
-           tax: product?.product?.taxId,
-           discount: product?.discount || 0,
-           discountType: product?.discountType,
-         })),
-       };
+
+       console.log('------values',values)
+      const formattedValues = {
+          supplierId: values?.supplier?._id,
+          invoiceNumber: values?.invoiceNumber,
+          orderDate: format(new Date(values?.orderDate || ''), 'yyyy-MM-dd'),
+          amountPaid: values?.amountPaid,
+          shippingCharges: values?.shippingCharges || 0,
+          amountReceived: values?.amountReceived?.map((el: any) => ({
+            paymentModeId: el?.paymentModeId?._id,
+            amount: el?.amount.toString(),
+            txnNumber: el?.txnNumber
+          })),
+          products: values?.productDetails?.map((product) => ({
+            productId: product?.product?._id,
+            quantity: product?.quantity,
+            rate: product?.rate,
+            tax: product?.product?.taxId,
+            discount: product?.discount || 0,
+            discountType: product?.discountType,
+          })),
+        };
 
     updatePurchaseOrder({purchaseOrderId:id,body:formattedValues}).then((res: any) => {
       if (res?.error) {

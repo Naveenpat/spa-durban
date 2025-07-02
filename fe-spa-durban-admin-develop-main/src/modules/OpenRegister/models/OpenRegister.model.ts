@@ -17,3 +17,10 @@ export type PaymentMode = {
   bankDeposit:any;
   reasons:any;
 };
+
+export type RegisterValue ={
+  Date:Date;
+  _id:string;
+  openingBalance:number;
+  carryForwardBalance:number;
+};

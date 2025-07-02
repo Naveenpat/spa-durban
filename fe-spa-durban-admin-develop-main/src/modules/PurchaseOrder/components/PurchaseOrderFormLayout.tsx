@@ -7,7 +7,7 @@ import ATMTextArea from 'src/components/atoms/FormElements/ATMTextArea/ATMTextAr
 import ATMTextField from 'src/components/atoms/FormElements/ATMTextField/ATMTextField';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
 import { PurchaseOrderFormValues } from '../models/PurchaseOrder.model';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useFetchData } from 'src/hooks/useFetchData';
 import { useGetSupplierListingQuery } from 'src/modules/Supplier/service/SupplierServices';
 import { useGetProductsQuery } from 'src/modules/Product/service/ProductServices';
@@ -15,6 +15,7 @@ import ATMDiscount from 'src/components/atoms/FormElements/ATMDiscountField/ATMD
 import ATMDiscountField from 'src/components/atoms/FormElements/ATMDiscountField/ATMDiscountField';
 import { CURRENCY } from 'src/utils/constants';
 import ATMNumberField from 'src/components/atoms/FormElements/ATMNumberField/ATMNumberField';
+import { useGetPaymntModesQuery } from 'src/modules/PaymentMode/service/PaymentModeServices';
 
 type Props = {
   formikProps: FormikProps<PurchaseOrderFormValues>;
@@ -82,6 +83,12 @@ const PurchaseOrderFormLayout = ({ formikProps,
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
 
+
+  const [showEFTModal, setShowEFTModal] = useState(false);
+  const [currentIndexForEFT, setCurrentIndexForEFT] = useState<number | null>(null);
+  const [eftTxnNumber, setEftTxnNumber] = useState('');
+
+
   const { data: suppliers, isLoading: isSuppliersLoading, refetch } = useFetchData(
     useGetSupplierListingQuery,
     {
@@ -115,6 +122,94 @@ const PurchaseOrderFormLayout = ({ formikProps,
       },
     },
   );
+
+  const { data: paymentData, isLoading: paymentLoading } = useFetchData(
+    useGetPaymntModesQuery,
+    {
+      body: {
+        isPaginationRequired: false,
+        filterBy: JSON.stringify([
+          {
+            fieldName: 'isActive',
+            value: true,
+          },
+        ]),
+      },
+    },
+  );
+
+
+
+   const isLastPaymentModeFilled = () => {
+    if (values?.amountReceived?.length === 0) {
+      return true;
+    }
+    const lastPaymentMode =
+      values?.amountReceived?.[values.amountReceived.length - 1];
+    return (
+      lastPaymentMode && lastPaymentMode.paymentModeId && lastPaymentMode.amount
+    );
+  };
+
+  const calculateGrandTotal = (values: any): number => {
+  if (!values?.productDetails) return 0;
+
+  const productsTotal = values.productDetails.reduce((sum: number, product: any) => {
+    const baseAmount = Number(product?.rate || 0) * Number(product?.quantity || 0);
+
+    const taxAmount = calculateTaxAmount({
+      amount: baseAmount,
+      discountAmount: 0,
+      taxPercent: product?.taxPercent,
+    });
+
+    const discountAmount = calculateDiscount({
+      amount: baseAmount + taxAmount,
+      discount: Number(product?.discount || 0),
+      discountType: product?.discountType || 0,
+    });
+
+    const finalTaxAmount = calculateTaxAmount({
+      amount: baseAmount,
+      discountAmount,
+      taxPercent: product?.taxPercent || 0,
+    });
+
+    const totalAmount = calculateTotalAmount({
+      amount: baseAmount,
+      discountAmount,
+      taxAmount: finalTaxAmount,
+    });
+
+    return sum + totalAmount;
+  }, 0);
+
+  return productsTotal + Number(values?.shippingCharges || 0);
+};
+
+  const showPaymentData = () => {
+    const totalAmount = calculateGrandTotal(values);
+
+    // Get all non-cash payments and sum them
+    const nonCashTotal = values.amountReceived && values.amountReceived.reduce(
+      (acc: number, curr: any) => {
+        const modeType = paymentData?.find(
+          (mode: any) => mode._id === curr.paymentModeId?._id,
+        )?.type;
+
+        const amount = parseFloat(curr.amount) || 0;
+
+        if (modeType !== 'cash') {
+          return acc + amount;
+        }
+
+        return acc;
+      },
+      0,
+    );
+
+    return nonCashTotal > totalAmount;
+  };
 
   return (
     <div className="flex flex-col h-full overflow-auto ">
@@ -357,13 +452,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                         (product?.rate || 0) *
                                         (product?.quantity || 0),
                                       discountAmount: 0,
-                                      taxPercent: product?.product?.taxPercent,
+                                      taxPercent: product?.taxPercent,
                                     }),
                                   discount: product?.discount || 0,
                                   discountType: product?.discountType || 0,
                                 }),
 
-                                taxPercent: product?.product?.taxPercent || 0,
+                                taxPercent: product?.taxPercent || 0,
                               }).toFixed(2)}
                             </div>
 
@@ -379,7 +474,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                       (product?.rate || 0) *
                                       (product?.quantity || 0),
                                     discountAmount: 0,
-                                    taxPercent: product?.product?.taxPercent,
+                                    taxPercent: product?.taxPercent,
                                   }),
                                 discount: product?.discount || 0,
                                 discountType: product?.discountType,
@@ -402,7 +497,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                         (product?.rate || 0) *
                                         (product?.quantity || 0),
                                       discountAmount: 0,
-                                      taxPercent: product?.product?.taxPercent,
+                                      taxPercent: product?.taxPercent,
                                     }),
                                   discount: product?.discount || 0,
                                   discountType: product?.discountType || 0,
@@ -428,7 +523,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                     discountType: product?.discountType || 0,
                                   }),
 
-                                  taxPercent: product?.product?.taxPercent || 0,
+                                  taxPercent: product?.taxPercent || 0,
                                 }),
                               }).toFixed(2)}
                             </div>
@@ -501,13 +596,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                               Number(product?.rate || 0) *
                               Number(product?.quantity || 0),
                             discountAmount: 0,
-                            taxPercent: product?.product?.taxPercent,
+                            taxPercent: product?.taxPercent || 0,
                           }),
                         discount: Number(product?.discount || 0),
                         discountType: product?.discountType || 0,
                       }),
 
-                      taxPercent: product?.product?.taxPercent || 0,
+                      taxPercent: product?.taxPercent || 0,
                     })
                   );
                 }, 0)
@@ -530,7 +625,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                             Number(product?.rate || 0) *
                             Number(product?.quantity || 0),
                           discountAmount: 0,
-                          taxPercent: product?.product?.taxPercent,
+                          taxPercent: product?.taxPercent || 0,
                         }),
                       discount: Number(product?.discount || 0),
                       discountType: product?.discountType || 0,
@@ -558,7 +653,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
               />
             </div>
 
-            <div className="flex justify-between gap-4 font-medium text-md text-slate-700">
+            {/* <div className="flex justify-between gap-4 font-medium text-md text-slate-700">
               <span className="">Grand Total</span>
               {CURRENCY}{' '}
               {(
@@ -609,7 +704,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                   );
                 }, 0) + Number(values?.shippingCharges || 0)
               ).toFixed(2)}
-            </div>
+            </div> */}
+
+            <div className="flex justify-between gap-4 font-medium text-md text-slate-700">
+  <span>Grand Total</span>
+  {CURRENCY} {calculateGrandTotal(values).toFixed(2)}
+</div>
+
 
             <div className="flex items-center justify-between gap-4 text-sm font-medium text-slate-700">
               <span className="">Amount Paid</span>
@@ -643,7 +744,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                             Number(product?.rate || 0) *
                             Number(product?.quantity || 0),
                           discountAmount: 0,
-                          taxPercent: product?.product?.taxPercent,
+                          taxPercent: product?.taxPercent || 0,
                         }),
                       discount: Number(product?.discount || 0),
                       discountType: product?.discountType || 0,
@@ -662,13 +763,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                               Number(product?.rate || 0) *
                               Number(product?.quantity || 0),
                             discountAmount: 0,
-                            taxPercent: product?.product?.taxPercent,
+                            taxPercent: product?.taxPercent || 0,
                           }),
                         discount: Number(product?.discount || 0),
                         discountType: product?.discountType || 0,
                       }),
 
-                      taxPercent: product?.product?.taxPercent || 0,
+                      taxPercent: product?.taxPercent || 0,
                     }),
                   })
                 );
@@ -700,7 +801,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                               Number(product?.rate || 0) *
                               Number(product?.quantity || 0),
                             discountAmount: 0,
-                            taxPercent: product?.product?.taxPercent,
+                            taxPercent: product?.taxPercent || 0,
                           }),
                         discount: Number(product?.discount || 0),
                         discountType: product?.discountType || 0,
@@ -719,13 +820,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                 Number(product?.rate || 0) *
                                 Number(product?.quantity || 0),
                               discountAmount: 0,
-                              taxPercent: product?.product?.taxPercent,
+                              taxPercent: product?.taxPercent || 0,
                             }),
                           discount: Number(product?.discount || 0),
                           discountType: product?.discountType || 0,
                         }),
 
-                        taxPercent: product?.product?.taxPercent || 0,
+                        taxPercent: product?.taxPercent || 0,
                       }),
                     })
                   );
@@ -735,6 +836,127 @@ const PurchaseOrderFormLayout = ({ formikProps,
               ).toFixed(2)}
             </div>
           </div>
+
+          <div className="flex flex-col gap-2 ">
+            {/* Amount Received */}
+            <div className="pb-2 text-sm font-medium tracking-wide border-b border-dashed text-slate-500">
+              Amount Received
+            </div>
+            <div className="grid items-end grid-cols-2 gap-2 text-xs font-medium tracking-wide text-slate-500 ">
+              <div className="col-span-1 ">Payment Mode</div>
+              <div className="">Amount</div>
+            </div>
+            {/* FieldArray For PaymentMode */}
+            <FieldArray name="amountReceived">
+              {({ insert, remove, push }) => (
+                <div className="flex flex-col gap-5 ">
+                  {values.amountReceived.length > 0 &&
+                    values.amountReceived.map(
+                      (payment: any, index: number) => (
+                        <div
+                          key={index}
+                          className="grid items-end grid-cols-2 gap-2"
+                        >
+                          <div className="col-span-1">
+                            <ATMSelect
+                              name={`amountReceived.${index}.paymentModeId`}
+                              value={
+                                values.amountReceived[index].paymentModeId
+                              }
+                              onChange={(newValue) => {
+                                // console.log(newValue, 'new value');
+                                const selectedMode = newValue?.modeName?.toLowerCase();
+
+                                if (selectedMode === 'eft') {
+                                  setCurrentIndexForEFT(index);        // Track which row this EFT is for
+                                  setShowEFTModal(true);               // Open modal
+                                }
+                                setFieldValue(
+                                  `amountReceived.${index}.paymentModeId`,
+                                  newValue,
+                                );
+                              }}
+                              label=""
+                              options={paymentData}
+                              valueAccessKey="_id"
+                              placeholder="Payment mode"
+                              getOptionLabel={(option: any) =>
+                                option?.modeName
+                              }
+                              isOptionDisabled={(option) => {
+                                return (
+                                  values?.amountReceived?.findIndex(
+                                    (modes: any) =>
+                                      modes?.paymentModeId?._id ===
+                                      option._id,
+                                  ) > -1
+                                );
+                              }}
+                              isLoading={paymentLoading}
+                            />
+                            {/* <h2>
+                                            <strong>Amount to Pay</strong>
+                                          </h2> */}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <ATMNumberField
+                              name={`amountReceived.${index}.amount`}
+                              value={values.amountReceived[index].amount}
+                              onChange={(newValue) => {
+                                setFieldValue(
+                                  `amountReceived.${index}.amount`,
+                                  newValue,
+                                );
+                              }}
+                              label=""
+                              placeholder="Enter Payment"
+                              isAllowDecimal
+                            />
+                            <div className="">
+                              <ATMButton
+                                type="button"
+                                onClick={() => remove(index)}
+                                variant="text"
+                                extraClasses=" text-red-500"
+                              >
+                                <IconTrash />
+                              </ATMButton>
+                            </div>
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  <div>
+                    {showPaymentData() ? (
+                      <div className="text-xs font-semibold text-red-500">
+                        Total received amount cannot be greater than payable
+                        amount.
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div
+                    className={`flex items-center justify-center gap-1 py-2 border border-dashed rounded cursor-pointer bg-gray-50  ${!isLastPaymentModeFilled()
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                      }`}
+                    onClick={() => {
+                      if (isLastPaymentModeFilled()) {
+                        push({ paymentModeId: '', amount: '' });
+                      }
+                    }}
+                  >
+                    <IconPlus className="size-[0.75rem]" />
+                    <span className="text-xs font-semibold">
+                      Add Payment Mode
+                    </span>
+                  </div>
+                </div>
+              )}
+            </FieldArray>
+          </div>
+
+
           <div className="">
             <ATMButton
               type="submit"
@@ -757,7 +979,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                               Number(product?.rate || 0) *
                               Number(product?.quantity || 0),
                             discountAmount: 0,
-                            taxPercent: product?.product?.taxPercent,
+                            taxPercent: product?.taxPercent || 0,
                           }),
                         discount: Number(product?.discount || 0),
                         discountType: product?.discountType || 0,
@@ -776,13 +998,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                 Number(product?.rate || 0) *
                                 Number(product?.quantity || 0),
                               discountAmount: 0,
-                              taxPercent: product?.product?.taxPercent,
+                              taxPercent: product?.taxPercent || 0,
                             }),
                           discount: Number(product?.discount || 0),
                           discountType: product?.discountType || 0,
                         }),
 
-                        taxPercent: product?.product?.taxPercent || 0,
+                        taxPercent: product?.taxPercent || 0,
                       }),
                     })
                   );

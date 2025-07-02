@@ -140,11 +140,42 @@ export const outletApi = apiSlice.injectEndpoints({
       query: (outletId) => ({
         url: '/analytics/new/outlet/sales-csv-data',
         method: 'POST',
-        body:outletId, // sends { outletId: '...' } in JSON body
+        body: outletId, // sends { outletId: '...' } in JSON body
         responseHandler: (response) => response.blob(), // for CSV
       }),
     }),
+    getRegisterChartData: builder.query({
+      query: ({ outletId, startDate, endDate, page = 1, limit = 10 }) => {
+        const params = new URLSearchParams({
+          outletId,
+          startDate,
+          endDate,
+          page: String(page),
+          limit: String(limit)
+        });
 
+        return {
+          url: `/analytics/register-chart-data?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
+    getRegisterData: builder.query({
+      query: ({ outletId, startDate, endDate, page = 1, limit = 10 }) => {
+        const params = new URLSearchParams({
+          outletId,
+          startDate,
+          endDate,
+          page: String(page),
+          limit: String(limit)
+        });
+
+        return {
+          url: `/analytics/register-table-data?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
   }),
 });
 
@@ -160,5 +191,7 @@ export const {
   useGetSalesReportByCustomerQuery,
   useGetSalesChartDataReportByOutletQuery,
   useGetSalesChartDataReportByCustomerQuery,
-  useGetSalesByOutletCsvDataQuery
+  useGetSalesByOutletCsvDataQuery,
+  useGetRegisterChartDataQuery,
+  useGetRegisterDataQuery
 } = outletApi;

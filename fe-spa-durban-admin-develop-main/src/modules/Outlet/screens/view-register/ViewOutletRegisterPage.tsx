@@ -11,11 +11,12 @@ import { useFilterPagination } from 'src/hooks/useFilterPagination';
 import { SalesReport } from 'src/modules/Invoices/models/Invoices.model';
 import { RootState } from 'src/store';
 import { isAuthorized } from 'src/utils/authorization';
-import { useGetSalesChartDataReportByOutletQuery, useGetSalesReportByOutletQuery } from '../../service/OutletServices';
+import { useGetRegisterChartDataQuery, useGetRegisterDataQuery, useGetSalesChartDataReportByOutletQuery, useGetSalesReportByOutletQuery } from '../../service/OutletServices';
 import ATMChart from 'src/components/atoms/ATMChart/ATMChart';
 import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
 import { formatZonedDate } from 'src/utils/formatZonedDate';
 import * as XLSX from 'xlsx';
+import { Register, RegisterValue } from 'src/modules/OpenRegister/models/OpenRegister.model';
 
 
 const salesData = [
@@ -41,7 +42,7 @@ const ViewOutletRegisterPage = () => {
     useFilterPagination(['outletId', 'customerId']);
   const [searchParams, setSearchParams] = useSearchParams();
   const { outlets } = useSelector((state: RootState) => state.auth);
-  const { data, isLoading, error } = useGetSalesReportByOutletQuery({
+  const { data, isLoading, error } = useGetRegisterDataQuery({
     outletId: id,
     startDate: dateFilter?.start_date,
     endDate: dateFilter?.end_date,
@@ -51,45 +52,25 @@ const ViewOutletRegisterPage = () => {
     sortOrder: orderValue || 'desc',
   });
 
-  const { data: chartData } = useGetSalesChartDataReportByOutletQuery({
+  const { data: chartData } = useGetRegisterChartDataQuery({
     outletId: id,
     startDate: dateFilter?.start_date,
     endDate: dateFilter?.end_date
   });
 
+  console.log('-----data', data)
 
-  const salesByDate = chartData?.data?.salesByDate || [];
-  const salesByPaymentMode = chartData?.data?.salesByPaymentMode || [];
-  const topCustomers = chartData?.data?.topCustomers || [];
+
+const dailySummary = chartData?.data?.dailySummary || [];
+const finalCashVsOpening = chartData?.data?.finalCashVsOpening || [];
+const paymentModeBreakdown = chartData?.data?.paymentModeBreakdown || [];
 
   // console.log('----chartData', chartData)
 
 
-  const tableHeaders: TableHeader<SalesReport>[] = [
+  const tableHeaders: TableHeader<RegisterValue>[] = [
     {
-      fieldName: 'invoiceNumber',
-      headerName: 'Invoice N0.',
-      flex: 'flex-[1_0_0%]',
-    },
-    {
-      fieldName: 'customerName',
-      headerName: 'Customer Name',
-      flex: 'flex-[1_0_0%]',
-    },
-    {
-      fieldName: 'totalAmount',
-      headerName: 'Total Amount',
-      flex: 'flex-[1_0_0%]',
-      sortable: true,
-      sortKey: 'totalAmount',
-    },
-    {
-      fieldName: 'balanceDue',
-      headerName: 'Balance Due',
-      flex: 'flex-[1_0_0%]',
-    },
-    {
-      fieldName: 'createdAt',
+      fieldName: 'Date',
       headerName: 'Date',
       flex: 'flex-[1_1_0%]',
       sortable: true,
@@ -100,31 +81,17 @@ const ViewOutletRegisterPage = () => {
         const date = row.createdAt ? new Date(row.createdAt) : null;
         // return date ? format(date, 'dd-MM-yyyy') : '-';
         return date ? formatZonedDate(date) : '-';
-      },
+      }
+    }, {
+      fieldName: 'openingBalance',
+      headerName: 'Opening Balance',
+      flex: 'flex-[1_1_0%]',
     },
     {
-      fieldName: 'status',
-      headerName: 'Status',
-      align: 'center',
+      fieldName: 'carryForwardBalance',
+      headerName: 'Carry Forword Balance',
       flex: 'flex-[1_1_0%]',
-      renderCell: (item) => (
-        <div>
-          {item.status && item.status.trim() !== '' ? (
-            <span className="text-red-700 bg-red-100 py-[3px] font-medium px-2 rounded-lg border-slate-300">
-              {item.status}
-            </span>
-          ) : item?.balanceDue > 0 ? (
-            <span className="text-yellow-700 bg-yellow-100 py-[3px] font-medium px-2 rounded-lg border-slate-300">
-              Unpaid
-            </span>
-          ) : (
-            <span className="text-green-700 bg-green-100 py-[3px] font-medium px-2 rounded-lg border-slate-300">
-              Paid
-            </span>
-          )}
-        </div>
-      ),
-    },
+    }
   ]
 
   const filters: FilterType[] = [
@@ -144,8 +111,8 @@ const ViewOutletRegisterPage = () => {
     },
   ];
 
-  const invoices = data?.data?.invoices || [];
-  const totalAmount = data?.data?.totalSalesData[0]?.totalSalesAmount || [];
+  const invoices = data?.data || [];
+  // const totalAmount = data && data?.data?.totalSalesData[0]?.totalSalesAmount || [];
   const today = new Date();
   const oneMonthAgo = subMonths(today, 1);
 
@@ -201,18 +168,31 @@ const ViewOutletRegisterPage = () => {
           <MOLFilterBar hideSearch={true} filters={filters} />
           <div className="flex flex-col overflow-auto border rounded border-slate-300 p-1">
             <div className="grid grid-cols-3 gap-4">
-              {/* Chart 1: Sales by Date (Bar) */}
-              {salesByDate.length > 0 && (
+              {/* Chart 4: Daily Summary (Line) */}
+              {dailySummary.length > 0 && (
                 <div className="col-span">
                   <ATMChart
                     type="bar"
                     data={{
-                      labels: salesByDate.map((item: any) => item._id),
+                      labels: dailySummary.map((item: any) => item.date),
                       datasets: [
                         {
-                          label: 'Sales',
-                          data: salesByDate.map((item: any) => item.total),
-                          backgroundColor: '#3b82f6',
+                          label: 'Total Cash',
+                          data: dailySummary.map((item: any) => item.totalCash),
+                          borderColor: '#3b82f6',
+                          backgroundColor: '#3b82f670',
+                        },
+                        {
+                          label: 'Bank Deposit',
+                          data: dailySummary.map((item: any) => item.bankDeposit),
+                          borderColor: '#10b981',
+                          backgroundColor: '#10b98170',
+                        },
+                        {
+                          label: 'Carry Forward',
+                          data: dailySummary.map((item: any) => item.carryForwardBalance),
+                          borderColor: '#f59e0b',
+                          backgroundColor: '#f59e0b70',
                         },
                       ],
                     }}
@@ -225,18 +205,23 @@ const ViewOutletRegisterPage = () => {
                 </div>
               )}
 
-              {/* Chart 2: Sales by Payment Mode (Pie) */}
-              {salesByPaymentMode.length > 0 && (
+              {/* Chart 5: Final Cash vs Opening Balance (Bar) */}
+              {finalCashVsOpening.length > 0 && (
                 <div className="col-span">
                   <ATMChart
-                    type="pie"
+                    type="bar"
                     data={{
-                      labels: salesByPaymentMode.map((item: any) => item._id),
+                      labels: finalCashVsOpening.map((item: any) => item.date),
                       datasets: [
                         {
-                          label: 'Payment Modes',
-                          data: salesByPaymentMode.map((item: any) => item.total),
-                          backgroundColor: ['#4caf50', '#ff9800', '#f44336'],
+                          label: 'Opening Balance',
+                          data: finalCashVsOpening.map((item: any) => item.openingBalance),
+                          backgroundColor: '#6366f1',
+                        },
+                        {
+                          label: 'Final Cash',
+                          data: finalCashVsOpening.map((item: any) => item.finalCash),
+                          backgroundColor: '#06b6d4',
                         },
                       ],
                     }}
@@ -249,35 +234,50 @@ const ViewOutletRegisterPage = () => {
                 </div>
               )}
 
-              {/* Chart 3: Top Customers (Doughnut) */}
-              {topCustomers.length > 0 && (
+              {/* Chart 6: Payment Mode Breakdown (Stacked Bar) */}
+              {paymentModeBreakdown.length > 0 && (
                 <div className="col-span">
                   <ATMChart
-                    type="doughnut"
+                    type="bar"
                     data={{
-                      labels: topCustomers.map((item: any) => item.customerName || 'Unnamed'),
+                      labels: paymentModeBreakdown.map((item: any) => item.date),
                       datasets: [
                         {
-                          label: 'Top Customers',
-                          data: topCustomers.map((item: any) => item.total),
-                          backgroundColor: ['#06b6d4', '#10b981', '#f59e0b', '#ef4444'],
+                          label: 'Cash',
+                          data: paymentModeBreakdown.map((item: any) => item.cash),
+                          backgroundColor: '#4caf50',
+                        },
+                        {
+                          label: 'UPI',
+                          data: paymentModeBreakdown.map((item: any) => item.upi),
+                          backgroundColor: '#ff9800',
+                        },
+                        {
+                          label: 'Card',
+                          data: paymentModeBreakdown.map((item: any) => item.card),
+                          backgroundColor: '#f44336',
                         },
                       ],
                     }}
                     options={{
                       responsive: true,
-                      plugins: { legend: { position: 'right' } },
+                      plugins: { legend: { position: 'top' } },
                       maintainAspectRatio: false,
+                      scales: {
+                        x: { stacked: true },
+                        y: { stacked: true },
+                      },
                     }}
                   />
                 </div>
               )}
+
             </div>
 
 
 
             <div className="flex-1 overflow-auto mt-3">
-              <MOLTable<SalesReport>
+              <MOLTable<RegisterValue>
                 tableHeaders={tableHeaders}
                 data={invoices || []}
                 getKey={(item) => item?._id}

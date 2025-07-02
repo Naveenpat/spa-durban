@@ -18,6 +18,12 @@ export interface Product {
   amount: number
 }
 
+export interface amountReceived {
+  paymentModeId: ObjectId;
+  amount: number;
+  txnNumber:string;
+}
+
 export interface PurchaseOrderDocument extends Document {
   supplierId: ObjectId
   invoiceNumber: string
@@ -30,6 +36,7 @@ export interface PurchaseOrderDocument extends Document {
   totalDiscount: number
   isInventoryIn: boolean
   products: Product[]
+  amountReceived: amountReceived[];
   createdBy: ObjectId
   isDeleted: boolean
   isActive: boolean
@@ -118,6 +125,29 @@ const PurchaseOrderSchema = new mongoose.Schema<PurchaseOrderDocument>(
     isInventoryIn: {
       type: Boolean,
       default: false,
+    },
+    amountReceived: {
+      type: [
+        {
+          paymentModeId: {
+            type: mongoose.Types.ObjectId,
+            ref: "PaymentMode",
+            required: true,
+            trim: true,
+          },
+          amount: {
+            type: Number,
+            required: true,
+            trim: true,
+          },
+          txnNumber: {
+            type: String,
+            default: ''
+          }
+        },
+      ],
+      required: true,
+      trim: true,
     },
 
     products: {

@@ -25,6 +25,7 @@ import Inventory, { searchKeys, allowedDateFilterKeys } from "./schema.inventory
 import { ObjectId } from "mongoose"
 import { checkQuantitiesMatch, groupAndSumQuantities } from "./helper.inventory"
 import { UserEnum } from "../../../utils/enumUtils"
+import { PurchaseOrderDocument } from "../purchaseOrder/schema.purchaseOrder"
 
 const createInventory = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -394,45 +395,154 @@ const getInventory = catchAsync(
   }
 )
 
+// const updateInventory = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     const { outletId, productId, POId } = req.body
+
+//     const product = await productService.getProductById(productId)
+//     if (!product) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "Invalid Product!")
+//     }
+
+//     /*
+//      * check PO exist
+//      */
+//     const purchaseOrder = await purchaseOrderService.getPurchaseOrderById(POId)
+//     if (!purchaseOrder) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "Invalid PO!")
+//     }
+
+//     /*
+//      * check outlets exist
+//      */
+//     const outlet = await outletService.getOutletById(outletId)
+//     if (!outlet) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "Invalid outlet!")
+//     }
+
+//     const inventory = await inventoryService.updateInventoryById(
+//       req.params.inventoryId,
+//       req.body
+//     )
+
+//     return res.status(httpStatus.OK).send({
+//       message: "Updated successfully!",
+//       data: inventory,
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     })
+//   }
+// )
+
 const updateInventory = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    const { outletId, productId, POId } = req.body
+    const { inventoryData } = req.body;
 
-    const product = await productService.getProductById(productId)
-    if (!product) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Invalid Product!")
+    if (!Array.isArray(inventoryData) || inventoryData.length === 0) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "No inventory data provided.");
     }
 
-    /*
-     * check PO exist
-     */
-    const purchaseOrder = await purchaseOrderService.getPurchaseOrderById(POId)
-    if (!purchaseOrder) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Invalid PO!")
+    // Normalize outletId in case it's an object
+    inventoryData.forEach((item) => {
+      if (typeof item.outletId === 'object' && item.outletId?._id) {
+        item.outletId = item.outletId._id;
+      }
+    });
+
+    // Step 1: Validate all products
+    const allProducts = await Promise.all(
+      inventoryData.map((ele) => productService.getProductById(ele.productId))
+    );
+    const notFoundProducts = allProducts.filter((product) => !product);
+    if (notFoundProducts.length > 0) {
+      throw new ApiError(httpStatus.NOT_FOUND, "One or more products are invalid.");
     }
 
-    /*
-     * check outlets exist
-     */
-    const outlet = await outletService.getOutletById(outletId)
-    if (!outlet) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Invalid outlet!")
+    // Step 2: Validate all POs
+    const allPOs = await Promise.all(
+  inventoryData.map((ele) => purchaseOrderService.getPurchaseOrderById(ele.POId))
+) as PurchaseOrderDocument[];
+    const notFoundPOs = allPOs.filter((po) => !po);
+    if (notFoundPOs.length > 0) {
+      throw new ApiError(httpStatus.NOT_FOUND, "One or more purchase orders are invalid.");
     }
 
-    const inventory = await inventoryService.updateInventoryById(
-      req.params.inventoryId,
-      req.body
-    )
+    // Group data by POId → { [POId]: { [productId]: totalQty } }
+    const inventoryQtyMap: Record<string, Record<string, number>> = {};
+    for (const item of inventoryData) {
+      const poId = item.POId;
+      const productId = item.productId;
+      const qty = parseFloat(item.quantity); // Ensure number
+
+      if (!inventoryQtyMap[poId]) inventoryQtyMap[poId] = {};
+      inventoryQtyMap[poId][productId] = (inventoryQtyMap[poId][productId] || 0) + qty;
+    }
+
+    // Validate against PO data
+    for (const [poIndex, po] of allPOs.entries()) {
+      const poId = (po as any)?._id.toString();
+      const poProducts = po?.products || [];
+
+      const qtyMap = inventoryQtyMap[poId] || {};
+
+      for (const poProd of poProducts) {
+        const expectedQty = Number(poProd.quantity || 0);
+        const submittedQty = Number(qtyMap[poProd.productId?.toString()] || 0);
+
+        if (submittedQty > expectedQty) {
+          throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            `Submitted quantity (${submittedQty}) for product ${poProd.productId} exceeds allowed PO quantity (${expectedQty})`
+          );
+        }
+      }
+    }
+
+    // Step 3: Validate all outlets
+    const allOutlets = await Promise.all(
+      inventoryData.map((ele) => outletService.getOutletById(ele.outletId))
+    );
+    const notFoundOutlets = allOutlets.filter((outlet) => !outlet);
+    if (notFoundOutlets.length > 0) {
+      throw new ApiError(httpStatus.NOT_FOUND, "One or more outlets are invalid.");
+    }
+
+    // Step 4: Update inventories
+    const updateTasks = inventoryData.map((ele) => {
+      if (!ele.inventoryId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Missing inventoryId for update.");
+      }
+
+      return inventoryService.updateInventoryById(ele.inventoryId, {
+        productId: ele.productId,
+        quantity: parseFloat(ele.quantity),
+        purchasePrice: ele.purchasePrice,
+        outletId: ele.outletId,
+        POId: ele.POId,
+        updatedById: req.userData?.Id,
+      });
+    });
+
+    const updatedInventories = await Promise.all(updateTasks);
+
+    // Step 5: Mark PO as inventory updated
+    await purchaseOrderService.updatePoByIdAndUpdate(inventoryData[0].POId, {
+      isInventoryIn: true,
+    });
 
     return res.status(httpStatus.OK).send({
-      message: "Updated successfully!",
-      data: inventory,
+      message: "Inventory updated successfully!",
+      data: updatedInventories,
       status: true,
       code: "OK",
       issue: null,
-    })
+    });
   }
-)
+);
+
+
+
 
 const deleteInventory = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {

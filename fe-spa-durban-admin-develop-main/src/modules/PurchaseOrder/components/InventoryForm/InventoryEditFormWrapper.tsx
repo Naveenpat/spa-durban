@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGetPurchaseOrderbyIdQuery } from '../../service/PurchaseOrderServices';
 import { useFetchData } from 'src/hooks/useFetchData';
 import { PurchaseOrder } from '../../models/PurchaseOrder.model';
-import { useAddInventoryMutation, useGetInventoryByPurchaseOrderIdQuery } from 'src/modules/Inventory/service/InventoryServices';
+import { useAddInventoryMutation, useGetInventoryByPurchaseOrderIdQuery, useUpdateInventoryMutation } from 'src/modules/Inventory/service/InventoryServices';
 import { showToast } from 'src/utils/showToaster';
 
 const InventoryEditFormWrapper = () => {
@@ -21,7 +21,7 @@ const InventoryEditFormWrapper = () => {
 
   console.log('-------', data)
 
-  const [addInventory] = useAddInventoryMutation();
+  const [updateInventory] = useUpdateInventoryMutation();
 
   const purchaseOrderId = (data as any)?.data?._id;
 
@@ -32,6 +32,7 @@ const InventoryEditFormWrapper = () => {
           inv.POId === purchaseOrderId
         )
         ?.map((inv: any) => ({
+          _id:inv._id,
           outlet: inv.outletId,
           quantity: inv.quantity,
         })) || [
@@ -57,11 +58,12 @@ const InventoryEditFormWrapper = () => {
     const result = data?.reduce((acc, el) => {
       el?.inventories?.forEach((inventory: any) => {
         acc?.push({
+          inventoryId:inventory?._id,
           POId: id,
           productId: el?.product?.productId,
           purchasePrice: el?.product?.rate,
           quantity: inventory?.quantity,
-          outletId: inventory?.outlet?._id,
+          outletId: inventory?.outlet,
         });
       });
       return acc;
@@ -72,7 +74,9 @@ const InventoryEditFormWrapper = () => {
     values: any,
     { resetForm, setSubmitting }: FormikHelpers<any>,
   ) => {
-    addInventory({ inventoryData: getFormattedData(values?.products) }).then(
+
+    console.log('--------values',values)
+    updateInventory({ inventoryData: getFormattedData(values?.products) }).then(
       (res: any) => {
         if (res?.error) {
           showToast('error', res?.error?.data?.message);

@@ -22,6 +22,7 @@ import {
   checkInvalidParams,
 } from "../../../utils/utils";
 import { pick } from "../../../../utilities/pick";
+import CloseRegister from "../register/schema.closereegister";
 
 //-----------------------------------------------
 
@@ -235,7 +236,7 @@ const getOutletReport = catchAsync(
 const getOutletDailyReport = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const reportDuration = req.query.reportDuration as string;
-    const { outletId } = req.query; 
+    const { outletId } = req.query;
     let result = await analyticsService.getDailyOutletReportSingleDay(outletId);
     //
 
@@ -257,7 +258,7 @@ const getSalesReportByOutlet = catchAsync(async (req: AuthenticatedRequest, res:
   const skip = (Number(page) - 1) * Number(limit);
 
   // Construct createdAt filter from startDate and endDate
-   const invoiceDateFilter: Record<string, any> = {};
+  const invoiceDateFilter: Record<string, any> = {};
   if (startDate) {
     invoiceDateFilter.$gte = new Date(startDate as string);
   }
@@ -268,13 +269,13 @@ const getSalesReportByOutlet = catchAsync(async (req: AuthenticatedRequest, res:
   }
 
   const sortKey = (req.query.sortBy as string) || 'createdAt';
-const sortOrderParam = req.query.sortOrder as string | number;
+  const sortOrderParam = req.query.sortOrder as string | number;
 
-// Convert to number: -1 or 1
-let sortOrder: 1 | -1 = -1;
-if (sortOrderParam === 'asc' || sortOrderParam === 1 || sortOrderParam === '1') {
-  sortOrder = 1;
-}
+  // Convert to number: -1 or 1
+  let sortOrder: 1 | -1 = -1;
+  if (sortOrderParam === 'asc' || sortOrderParam === 1 || sortOrderParam === '1') {
+    sortOrder = 1;
+  }
 
   // console.log('-----',invoiceDateFilter)
   const pipeline: PipelineStage[] = [
@@ -409,20 +410,20 @@ if (sortOrderParam === 'asc' || sortOrderParam === 1 || sortOrderParam === '1') 
   });
 
   const totalSalesData = await Invoice.aggregate([
-  {
-    $match: {
-      outletId: new mongoose.Types.ObjectId(outletId as string),
-      isDeleted: false,
-      ...(Object.keys(invoiceDateFilter).length > 0 ? { invoiceDate: invoiceDateFilter } : {}),
+    {
+      $match: {
+        outletId: new mongoose.Types.ObjectId(outletId as string),
+        isDeleted: false,
+        ...(Object.keys(invoiceDateFilter).length > 0 ? { invoiceDate: invoiceDateFilter } : {}),
+      },
     },
-  },
-  {
-    $group: {
-      _id: null,
-      totalSalesAmount: { $sum: "$totalAmount" },
+    {
+      $group: {
+        _id: null,
+        totalSalesAmount: { $sum: "$totalAmount" },
+      },
     },
-  },
-]);
+  ]);
 
 
   return res.status(httpStatus.OK).send({
@@ -457,14 +458,14 @@ const getSalesReportByCustomer = catchAsync(async (req: AuthenticatedRequest, re
     invoiceDateFilter.$lte = end;
   }
 
-const sortKey = (req.query.sortBy as string) || 'createdAt';
-const sortOrderParam = req.query.sortOrder as string | number;
+  const sortKey = (req.query.sortBy as string) || 'createdAt';
+  const sortOrderParam = req.query.sortOrder as string | number;
 
-// Convert to number: -1 or 1
-let sortOrder: 1 | -1 = -1;
-if (sortOrderParam === 'asc' || sortOrderParam === 1 || sortOrderParam === '1') {
-  sortOrder = 1;
-}
+  // Convert to number: -1 or 1
+  let sortOrder: 1 | -1 = -1;
+  if (sortOrderParam === 'asc' || sortOrderParam === 1 || sortOrderParam === '1') {
+    sortOrder = 1;
+  }
 
   const pipeline: PipelineStage[] = [
     {
@@ -578,7 +579,7 @@ if (sortOrderParam === 'asc' || sortOrderParam === 1 || sortOrderParam === '1') 
     { $limit: Number(limit) },
   ];
 
-  
+
   pipeline.push({ $sort: { [sortKey]: sortOrder } });
 
   const data = await Invoice.aggregate(pipeline);
@@ -815,6 +816,298 @@ const getSalesChartDataReportByCustomer = catchAsync(async (req: AuthenticatedRe
 });
 
 
+const getRegisterChartDataByOutlet = catchAsync(async (req: Request, res: Response) => {
+  const { outletId, startDate, endDate } = req.query;
+
+  if (!outletId || !startDate || !endDate) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      message: 'Missing required query parameters: outletId, startDate, and endDate',
+      status: false,
+    });
+  }
+
+  const pipeline: PipelineStage[] = [
+    {
+      $match: {
+        outletId: new mongoose.Types.ObjectId(outletId as string),
+        isDeleted: false,
+        date: {
+          $gte: new Date(`${startDate}T00:00:00.000Z`),
+          $lte: new Date(`${endDate}T23:59:59.999Z`),
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: 'registers', // previously: 'openregisters'
+        localField: 'openRegisterId',
+        foreignField: '_id',
+        as: 'openRegister',
+      },
+    },
+    {
+      $unwind: {
+        path: '$openRegister',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $addFields: {
+        openingBalance: '$openRegister.openingBalance',
+
+        // Total CASH based on paymentModeName
+        totalCash: {
+          $sum: {
+            $map: {
+              input: {
+                $filter: {
+                  input: '$closeRegister',
+                  as: 'entry',
+                  cond: {
+                    $eq: [{ $toLower: '$$entry.paymentModeName' }, 'cash'],
+                  },
+                },
+              },
+              as: 'cashEntry',
+              in: { $ifNull: ['$$cashEntry.totalAmount', 0] },
+            },
+          },
+        },
+
+        // Total by paymentModeName
+        cashAmount: {
+          $sum: {
+            $map: {
+              input: {
+                $filter: {
+                  input: '$closeRegister',
+                  as: 'e',
+                  cond: {
+                    $eq: [{ $toLower: '$$e.paymentModeName' }, 'cash'],
+                  },
+                },
+              },
+              as: 'e',
+              in: { $ifNull: ['$$e.totalAmount', 0] },
+            },
+          },
+        },
+        upiAmount: {
+          $sum: {
+            $map: {
+              input: {
+                $filter: {
+                  input: '$closeRegister',
+                  as: 'e',
+                  cond: {
+                    $eq: [{ $toLower: '$$e.paymentModeName' }, 'upi'],
+                  },
+                },
+              },
+              as: 'e',
+              in: { $ifNull: ['$$e.totalAmount', 0] },
+            },
+          },
+        },
+        cardAmount: {
+          $sum: {
+            $map: {
+              input: {
+                $filter: {
+                  input: '$closeRegister',
+                  as: 'e',
+                  cond: {
+                    $eq: [{ $toLower: '$$e.paymentModeName' }, 'credit card'],
+                  },
+                },
+              },
+              as: 'e',
+              in: { $ifNull: ['$$e.totalAmount', 0] },
+            },
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        finalCash: {
+          $add: [
+            { $ifNull: ['$openingBalance', 0] },
+            { $ifNull: ['$totalCash', 0] },
+          ],
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        date: 1,
+        openingBalance: 1,
+        totalCash: 1,
+        finalCash: 1,
+        bankDeposit: 1,
+        carryForwardBalance: 1,
+        cashAmount: 1,
+        upiAmount: 1,
+        cardAmount: 1,
+      },
+    },
+    {
+      $sort: { date: 1 },
+    },
+  ];
+
+  const rawData = await CloseRegister.aggregate(pipeline);
+
+  // Format for charts
+  const dailySummary = rawData.map((item) => ({
+    date: item.date,
+    totalCash: item.totalCash || 0,
+    bankDeposit: item.bankDeposit || 0,
+    carryForwardBalance: item.carryForwardBalance || 0,
+  }));
+
+  const finalCashVsOpening = rawData.map((item) => ({
+    date: item.date,
+    openingBalance: item.openingBalance || 0,
+    finalCash: item.finalCash || 0,
+  }));
+
+  const paymentModeBreakdown = rawData.map((item) => ({
+    date: item.date,
+    cash: item.cashAmount || 0,
+    upi: item.upiAmount || 0,
+    card: item.cardAmount || 0,
+  }));
+
+  const allInOneTable = rawData;
+
+  return res.status(httpStatus.OK).json({
+    message: 'Chart data fetched successfully',
+    status: true,
+    data: {
+      dailySummary,
+      finalCashVsOpening,
+      paymentModeBreakdown,
+      allInOneTable,
+    },
+  });
+});
+
+
+
+
+const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  const { outletId, page = 1, limit = 10, startDate, endDate } = req.query;
+
+  const match: any = {
+    isDeleted: false,
+  };
+  if (outletId) match.outletId = new mongoose.Types.ObjectId(outletId as string);
+
+  if (startDate && endDate) {
+    match.date = {
+      $gte: new Date(startDate as string),
+      $lte: new Date(endDate as string),
+    };
+  }
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const registerData = await CloseRegister.aggregate([
+    { $match: match },
+
+    // Join with OpenRegister
+    {
+      $lookup: {
+        from: "registers",
+        localField: "openRegisterId",
+        foreignField: "_id",
+        as: "openRegisterData"
+      }
+    },
+    { $unwind: { path: "$openRegisterData", preserveNullAndEmptyArrays: true } },
+
+    // Add totalCash by summing only cash entries
+    {
+      $addFields: {
+        totalCash: {
+          $sum: {
+            $map: {
+              input: {
+                $filter: {
+                  input: "$closeRegister",
+                  as: "item",
+                  cond: { $eq: ["$$item.paymentMode", "CASH"] }
+                }
+              },
+              as: "cashItem",
+              in: { $ifNull: ["$$cashItem.amount", 0] }
+            }
+          }
+        }
+      }
+    },
+
+    // Calculate finalCash = openingBalance + totalCash
+    {
+      $addFields: {
+        finalCash: {
+          $add: [
+            { $ifNull: ["$totalCash", 0] },
+            { $ifNull: ["$openRegisterData.openingBalance", 0] }
+          ]
+        }
+      }
+    },
+
+    // Final projection
+    {
+      $project: {
+        date: 1,
+        outletId: 1,
+        createdBy: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        bankDeposit: 1,
+        carryForwardBalance: 1,
+        closeRegister: 1,
+
+        // From open register
+        openingBalance: "$openRegisterData.openingBalance",
+        openedAt: "$openRegisterData.openedAt",
+        totalSales: "$openRegisterData.totalSales",
+        closingAmount: "$openRegisterData.closingAmount",
+        totalTransactions: "$openRegisterData.totalTransactions",
+
+        // Custom calculated fields
+        totalCash: 1,
+        finalCash: 1
+      }
+    },
+
+    { $sort: { date: -1 } },
+    { $skip: skip },
+    { $limit: Number(limit) }
+  ]);
+
+
+  const totalCount = await CloseRegister.countDocuments(match);
+
+  res.status(200).json({
+    success: true,
+    data: registerData,
+    pagination: {
+      total: totalCount,
+      page: Number(page),
+      limit: Number(limit),
+      pages: Math.ceil(totalCount / Number(limit)),
+    }
+  });
+});
+
+
+
 //-----------------------------------------------
 export {
   getTopItems,
@@ -825,5 +1118,7 @@ export {
   getSalesReportByOutlet,
   getSalesReportByCustomer,
   getSalesChartDataReportByOutlet,
-  getSalesChartDataReportByCustomer
+  getSalesChartDataReportByCustomer,
+  getRegisterChartDataByOutlet,
+  getRegisterDataByOutlet
 };

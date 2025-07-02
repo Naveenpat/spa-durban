@@ -33,12 +33,11 @@ getInventoryByPurchaseOrderId: builder.query({
   // providesTags: ['inventory'],
 }),
 updateInventory: builder.mutation({
-  query: ({ inventoryId, body }) => ({
-    url: `/inventory/${inventoryId}`,
-    method: 'PATCH', // or 'PUT' based on your API convention
-    body,
+  query: (body) => ({
+    url: `/inventory`, // no inventoryId here
+    method: 'PUT',
+    body, // { inventoryData: [...] }
   }),
-  // Optionally invalidate cache if you're using tags
   // invalidatesTags: ['Inventory'],
 }),
   }),

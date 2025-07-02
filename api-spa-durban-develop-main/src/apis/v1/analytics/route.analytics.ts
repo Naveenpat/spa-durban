@@ -277,4 +277,20 @@ router.get(
   analyticsController.getSalesChartDataReportByCustomer
 );
 
+router.get(
+  '/register-chart-data',
+  parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getRegisterChartDataByOutlet
+);
+
+router.get(
+  '/register-table-data',
+  parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getRegisterDataByOutlet
+);
+
+
+
 export default router;

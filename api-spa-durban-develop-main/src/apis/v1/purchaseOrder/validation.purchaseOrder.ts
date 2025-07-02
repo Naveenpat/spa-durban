@@ -27,6 +27,12 @@ export const create: { body: ObjectSchema } = {
       tax: Joi.string().custom(objectId),
       discount: Joi.number().required(),
     }),
+    amountReceived: Joi.array().items({
+      paymentModeId: Joi.string(),
+      amount: Joi.string(),
+
+      txnNumber: Joi.number().allow("")
+    }),
   }),
 }
 
@@ -50,6 +56,12 @@ export const update: { params: ObjectSchema; body: ObjectSchema } = {
       rate: Joi.number().required(),
       tax: Joi.string().custom(objectId),
       discount: Joi.number().required(),
+    }),
+    amountReceived: Joi.array().items({
+      paymentModeId: Joi.string(),
+      amount: Joi.string(),
+
+      txnNumber: Joi.number().allow("")
     }),
   }),
 }

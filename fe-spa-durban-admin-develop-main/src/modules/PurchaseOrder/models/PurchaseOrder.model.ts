@@ -60,6 +60,7 @@ export type PurchaseOrderFormValues = {
     taxPercent?: number;
     taxType?: string;
   }[];
+  amountReceived:any;
 };
 
 export type PaymentInFormValues = {

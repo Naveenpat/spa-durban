@@ -156,6 +156,8 @@ const CartSummarySection = ({
   const [selectedCustomer, setSelectedCustomer] = useState<SelectOption | null>(
     null,
   );
+
+  console.log('-----selectedCustomer',selectedCustomer)
   const { values, setFieldValue } = formikProps;
   const [isOpenAddNotesDialog, setIsOpenAddNotesDialog] = useState(false);
   const { userData, outlet, accessToken } = useSelector(
@@ -584,7 +586,7 @@ const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
           </div>
         </div>
 
-        <AmountSummaryCard items={cartItems} customer={values?.customer} />
+        <AmountSummaryCard items={cartItems} customer={selectedCustomer} />
         {isOpenAddDialog && (
           <PaymentFormWrapper
             onClose={() => dispatch(setIsOpenAddDialog(false))}

@@ -434,11 +434,8 @@ const getRegisterCurentDate = catchAsync(
       {
         $addFields: {
           createdAtDate: {
-            $dateFromString: {
-              dateString: "$createdAt",
-              format: "%Y-%m-%d %H:%M:%S",
-            },
-          },
+            $toDate: "$invoiceDate"
+          }
         },
       },
       {

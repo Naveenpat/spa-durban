@@ -318,6 +318,7 @@ const getPurchaseOrder = catchAsync(
                 phone: 1,
                 email: 1,
                 address: 1,
+                amountReceived:1
               },
             },
           ],
@@ -391,6 +392,7 @@ const getPurchaseOrder = catchAsync(
           isInventoryIn: { $first: "$isInventoryIn" },
           createdAt: { $first: "$createdAt" },
           updatedAt: { $first: "$updatedAt" },
+          amountReceived:{$first:"$amountReceived"}
         },
       },
     ])

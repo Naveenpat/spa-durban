@@ -27,6 +27,13 @@ const AddPurchaseOrderFormWrapper = () => {
 
     shippingCharges: '',
     amountPaid: '',
+    amountReceived: [
+      {
+        paymentModeId: '',
+        amount: 0,
+        txnNumber: ''
+      },
+    ],
   };
 
   const validationSchema = object().shape({
@@ -52,6 +59,11 @@ const AddPurchaseOrderFormWrapper = () => {
       orderDate: format(new Date(values?.orderDate || ''), 'yyyy-MM-dd'),
       amountPaid: values?.amountPaid,
       shippingCharges: values?.shippingCharges || 0,
+      amountReceived: values?.amountReceived?.map((el: any) => ({
+        paymentModeId: el?.paymentModeId?._id,
+        amount: el?.amount,
+        txnNumber: el?.txnNumber
+      })),
       products: values?.productDetails?.map((product) => ({
         productId: product?.product?._id,
         quantity: product?.quantity,
