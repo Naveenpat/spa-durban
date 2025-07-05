@@ -251,13 +251,16 @@ const importCustomerCsvSheet = async (req: AuthenticatedRequest, res: Response) 
 
 const exportCustomerCsvSheet = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    const buffer = await customerService.exportCSV();
+    const includeContact = req.query.includeContact === 'true';
+
+    const buffer = await customerService.exportCSV(includeContact);
 
     res.setHeader('Content-Disposition', 'attachment; filename=customers.csv');
     res.setHeader('Content-Type', 'text/csv');
     res.send(buffer);
   }
 );
+
 
 
 

@@ -58,41 +58,114 @@ const ViewOutletRegisterPage = () => {
     endDate: dateFilter?.end_date
   });
 
-  console.log('-----data', data)
+  console.log('-----chartData', chartData)
 
 
-const dailySummary = chartData?.data?.dailySummary || [];
-const finalCashVsOpening = chartData?.data?.finalCashVsOpening || [];
-const paymentModeBreakdown = chartData?.data?.paymentModeBreakdown || [];
-
+  const dailySummary = chartData?.data?.dailySummary || [];
+  const finalCashVsOpening = chartData?.data?.finalCashVsOpening || [];
+  const paymentModeBreakdown = chartData?.data?.paymentModeBreakdown || [];
+  const allInOneTable = chartData?.data?.allInOneTable || [];
   // console.log('----chartData', chartData)
 
 
   const tableHeaders: TableHeader<RegisterValue>[] = [
     {
-      fieldName: 'Date',
+      fieldName: 'openedAt',
       headerName: 'Date',
       flex: 'flex-[1_1_0%]',
       sortable: true,
-      sortKey: 'createdAt',
+      sortKey: 'openedAt',
       extraClasses: () => '',
       stopPropagation: true,
       render: (row: any) => {
-        const date = row.createdAt ? new Date(row.createdAt) : null;
-        // return date ? format(date, 'dd-MM-yyyy') : '-';
+        const date = row.openedAt ? new Date(row.openedAt) : null;
         return date ? formatZonedDate(date) : '-';
       }
-    }, {
+    },
+    {
       fieldName: 'openingBalance',
       headerName: 'Opening Balance',
       flex: 'flex-[1_1_0%]',
     },
     {
       fieldName: 'carryForwardBalance',
-      headerName: 'Carry Forword Balance',
+      headerName: 'Carry Forward Balance',
       flex: 'flex-[1_1_0%]',
+    },
+    {
+      fieldName: 'bankDeposit',
+      headerName: 'Bank Deposite',
+      flex: 'flex-[1_1_0%]',
+    },
+    {
+      fieldName: 'cashAmount',
+      headerName: 'Total Cash',
+      flex: 'flex-[1_1_0%]',
+    },
+    {
+      fieldName: 'closeRegister',
+      headerName: 'Payment Summary',
+      flex: 'flex-[3_1_0%]',
+      render: (row: any) => {
+        if (!Array.isArray(row?.closeRegister)) return '-';
+
+        return (
+          <div className="space-y-2 text-sm">
+            {row.closeRegister.map((entry: any, index: number) => (
+              <div key={index} className="border rounded p-2 bg-gray-50">
+                {/* <div className="font-semibold">
+                {new Date(entry.date).toLocaleDateString('en-GB')}
+              </div> */}
+                <ul className="list-disc pl-4 mt-1 space-y-1">
+                  {entry.payments?.map((payment: any, i: number) => (
+                    <li key={i}>
+                      <span className="capitalize font-medium">{payment.paymentModeName}</span>:
+                      Total: R {payment.totalAmount?.toFixed(2)} | Manual: R {payment.manual || '0'}
+                      {payment.reason && (
+                        <span className="text-orange-600 ml-1">
+                          (Reason: {payment.reason})
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    },
+    {
+      fieldName: 'registerStatus',
+      headerName: 'Register Status',
+      flex: 'flex-[1_1_0%]',
+      render: (row: any) => {
+        if (row.isClosed) return 'Closed';
+        if (row.isOpened) return 'Opened';
+        return 'Not Opened';
+      }
+    },
+    {
+      fieldName: 'cashUsageReason',
+      headerName: 'Cash Usage Reason',
+      flex: 'flex-[1_1_0%]',
+    },
+    {
+      fieldName: 'cashUsageProofUrl',
+      headerName: 'Image',
+      flex: 'flex-[0.5_1_0%]',
+      render: (row: any) => (
+        <img
+          src={`${process.env.REACT_APP_BASE_URL}/${row.cashUsageProofUrl}`}
+          onError={(e) => (e.currentTarget.src)}
+          alt="Logo"
+          className="h-12 w-12 object-contain rounded-full border"
+        />
+      ),
+      stopPropagation: true,
     }
-  ]
+  ];
+
 
   const filters: FilterType[] = [
     {
@@ -167,7 +240,7 @@ const paymentModeBreakdown = chartData?.data?.paymentModeBreakdown || [];
           {/* Table Toolbar */}
           <MOLFilterBar hideSearch={true} filters={filters} />
           <div className="flex flex-col overflow-auto border rounded border-slate-300 p-1">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {/* Chart 4: Daily Summary (Line) */}
               {dailySummary.length > 0 && (
                 <div className="col-span">
@@ -233,48 +306,7 @@ const paymentModeBreakdown = chartData?.data?.paymentModeBreakdown || [];
                   />
                 </div>
               )}
-
-              {/* Chart 6: Payment Mode Breakdown (Stacked Bar) */}
-              {paymentModeBreakdown.length > 0 && (
-                <div className="col-span">
-                  <ATMChart
-                    type="bar"
-                    data={{
-                      labels: paymentModeBreakdown.map((item: any) => item.date),
-                      datasets: [
-                        {
-                          label: 'Cash',
-                          data: paymentModeBreakdown.map((item: any) => item.cash),
-                          backgroundColor: '#4caf50',
-                        },
-                        {
-                          label: 'UPI',
-                          data: paymentModeBreakdown.map((item: any) => item.upi),
-                          backgroundColor: '#ff9800',
-                        },
-                        {
-                          label: 'Card',
-                          data: paymentModeBreakdown.map((item: any) => item.card),
-                          backgroundColor: '#f44336',
-                        },
-                      ],
-                    }}
-                    options={{
-                      responsive: true,
-                      plugins: { legend: { position: 'top' } },
-                      maintainAspectRatio: false,
-                      scales: {
-                        x: { stacked: true },
-                        y: { stacked: true },
-                      },
-                    }}
-                  />
-                </div>
-              )}
-
             </div>
-
-
 
             <div className="flex-1 overflow-auto mt-3">
               <MOLTable<RegisterValue>

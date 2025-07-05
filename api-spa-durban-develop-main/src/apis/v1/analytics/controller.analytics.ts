@@ -23,6 +23,8 @@ import {
 } from "../../../utils/utils";
 import { pick } from "../../../../utilities/pick";
 import CloseRegister from "../register/schema.closereegister";
+import SalesRegister from "../register/schema.salesreegister";
+import { pipeline } from "stream";
 
 //-----------------------------------------------
 
@@ -826,153 +828,177 @@ const getRegisterChartDataByOutlet = catchAsync(async (req: Request, res: Respon
     });
   }
 
+  const match: any = {
+    isDeleted: false,
+  };
+
+  if (outletId) match.outletId = new mongoose.Types.ObjectId(outletId as string);
+
+  if (startDate && endDate) {
+    const start = new Date(startDate as string);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate as string);
+    end.setHours(23, 59, 59, 999);
+
+    match.openedAt = {
+      $gte: start,
+      $lte: end,
+    };
+  }
+
   const pipeline: PipelineStage[] = [
-    {
-      $match: {
-        outletId: new mongoose.Types.ObjectId(outletId as string),
-        isDeleted: false,
-        date: {
-          $gte: new Date(`${startDate}T00:00:00.000Z`),
-          $lte: new Date(`${endDate}T23:59:59.999Z`),
-        },
-      },
-    },
-    {
-      $lookup: {
-        from: 'registers', // previously: 'openregisters'
-        localField: 'openRegisterId',
-        foreignField: '_id',
-        as: 'openRegister',
-      },
-    },
-    {
-      $unwind: {
-        path: '$openRegister',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $addFields: {
-        openingBalance: '$openRegister.openingBalance',
+    { $match: match },
 
-        // Total CASH based on paymentModeName
-        totalCash: {
-          $sum: {
-            $map: {
-              input: {
-                $filter: {
-                  input: '$closeRegister',
-                  as: 'entry',
-                  cond: {
-                    $eq: [{ $toLower: '$$entry.paymentModeName' }, 'cash'],
-                  },
-                },
-              },
-              as: 'cashEntry',
-              in: { $ifNull: ['$$cashEntry.totalAmount', 0] },
-            },
-          },
-        },
+    // {
+    //   $lookup: {
+    //     from: 'registers', // open register reference
+    //     localField: 'openRegisterId',
+    //     foreignField: '_id',
+    //     as: 'openRegister',
+    //   },
+    // },
+    // {
+    //   $unwind: {
+    //     path: '$openRegister',
+    //     preserveNullAndEmptyArrays: true,
+    //   },
+    // },
+    // {
+    //   $addFields: {
+    //     openingBalance: '$openRegister.openingBalance',
 
-        // Total by paymentModeName
-        cashAmount: {
-          $sum: {
-            $map: {
-              input: {
-                $filter: {
-                  input: '$closeRegister',
-                  as: 'e',
-                  cond: {
-                    $eq: [{ $toLower: '$$e.paymentModeName' }, 'cash'],
-                  },
-                },
-              },
-              as: 'e',
-              in: { $ifNull: ['$$e.totalAmount', 0] },
-            },
-          },
-        },
-        upiAmount: {
-          $sum: {
-            $map: {
-              input: {
-                $filter: {
-                  input: '$closeRegister',
-                  as: 'e',
-                  cond: {
-                    $eq: [{ $toLower: '$$e.paymentModeName' }, 'upi'],
-                  },
-                },
-              },
-              as: 'e',
-              in: { $ifNull: ['$$e.totalAmount', 0] },
-            },
-          },
-        },
-        cardAmount: {
-          $sum: {
-            $map: {
-              input: {
-                $filter: {
-                  input: '$closeRegister',
-                  as: 'e',
-                  cond: {
-                    $eq: [{ $toLower: '$$e.paymentModeName' }, 'credit card'],
-                  },
-                },
-              },
-              as: 'e',
-              in: { $ifNull: ['$$e.totalAmount', 0] },
-            },
-          },
-        },
-      },
-    },
-    {
-      $addFields: {
-        finalCash: {
-          $add: [
-            { $ifNull: ['$openingBalance', 0] },
-            { $ifNull: ['$totalCash', 0] },
-          ],
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        date: 1,
-        openingBalance: 1,
-        totalCash: 1,
-        finalCash: 1,
-        bankDeposit: 1,
-        carryForwardBalance: 1,
-        cashAmount: 1,
-        upiAmount: 1,
-        cardAmount: 1,
-      },
-    },
-    {
-      $sort: { date: 1 },
-    },
+    //     cashAmount: {
+    //       $sum: {
+    //         $map: {
+    //           input: {
+    //             $filter: {
+    //               input: '$closeRegister',
+    //               as: 'entry',
+    //               cond: {
+    //                 $eq: [{ $toLower: '$$entry.paymentModeName' }, 'cash'],
+    //               },
+    //             },
+    //           },
+    //           as: 'entry',
+    //           in: { $ifNull: ['$$entry.totalAmount', 0] },
+    //         },
+    //       },
+    //     },
+    //     upiAmount: {
+    //       $sum: {
+    //         $map: {
+    //           input: {
+    //             $filter: {
+    //               input: '$closeRegister',
+    //               as: 'entry',
+    //               cond: {
+    //                 $eq: [{ $toLower: '$$entry.paymentModeName' }, 'upi'],
+    //               },
+    //             },
+    //           },
+    //           as: 'entry',
+    //           in: { $ifNull: ['$$entry.totalAmount', 0] },
+    //         },
+    //       },
+    //     },
+    //     cardAmount: {
+    //       $sum: {
+    //         $map: {
+    //           input: {
+    //             $filter: {
+    //               input: '$closeRegister',
+    //               as: 'entry',
+    //               cond: {
+    //                 $eq: [{ $toLower: '$$entry.paymentModeName' }, 'credit card'],
+    //               },
+    //             },
+    //           },
+    //           as: 'entry',
+    //           in: { $ifNull: ['$$entry.totalAmount', 0] },
+    //         },
+    //       },
+    //     },
+    //     totalCash: {
+    //       $sum: {
+    //         $map: {
+    //           input: {
+    //             $filter: {
+    //               input: '$closeRegister',
+    //               as: 'entry',
+    //               cond: {
+    //                 $eq: [{ $toLower: '$$entry.paymentModeName' }, 'cash'],
+    //               },
+    //             },
+    //           },
+    //           as: 'entry',
+    //           in: { $ifNull: ['$$entry.totalAmount', 0] },
+    //         },
+    //       },
+    //     },
+    //     finalCash: {
+    //       $add: [
+    //         { $ifNull: ['$openRegister.openingBalance', 0] },
+    //         {
+    //           $sum: {
+    //             $map: {
+    //               input: {
+    //                 $filter: {
+    //                   input: '$closeRegister',
+    //                   as: 'entry',
+    //                   cond: {
+    //                     $eq: [{ $toLower: '$$entry.paymentModeName' }, 'cash'],
+    //                   },
+    //                 },
+    //               },
+    //               as: 'entry',
+    //               in: { $ifNull: ['$$entry.totalAmount', 0] },
+    //             },
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   },
+    // },
+    // {
+    //   $project: {
+    //     _id: 1,
+    //     date: 1,
+    //     openedAt: 1,
+    //     closedAt: 1,
+    //     openingBalance: 1,
+    //     totalCash: 1,
+    //     finalCash: 1,
+    //     bankDeposit: 1,
+    //     carryForwardBalance: 1,
+    //     cashAmount: 1,
+    //     upiAmount: 1,
+    //     cardAmount: 1,
+    //     cashUsageReason: 1,
+    //     cashUsageProofUrl: 1,
+    //   },
+    // },
+    { $sort: { openedAt: 1 } },
   ];
 
-  const rawData = await CloseRegister.aggregate(pipeline);
+  const rawData = await SalesRegister.aggregate(pipeline);
 
-  // Format for charts
+  // --- Format 1: Daily Summary ---
   const dailySummary = rawData.map((item) => ({
-    date: item.date,
+    date: item.openedAt?.toISOString().split("T")[0],
     totalCash: item.totalCash || 0,
     bankDeposit: item.bankDeposit || 0,
     carryForwardBalance: item.carryForwardBalance || 0,
   }));
 
+  // --- Format 2: Final Cash vs Opening ---
   const finalCashVsOpening = rawData.map((item) => ({
-    date: item.date,
+    date: item.openedAt?.toISOString().split("T")[0],
     openingBalance: item.openingBalance || 0,
-    finalCash: item.finalCash || 0,
+    finalCash: item.cashAmount || 0,
   }));
 
+  // --- Format 3: Payment Mode Breakdown ---
   const paymentModeBreakdown = rawData.map((item) => ({
     date: item.date,
     cash: item.cashAmount || 0,
@@ -980,7 +1006,30 @@ const getRegisterChartDataByOutlet = catchAsync(async (req: Request, res: Respon
     card: item.cardAmount || 0,
   }));
 
-  const allInOneTable = rawData;
+  // --- Format 4: Manual vs System Cash ---
+  const manualVsSystemCash = rawData.map((item) => ({
+    date: item.date,
+    systemCash: item.totalCash || 0,
+    manualCash: item.cashAmount || 0,
+    difference: (item.totalCash || 0) - (item.cashAmount || 0),
+  }));
+
+  // --- Format 5: Register Timeline ---
+  const registerTimeline = rawData.map((item) => ({
+    date: item.date,
+    openedAt: item.openedAt,
+    closedAt: item.closedAt,
+    durationInMinutes: item.openedAt && item.closedAt
+      ? Math.round((new Date(item.closedAt).getTime() - new Date(item.openedAt).getTime()) / 60000)
+      : null,
+  }));
+
+  // --- Format 6: Cash Usage Summary ---
+  const cashUsageSummary = rawData.map((item) => ({
+    date: item.date,
+    reason: item.cashUsageReason || '',
+    proofUrl: item.cashUsageProofUrl || '',
+  }));
 
   return res.status(httpStatus.OK).json({
     message: 'Chart data fetched successfully',
@@ -989,7 +1038,10 @@ const getRegisterChartDataByOutlet = catchAsync(async (req: Request, res: Respon
       dailySummary,
       finalCashVsOpening,
       paymentModeBreakdown,
-      allInOneTable,
+      manualVsSystemCash,
+      registerTimeline,
+      cashUsageSummary,
+      allInOneTable: rawData,
     },
   });
 });
@@ -997,8 +1049,14 @@ const getRegisterChartDataByOutlet = catchAsync(async (req: Request, res: Respon
 
 
 
+
 const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
-  const { outletId, page = 1, limit = 10, startDate, endDate } = req.query;
+  const { outletId, startDate, endDate } = req.query;
+
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+
 
   const match: any = {
     isDeleted: false,
@@ -1006,93 +1064,101 @@ const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res
   if (outletId) match.outletId = new mongoose.Types.ObjectId(outletId as string);
 
   if (startDate && endDate) {
-    match.date = {
-      $gte: new Date(startDate as string),
-      $lte: new Date(endDate as string),
+    const start = new Date(startDate as string);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate as string);
+    end.setHours(23, 59, 59, 999);
+
+    match.openedAt = {
+      $gte: start,
+      $lte: end,
     };
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
-
-  const registerData = await CloseRegister.aggregate([
-    { $match: match },
-
-    // Join with OpenRegister
+  const pipeline: PipelineStage[] = [
     {
-      $lookup: {
-        from: "registers",
-        localField: "openRegisterId",
-        foreignField: "_id",
-        as: "openRegisterData"
-      }
-    },
-    { $unwind: { path: "$openRegisterData", preserveNullAndEmptyArrays: true } },
+      $match: match
+    }
+    // { $unwind: { path: "$closeRegister", preserveNullAndEmptyArrays: true } },
+    // { $unwind: { path: "$closeRegister.payments", preserveNullAndEmptyArrays: true } },
+    // {
+    //   $group: {
+    //     _id: "$_id",
+    //     date: { $first: "$date" },
+    //     openingBalance: { $first: "$openingBalance" },
+    //     bankDeposit: { $first: "$bankDeposit" },
+    //     carryForwardBalance: { $first: "$carryForwardBalance" },
 
-    // Add totalCash by summing only cash entries
-    {
-      $addFields: {
-        totalCash: {
-          $sum: {
-            $map: {
-              input: {
-                $filter: {
-                  input: "$closeRegister",
-                  as: "item",
-                  cond: { $eq: ["$$item.paymentMode", "CASH"] }
-                }
-              },
-              as: "cashItem",
-              in: { $ifNull: ["$$cashItem.amount", 0] }
-            }
-          }
-        }
-      }
-    },
+    //     totalCash: {
+    //       $sum: {
+    //         $cond: [
+    //           { $eq: [{ $toLower: "$closeRegister.payments.paymentModeName" }, "cash"] },
+    //           { $toDouble: "$closeRegister.payments.totalAmount" },
+    //           0,
+    //         ],
+    //       },
+    //     },
+    //     totalUPI: {
+    //       $sum: {
+    //         $cond: [
+    //           { $eq: [{ $toLower: "$closeRegister.payments.paymentModeName" }, "upi"] },
+    //           { $toDouble: "$closeRegister.payments.totalAmount" },
+    //           0,
+    //         ],
+    //       },
+    //     },
+    //     totalCard: {
+    //       $sum: {
+    //         $cond: [
+    //           { $eq: [{ $toLower: "$closeRegister.payments.paymentModeName" }, "credit card"] },
+    //           { $toDouble: "$closeRegister.payments.totalAmount" },
+    //           0,
+    //         ],
+    //       },
+    //     },
+    //   },
+    // },
+    // {
+    //   $addFields: {
+    //     finalCash: {
+    //       $add: [
+    //         { $ifNull: ["$openingBalance", 0] },
+    //         { $ifNull: ["$totalCash", 0] },
+    //       ],
+    //     },
+    //   },
+    // },
+    // {
+    //   $project: {
+    //     _id: 0,
+    //     openedAt: 1,
+    //     openingBalance: 1,
+    //     bankDeposit: 1,
+    //     carryForwardBalance: 1,
+    //     closeRegister:1,
+    //     cashUsageReason:1,
+    //     cashUsageProofUrl:1,
+    //     totalCash: 1,
+    //     totalUPI: 1,
+    //     totalCard: 1,
+    //     finalCash: 1,
+    //     totalCashAmount:1,
+    //     isOpened:1,
+    //     isClosed:1
+    //   },
+    // }
+  ];
 
-    // Calculate finalCash = openingBalance + totalCash
-    {
-      $addFields: {
-        finalCash: {
-          $add: [
-            { $ifNull: ["$totalCash", 0] },
-            { $ifNull: ["$openRegisterData.openingBalance", 0] }
-          ]
-        }
-      }
-    },
-
-    // Final projection
-    {
-      $project: {
-        date: 1,
-        outletId: 1,
-        createdBy: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        bankDeposit: 1,
-        carryForwardBalance: 1,
-        closeRegister: 1,
-
-        // From open register
-        openingBalance: "$openRegisterData.openingBalance",
-        openedAt: "$openRegisterData.openedAt",
-        totalSales: "$openRegisterData.totalSales",
-        closingAmount: "$openRegisterData.closingAmount",
-        totalTransactions: "$openRegisterData.totalTransactions",
-
-        // Custom calculated fields
-        totalCash: 1,
-        finalCash: 1
-      }
-    },
-
-    { $sort: { date: -1 } },
+  pipeline.push(
+    { $sort: { openedAt: -1 } },
     { $skip: skip },
-    { $limit: Number(limit) }
-  ]);
+    { $limit: limit }
+  );
 
+  const registerData = await SalesRegister.aggregate(pipeline)
 
-  const totalCount = await CloseRegister.countDocuments(match);
+  const totalCount = await SalesRegister.countDocuments(match);
 
   res.status(200).json({
     success: true,

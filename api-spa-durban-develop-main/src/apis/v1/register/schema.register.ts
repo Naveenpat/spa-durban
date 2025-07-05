@@ -12,7 +12,9 @@ export interface RegisterDocument extends Document {
   outletId: ObjectId;
   isDeleted: boolean;
   isActive: boolean;
+  isOpened: boolean;
   createdBy: ObjectId;
+  _v:any;
 }
 
 export interface RegisterModel extends mongoose.Model<RegisterDocument> {
@@ -49,6 +51,10 @@ const RegisterSchema = new mongoose.Schema<RegisterDocument>(
       default: false,
     },
     isActive: {
+      type: Boolean,
+      default: true,
+    },
+    isOpened: {
       type: Boolean,
       default: true,
     },

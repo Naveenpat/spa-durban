@@ -439,31 +439,40 @@ const importCSV = async (file: Express.Multer.File): Promise<void> => {
 
 
 
-const exportCSV = async (): Promise<Buffer> => {
-  const customers = await Customer.find({ isDeleted: false }).limit(10).lean();
+const exportCSV = async (includeContact: boolean): Promise<Buffer> => {
+  const customers = await Customer.find().lean();
 
-  const rows = customers.map((cust) => ({
-    CustomerName: cust.customerName,
-    Phone: cust.phone,
-    Email: cust.email,
-    Address: cust.address,
-    City: cust.city,
-    Region: cust.region,
-    Country: cust.country,
-    TaxNo: cust.taxNo,
-    DateOfBirth: cust.dateOfBirth
-      ? new Date(cust.dateOfBirth).toLocaleDateString()
-      : '',
-    Gender: cust.gender,
-    LoyaltyPoints: cust.loyaltyPoints || 0,
-    CustomerType: cust.customerType,
-    IsActive: cust.isActive ? 'Active' : 'Inactive',
-    BookingCustomerId: cust.bookingCustomerId || '',
-    CashBackAmount: cust.cashBackAmount || 0
-  }));
+  const rows = customers.map((cust) => {
+    const base = {
+      CustomerName: cust.customerName,
+      CustomerType: cust.customerType,
+      IsActive: cust.isActive ? 'Active' : 'Inactive',
+      LoyaltyPoints: cust.loyaltyPoints || 0,
+      BookingCustomerId: cust.bookingCustomerId || '',
+      CashBackAmount: cust.cashBackAmount || 0,
+      CustomerGroup: cust.customerGroup || '',
+    };
+
+    const contactFields = {
+      Phone: cust.phone || '',
+      Email: cust.email || '',
+      Address: cust.address || '',
+      City: cust.city || '',
+      Region: cust.region || '',
+      Country: cust.country || '',
+      TaxNo: cust.taxNo || '',
+      DateOfBirth: cust.dateOfBirth
+        ? new Date(cust.dateOfBirth).toLocaleDateString('en-ZA') // Format: yyyy/mm/dd
+        : '',
+      Gender: cust.gender || '',
+      IsDeleted:cust.isDeleted ? "Yes" : "No"
+    };
+
+    return includeContact ? { ...base, ...contactFields } : base;
+  });
 
   return new Promise((resolve, reject) => {
-    const csvStream = format({ headers: true });
+    const csvStream = format({ headers: true, quote: '"' }); // quote field values for Excel
     const chunks: Buffer[] = [];
 
     csvStream.on('data', (chunk) => chunks.push(chunk));
@@ -474,6 +483,8 @@ const exportCSV = async (): Promise<Buffer> => {
     csvStream.end();
   });
 };
+
+
 
 
 

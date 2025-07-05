@@ -14,7 +14,7 @@ export interface CloseRegisterDocument extends Document {
   bankDeposit: number;
   carryForwardBalance: number;
   closeRegister: {
-    _id: ObjectId;
+    // _id: ObjectId;
     totalAmount: number;
     paymentModeName: string;
     manual: string;
@@ -23,6 +23,7 @@ export interface CloseRegisterDocument extends Document {
   openRegisterId:ObjectId;
   isDeleted: boolean;
   isActive: boolean;
+  createdAt:Date;
 }
 
 export interface CloseRegisterModel
@@ -70,7 +71,7 @@ const CloseRegisterSchema = new mongoose.Schema<CloseRegisterDocument>(
     },
     closeRegister: [
       {
-        _id: { type: mongoose.Schema.Types.ObjectId, required: true },
+        // _id: { type: mongoose.Schema.Types.ObjectId, required: true },
         totalAmount: { type: Number, required: true, min: 0 },
         paymentModeName: { type: String, required: true },
         manual: { type: String, required: true },

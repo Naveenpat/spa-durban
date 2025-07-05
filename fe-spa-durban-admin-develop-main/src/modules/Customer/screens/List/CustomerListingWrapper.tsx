@@ -19,6 +19,9 @@ import { useEffect, useState } from 'react';
 import { EmptyPointSettings } from '@syncfusion/ej2-react-charts';
 import toast from 'react-hot-toast';
 import { isAuthorized } from 'src/utils/authorization';
+import ATMExportDialog from 'src/components/atoms/ATMExportDialog/ATMExportDialog';
+import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
+import ATMDialog from 'src/components/atoms/ATMDialog/ATMDialog';
 
 type Props = {};
 
@@ -89,15 +92,24 @@ const CustomerListingWrapper = (props: Props) => {
   };
   const [loading, setLoading] = useState(false);
   const [startExport, setStartExport] = useState(false)
-  const { data: exportData, isLoading: isExporting } = useExportCustomerExcelQuery(undefined, {
-    skip: !startExport, // trigger only when needed
-  });
+  const [showExportPreview, setShowExportPreview] = useState(false);
+  const [includeCustomerDetails, setIncludeCustomerDetails] = useState<'yes' | 'no'>('yes');
+  const { data: exportData, isLoading: isExporting } = useExportCustomerExcelQuery(
+    { includeContact: includeCustomerDetails === 'yes' },
+    { skip: !startExport }
+  );
+
 
   const [importEmployeeExcel, { isLoading: isImporting }] = useImportCustomerExcelMutation();
 
   const exportEmployeeExcelSheet = () => {
-    setStartExport(true); // This will trigger the API call to fetch exportData
+    // setStartExport(true); // This will trigger the API call to fetch exportData
+    setShowExportPreview(true)
   };
+
+  const handleExport = (status: any) => {
+    setStartExport(true);
+  }
 
   // ⬇️ When exportData is updated by the API call, download the file
   useEffect(() => {
@@ -328,6 +340,67 @@ const CustomerListingWrapper = (props: Props) => {
         importEmployeeExcelSheet={importCustomerExcelSheet}
         exportEmployeeExcelSheet={exportEmployeeExcelSheet}
       />
+
+      {showExportPreview && (
+        <ATMDialog onClose={() => setShowExportPreview(false)}>
+          <div className="bg-white w-full max-w-sm p-5 rounded-md shadow-md space-y-5">
+            {/* Main Heading */}
+            <h2 className="text-lg font-bold text-gray-900 text-center">
+              Export Customers
+            </h2>
+
+            {/* Subheading */}
+            <div className="text-sm font-medium text-gray-700">
+              Do you want to include customer contact details in the export?
+            </div>
+
+            {/* Radio Buttons */}
+            <div className="flex gap-6 items-center text-sm text-gray-800">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="includeCustomer"
+                  value="yes"
+                  checked={includeCustomerDetails === 'yes'}
+                  onChange={() => setIncludeCustomerDetails('yes')}
+                />
+                Yes
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="includeCustomer"
+                  value="no"
+                  checked={includeCustomerDetails === 'no'}
+                  onChange={() => setIncludeCustomerDetails('no')}
+                />
+                No
+              </label>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-2">
+              <ATMButton variant='outlined' onClick={() => setShowExportPreview(false)}>
+                Cancel
+              </ATMButton>
+              <ATMButton
+                onClick={() => {
+                  setShowExportPreview(false);
+                  handleExport(includeCustomerDetails === 'no'); // Pass boolean
+                }}
+              >
+                Export Start
+              </ATMButton>
+            </div>
+          </div>
+        </ATMDialog>
+      )}
+
+
+
+
+
     </>
   );
 };

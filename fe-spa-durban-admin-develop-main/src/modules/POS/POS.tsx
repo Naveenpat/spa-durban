@@ -19,7 +19,7 @@ const POS = ({ formikProps }: Props) => {
   const prevTreatmentsRef = useRef<string[]>([]);
   const { outlet } = useSelector((state: RootState) => state.auth);
 
-  const { data:closeRegisterData, isLoading, refetch } = useFetchData(useGetRegisterByCurrentDateQuery, {
+  const { data: closeRegisterData, isLoading, refetch } = useFetchData(useGetRegisterByCurrentDateQuery, {
     body: outlet && (outlet as any)._id,
     dataType: 'VIEW',
   });
@@ -83,7 +83,7 @@ const POS = ({ formikProps }: Props) => {
         {/* Items List */}
         <div className="flex flex-col flex-1 h-full border-r">
           <ItemList
-          isDisabled={!!(closeRegisterData as any)?.data?.closeRegister}
+            isDisabled={!!(closeRegisterData as any)?.data?.register?.isClosed}
             onItemClick={(item) => {
               const itemIndex = values?.items?.findIndex(
                 (selected: any) => selected._id === item._id,
@@ -116,7 +116,7 @@ const POS = ({ formikProps }: Props) => {
             }
             onQuantityChange={handleChangeQuantity}
             formikProps={formikProps}
-            isDisabled={!!(closeRegisterData as any)?.data?.closeRegister}
+            isDisabled={!!(closeRegisterData as any)?.data?.register?.isClosed}
           />
         </div>
       </div>

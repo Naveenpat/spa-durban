@@ -59,14 +59,15 @@ export const customerApi = apiSlice.injectEndpoints({
         };
       },
     }),
-    exportCustomerExcel: builder.query<Blob, void>({
-      query: () => ({
-        url: '/customer/new/export-csv',
+    exportCustomerExcel: builder.query<Blob, { includeContact: boolean }>({
+      query: ({ includeContact }) => ({
+        url: `/customer/new/export-csv?includeContact=${includeContact}`,
         method: 'GET',
-        responseHandler: (response) => response.blob(), // this is key
+        responseHandler: (response) => response.blob(),
         responseType: 'blob',
       }),
     }),
+
 
 
     importCustomerExcel: builder.mutation({

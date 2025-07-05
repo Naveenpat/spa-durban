@@ -1,5 +1,5 @@
 import { Formik, FormikHelpers, Form } from 'formik';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PaymentMode } from '../../models/OpenRegister.model';
 // import OpenRegisterFormLayout from '../../components/OpenRegisterFormLayout';
 import CloseRegisterFormLayout from '../../components/CloseRegisterFormLayout';
@@ -25,6 +25,8 @@ type Props = {
 const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
   const [closeRegister] = useAddCloseRegisterMutation();
   const [sendPdfBYEmail] = useSendPdfBYEmailMutation();
+  const [showSummary, setShowSummary] = useState(false);
+
   const { userData, outlet, outlets } = useSelector(
     (state: RootState) => state.auth,
   );
@@ -40,8 +42,11 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
     totalAmount: 0,
     paymentModeName: '',
     manual: {},
-    reasons:{},
-    bankDeposit: 0
+    reasons: {},
+    bankDeposit: 0,
+    cashUsageReason: '',
+    cashUsageProofUrl: '',
+    cashUsageAmount:''
   };
 
 
@@ -135,21 +140,39 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
     { resetForm, setSubmitting }: FormikHelpers<PaymentMode>,
   ) => {
     try {
+      // const updatedPaymentModes = (data as any)?.data?.result?.map(
+      //   (item: { _id: string | number }) => ({
+      //     ...item,
+      //     manual: values.manual[item._id] || '', // Add manual key, default empty string if not found
+      //     reason:values.reasons[item._id] || ''
+      //   }),
+      // );
+      const updatedPaymentModes = (data as any)?.data.result?.map((entry: any) => {
+        const date = entry.date;
 
-      // console.log('-----------initialValues',(data as any)?.data?.existingRegister?.openingBalance)
-      const updatedPaymentModes = (data as any)?.data?.result?.map(
-        (item: { _id: string | number }) => ({
-          ...item,
-          manual: values.manual[item._id] || '', // Add manual key, default empty string if not found
-          reason:values.reasons[item._id] || ''
-        }),
-      );
+        const updatedPayments = entry.payments?.map((item: { _id: string | number, totalAmount: number, paymentModeName: string }) => {
+          const manualKey = `${item._id}_${date}`;
+          return {
+            paymentModeName: item.paymentModeName,
+            totalAmount: item.totalAmount,
+            manual: values.manual?.[manualKey] || item?.totalAmount,
+            reason: values.reasons?.[item._id] || ''
+          };
+        });
 
-      if (updatedPaymentModes.some((mode: any) => mode.manual === "")) {
-        showToast('error', 'Please fill manual entry');
-        setSubmitting(false);
-        return;
-      }
+        return {
+          date,
+          payments: updatedPayments
+        };
+      });
+
+
+
+      // if (updatedPaymentModes.some((mode: any) => mode.manual === "")) {
+      //   showToast('error', 'Please fill manual entry');
+      //   setSubmitting(false);
+      //   return;
+      // }
 
 
       // console.log(updatedPaymentModes);
@@ -157,10 +180,13 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
         closeRegister: updatedPaymentModes,
         outletId: outlet && (outlet as any)._id,
         bankDeposit: Number(values.bankDeposit),
-        openingBalance: (data as any)?.data?.existingRegister?.openingBalance
+        openingBalance: (data as any)?.data?.existingRegister?.openingBalance,
+        cashUsageReason: values?.cashUsageReason,
+        cashUsageProofUrl: values?.cashUsageProofUrl,
+        cashUsageAmount:values?.cashUsageAmount
       };
       console.log('formattedValues=======', formattedValues);
-     
+
       const res = await closeRegister(formattedValues).unwrap(); // Proper async handling
 
       if (res?.status) {
@@ -203,19 +229,23 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
       onSubmit={handleSubmit}
     >
       {(formikProps) => {
+        // const handleCloseRegisterSubmit = (e: React.FormEvent) => {
+        //   e.preventDefault();
+
+        //   ShowConfirmation({
+        //     type: 'INFO',
+        //     title: 'Are you sure?',
+        //     message: 'Do you really want to close the register?',
+        //     onConfirm: (closeDialog: any) => {
+        //       formikProps.submitForm(); // ✅ call Formik's built-in submit
+        //       closeDialog();
+        //     },
+        //     confirmationText: 'Submit'
+        //   });
+
         const handleCloseRegisterSubmit = (e: React.FormEvent) => {
           e.preventDefault();
-
-          ShowConfirmation({
-            type: 'INFO',
-            title: 'Are you sure?',
-            message: 'Do you really want to close the register?',
-            onConfirm: (closeDialog: any) => {
-              formikProps.submitForm(); // ✅ call Formik's built-in submit
-              closeDialog();
-            },
-            confirmationText: 'Submit'
-          });
+          setShowSummary(true); // 🔁 Trigger summary instead of direct confirmation
         };
 
         return (
@@ -226,6 +256,8 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
               formType="OPEN"
               opningData={(data as any)?.data}
               isLoading={isLoading}
+              setShowSummary={setShowSummary}
+              showSummary={showSummary}
             />
           </form>
         );

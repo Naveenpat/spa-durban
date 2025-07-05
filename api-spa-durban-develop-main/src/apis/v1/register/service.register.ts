@@ -4,6 +4,7 @@ import CloseRegister, { CloseRegisterDocument } from "./schema.closereegister";
 import ApiError from "../../../../utilities/apiError";
 import mongoose from "mongoose";
 import { RangeFilter } from "../../../utils/interface";
+import SalesRegister from "./schema.salesreegister";
 
 const createRegister = async (registerBody: any): Promise<RegisterDocument> => {
   return Register.create(registerBody);
@@ -88,7 +89,7 @@ const findRegister = async (query: {
   startOfDay: Date;
   endOfDay: Date;
 }) => {
-  return await Register.findOne({
+  return await SalesRegister.findOne({
     createdBy: new mongoose.Types.ObjectId(query.createdBy),
     outletId: new mongoose.Types.ObjectId(query.outletId),
     createdAt: { $gte: query.startOfDay, $lte: query.endOfDay }, // Search within the given date range
@@ -101,7 +102,7 @@ const findCloseRegister = async (query: {
   startOfDay: Date;
   endOfDay: Date;
 }) => {
-  return await CloseRegister.findOne({
+  return await SalesRegister.findOne({
     createdBy: new mongoose.Types.ObjectId(query.createdBy),
     outletId: new mongoose.Types.ObjectId(query.outletId),
     createdAt: { $gte: query.startOfDay, $lte: query.endOfDay }, // Search within the given date range
