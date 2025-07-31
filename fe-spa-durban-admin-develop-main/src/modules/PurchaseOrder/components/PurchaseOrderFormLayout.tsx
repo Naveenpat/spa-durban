@@ -160,7 +160,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
     const taxAmount = calculateTaxAmount({
       amount: baseAmount,
       discountAmount: 0,
-      taxPercent: product?.taxPercent,
+      taxPercent: product?.taxPercent?.taxPercent,
     });
 
     const discountAmount = calculateDiscount({
@@ -172,7 +172,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
     const finalTaxAmount = calculateTaxAmount({
       amount: baseAmount,
       discountAmount,
-      taxPercent: product?.taxPercent || 0,
+      taxPercent: product?.taxPercent?.taxPercent || 0,
     });
 
     const totalAmount = calculateTotalAmount({
@@ -194,7 +194,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
     const nonCashTotal = values.amountReceived && values.amountReceived.reduce(
       (acc: number, curr: any) => {
         const modeType = paymentData?.find(
-          (mode: any) => mode._id === curr.paymentModeId?._id,
+          (mode: any) => mode._id === curr.paymentModeId,
         )?.type;
 
         const amount = parseFloat(curr.amount) || 0;
@@ -458,7 +458,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                   discountType: product?.discountType || 0,
                                 }),
 
-                                taxPercent: product?.taxPercent || 0,
+                                taxPercent: product?.product?.taxPercent || 0,
                               }).toFixed(2)}
                             </div>
 
@@ -474,7 +474,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                       (product?.rate || 0) *
                                       (product?.quantity || 0),
                                     discountAmount: 0,
-                                    taxPercent: product?.taxPercent,
+                                    taxPercent: product?.taxPercent?.taxPercent,
                                   }),
                                 discount: product?.discount || 0,
                                 discountType: product?.discountType,
@@ -497,7 +497,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                         (product?.rate || 0) *
                                         (product?.quantity || 0),
                                       discountAmount: 0,
-                                      taxPercent: product?.taxPercent,
+                                      taxPercent: product?.taxPercent?.taxPercent,
                                     }),
                                   discount: product?.discount || 0,
                                   discountType: product?.discountType || 0,
@@ -523,7 +523,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                     discountType: product?.discountType || 0,
                                   }),
 
-                                  taxPercent: product?.taxPercent || 0,
+                                  taxPercent: product?.taxPercent?.taxPercent || 0,
                                 }),
                               }).toFixed(2)}
                             </div>
@@ -598,11 +598,11 @@ const PurchaseOrderFormLayout = ({ formikProps,
                             discountAmount: 0,
                             taxPercent: product?.taxPercent || 0,
                           }),
-                        discount: Number(product?.discount || 0),
+                        discount: Number(product?.product?.discount || 0),
                         discountType: product?.discountType || 0,
                       }),
 
-                      taxPercent: product?.taxPercent || 0,
+                      taxPercent: product?.product?.taxPercent || 0,
                     })
                   );
                 }, 0)
@@ -625,7 +625,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                             Number(product?.rate || 0) *
                             Number(product?.quantity || 0),
                           discountAmount: 0,
-                          taxPercent: product?.taxPercent || 0,
+                          taxPercent: product?.product?.taxPercent || 0,
                         }),
                       discount: Number(product?.discount || 0),
                       discountType: product?.discountType || 0,
@@ -744,7 +744,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                             Number(product?.rate || 0) *
                             Number(product?.quantity || 0),
                           discountAmount: 0,
-                          taxPercent: product?.taxPercent || 0,
+                          taxPercent: product?.product?.taxPercent || 0,
                         }),
                       discount: Number(product?.discount || 0),
                       discountType: product?.discountType || 0,
@@ -763,13 +763,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                               Number(product?.rate || 0) *
                               Number(product?.quantity || 0),
                             discountAmount: 0,
-                            taxPercent: product?.taxPercent || 0,
+                            taxPercent: product?.product?.taxPercent || 0,
                           }),
                         discount: Number(product?.discount || 0),
                         discountType: product?.discountType || 0,
                       }),
 
-                      taxPercent: product?.taxPercent || 0,
+                      taxPercent: product?.product?.taxPercent || 0,
                     }),
                   })
                 );
@@ -801,7 +801,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                               Number(product?.rate || 0) *
                               Number(product?.quantity || 0),
                             discountAmount: 0,
-                            taxPercent: product?.taxPercent || 0,
+                            taxPercent: product?.product?.taxPercent || 0,
                           }),
                         discount: Number(product?.discount || 0),
                         discountType: product?.discountType || 0,
@@ -820,13 +820,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                 Number(product?.rate || 0) *
                                 Number(product?.quantity || 0),
                               discountAmount: 0,
-                              taxPercent: product?.taxPercent || 0,
+                              taxPercent: product?.product?.taxPercent || 0,
                             }),
                           discount: Number(product?.discount || 0),
                           discountType: product?.discountType || 0,
                         }),
 
-                        taxPercent: product?.taxPercent || 0,
+                        taxPercent: product?.product?.taxPercent || 0,
                       }),
                     })
                   );
@@ -979,7 +979,7 @@ const PurchaseOrderFormLayout = ({ formikProps,
                               Number(product?.rate || 0) *
                               Number(product?.quantity || 0),
                             discountAmount: 0,
-                            taxPercent: product?.taxPercent || 0,
+                            taxPercent: product?.product?.taxPercent || 0,
                           }),
                         discount: Number(product?.discount || 0),
                         discountType: product?.discountType || 0,
@@ -998,13 +998,13 @@ const PurchaseOrderFormLayout = ({ formikProps,
                                 Number(product?.rate || 0) *
                                 Number(product?.quantity || 0),
                               discountAmount: 0,
-                              taxPercent: product?.taxPercent || 0,
+                              taxPercent: product?.product?.taxPercent || 0,
                             }),
                           discount: Number(product?.discount || 0),
                           discountType: product?.discountType || 0,
                         }),
 
-                        taxPercent: product?.taxPercent || 0,
+                        taxPercent: product?.product?.taxPercent || 0,
                       }),
                     })
                   );

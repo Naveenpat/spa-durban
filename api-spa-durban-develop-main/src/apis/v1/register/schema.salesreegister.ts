@@ -34,14 +34,12 @@ export interface SalesRegisterDocument extends Document {
   totalCashAmount: number;
   cashAmount: number;
   carryForwardBalance: number;
-  cashUsage: [
-    {
-      reason: String,
-      amount: Number,
-      proofUrl: String,
-      date: Date,
-    }
-  ],
+  cashUsage: {
+    reason: string;
+    amount: number;
+    proofUrl: string;
+    createdAt: Date;
+  }[];
   isDeleted: boolean;
   isActive: boolean;
   createdAt: Date;
@@ -135,7 +133,7 @@ const SalesRegisterSchema = new mongoose.Schema<SalesRegisterDocument>(
         reason: { type: String, required: true },
         amount: { type: Number, required: true },
         proofUrl: { type: String, default: '' },
-        date: { type: Date, default: Date.now },
+        createdAt: { type: Date, default: Date.now },
       }
     ],
     totalCashAmount: {

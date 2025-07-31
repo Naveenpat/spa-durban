@@ -44,9 +44,12 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
     manual: {},
     reasons: {},
     bankDeposit: 0,
-    cashUsageReason: '',
-    cashUsageProofUrl: '',
-    cashUsageAmount:''
+    cashUsages: [{
+      reason: '',
+      proofUrl: '',
+      amount: '',
+      createdAt: new Date()
+    }],
   };
 
 
@@ -147,6 +150,8 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
       //     reason:values.reasons[item._id] || ''
       //   }),
       // );
+
+
       const updatedPaymentModes = (data as any)?.data.result?.map((entry: any) => {
         const date = entry.date;
 
@@ -181,9 +186,12 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
         outletId: outlet && (outlet as any)._id,
         bankDeposit: Number(values.bankDeposit),
         openingBalance: (data as any)?.data?.existingRegister?.openingBalance,
-        cashUsageReason: values?.cashUsageReason,
-        cashUsageProofUrl: values?.cashUsageProofUrl,
-        cashUsageAmount:values?.cashUsageAmount
+        // cashUsages: values.cashUsages?.map((item: any) => ({
+        //   reason: item.reason,
+        //   amount: Number(item.amount),
+        //   proofUrl: item.proofUrl,
+        //   createdAt: new Date(), // or use item.createdAt if already present
+        // })) || [],
       };
       console.log('formattedValues=======', formattedValues);
 

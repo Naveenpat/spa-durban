@@ -79,7 +79,7 @@ const AddPurchaseOrderFormWrapper = () => {
         showToast('error', res?.error?.data?.message);
       } else {
         if (res?.data?.status) {
-          showToast('success', res?.data?.message);
+          showToast('success', 'Purchase Order Created Successfully');
           navigate('/purchase-order')
           resetForm();
         } else {

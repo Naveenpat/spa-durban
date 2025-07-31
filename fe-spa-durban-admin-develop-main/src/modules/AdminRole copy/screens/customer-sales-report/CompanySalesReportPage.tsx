@@ -47,10 +47,10 @@ const CompanySalesReportPage = () => {
   const [showCashbackModal, setShowCashbackModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
 
-  const { searchQuery, limit, page, dateFilter, orderBy, orderValue } =
-    useFilterPagination(['outletId', 'customerId']);
+  const { searchQuery, limit, page, dateFilter, orderBy, orderValue,appliedFilters } =
+    useFilterPagination(['outletsId', 'customerId']);
 
-  // console.log('-----', searchQuery, limit, page, dateFilter, orderBy, orderValue)
+  console.log('----appliedFilters-',appliedFilters?.[0]?.value)
   const [searchParams, setSearchParams] = useSearchParams();
   const { outlets } = useSelector((state: RootState) => state.auth);
   const queryParams = useMemo(() => ({
@@ -62,8 +62,9 @@ const CompanySalesReportPage = () => {
     searchValue: '',
     searchIn: ['customerName', 'outletName'],
     startDate: dateFilter?.start_date,
-    endDate: dateFilter?.end_date
-  }), [id, dateFilter?.start_date, dateFilter?.end_date, page, limit, orderBy, orderValue]);
+    endDate: dateFilter?.end_date,
+    outletId:appliedFilters?.[0]?.value
+  }), [id, dateFilter?.start_date, dateFilter?.end_date, page, limit, orderBy, orderValue,appliedFilters?.[0]?.value]);
 
   const { data, error, refetch } = useGetCompanySalesReportPaginatedQuery(queryParams);
 
@@ -80,13 +81,14 @@ const CompanySalesReportPage = () => {
       reportDuration: 'MONTHLY',
       startDate: dateFilter?.start_date,
       endDate: dateFilter?.end_date,
+      outletId:appliedFilters?.[0]?.value
     };
 
     return {
       companyId: id,
       ...query,
     };
-  }, [id, dateFilter?.start_date, dateFilter?.end_date]);
+  }, [id, dateFilter?.start_date, dateFilter?.end_date,appliedFilters?.[0]?.value]);
 
   const { data: customerSalesChartData, isLoading } =
     useGetCompanySalesChartDataQuery(chartQueryParams);
@@ -187,22 +189,22 @@ const CompanySalesReportPage = () => {
   ]
 
   const filters: FilterType[] = [
-    // {
-    //   filterType: 'multi-select',
-    //   label: 'Outlet',
-    //   fieldName: 'outletsId',
-    //   options:
-    //     outlets?.map((el: any) => {
-    //       return {
-    //         label: el?.name,
-    //         value: el?._id,
-    //       };
-    //     }) || [],
-    //   renderOption: (option) => option.label,
-    //   isOptionEqualToSearchValue: (option, value) => {
-    //     return option?.label.includes(value);
-    //   },
-    // },
+    {
+      filterType: 'multi-select',
+      label: 'Outlet',
+      fieldName: 'outletsId',
+      options:
+        outlets?.map((el: any) => {
+          return {
+            label: el?.name,
+            value: el?._id,
+          };
+        }) || [],
+      renderOption: (option) => option.label,
+      isOptionEqualToSearchValue: (option, value) => {
+        return option?.label.includes(value);
+      },
+    },
     {
       filterType: 'date',
       fieldName: 'createdAt',

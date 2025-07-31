@@ -97,7 +97,7 @@ const { data:openRegisterData, refetch:isRefetch } = useFetchData(useGetRegister
             onClose={onClose}
             formType="OPEN"
             opningData={(data as any)?.data}
-            openRegister={(openRegisterData as any)?.data?.register?.isClosed}
+            openRegister={(openRegisterData as any)?.data?.register?.isOpened}
           />
         </Form>
       )}

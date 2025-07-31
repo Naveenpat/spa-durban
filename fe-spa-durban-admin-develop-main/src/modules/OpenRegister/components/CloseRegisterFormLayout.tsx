@@ -3,7 +3,7 @@ import ATMTextField from 'src/components/atoms/FormElements/ATMTextField/ATMText
 import MOLFormDialog from 'src/components/molecules/MOLFormDialog/MOLFormDialog';
 import { PaymentMode } from '../models/OpenRegister.model';
 import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCircularProgress';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IconCalendar } from '@tabler/icons-react';
 import ATMDialog from 'src/components/atoms/ATMDialog/ATMDialog';
 import ATMFileUploader from 'src/components/atoms/FormElements/ATMFileUploader/ATMFileUploader';
@@ -33,7 +33,7 @@ const CloseRegisterFormLayout = ({
   showSummary
 }: Props) => {
   const { values, setFieldValue, isSubmitting, handleBlur } = formikProps;
-
+  const summaryRef = useRef<HTMLDivElement>(null);
   const formHeading = formType === 'OPEN' ? 'Close Register' : 'Edit Register';
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
@@ -42,9 +42,17 @@ const CloseRegisterFormLayout = ({
   const [showCashUsageModal, setShowCashUsageModal] = useState(false);
   const [cashUsageReason, setCashUsageReason] = useState('');
   const [cashUsageProof, setCashUsageProof] = useState<File | null>(null);
+  const [tempCashUsage, setTempCashUsage] = useState({
+    reason: '',
+    amount: '',
+    proofUrl: '',
+  });
+
+  const [cashUsages, setCashUsages] = useState<{ reason: string; amount: string; proofUrl: string; createdAt: Date }[]>([]);
 
 
-  console.log('---------cashUsageReason', cashUsageProof, cashUsageReason)
+
+  console.log('---------copningData', opningData)
 
 
 
@@ -97,7 +105,7 @@ const CloseRegisterFormLayout = ({
   const totalManualCashAvailable = openingManual + cashManual;
 
 
-  // console.log('------cashManual',updatedResult[0]?.totalAmount?.toFixed(2))
+
 
   const isOpeningReduced =
     updatedResult?.[0] &&
@@ -128,7 +136,7 @@ const CloseRegisterFormLayout = ({
     .pop();
 
   const lastCashRowKey = lastCashRowInfo ? `${lastCashRowInfo._id}_${lastCashRowInfo.date}` : '';
-
+  console.log('------cashManual', parseFloat(values.manual?.[lastCashRowKey] || '0'))
   const isCashLessThanOpening = parseFloat(values.manual?.[lastCashRowKey] || '0') < parseFloat(updatedResult[0]?.totalAmount || '0');
 
   const handleReviewBeforeSubmit = () => {
@@ -149,6 +157,79 @@ const CloseRegisterFormLayout = ({
 
     return () => clearTimeout(timeout); // Clear on new keystroke
   }, [values.manual?.[lastCashRowKey]]);
+
+
+  const handlePrint = () => {
+    if (!summaryRef.current) return;
+
+    const content = summaryRef.current.innerHTML;
+    const printWindow = window.open('', '_blank');
+
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(`
+      <html>
+        <head>
+          <title>Register Summary</title>
+          <style>
+            @page {
+              size: A4;
+              margin: 20mm;
+            }
+            html, body {
+              font-family: Arial, sans-serif;
+              padding: 0;
+              margin: 0;
+              background: white;
+              color: #000;
+            }
+            body {
+              width: 210mm;
+              min-height: 297mm;
+              padding: 20mm;
+              box-sizing: border-box;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 1rem;
+              font-size: 12px;
+            }
+            th, td {
+              border: 1px solid #999;
+              padding: 6px;
+              text-align: left;
+            }
+            h2, h3, h4 {
+              margin-top: 1rem;
+            }
+            a, button {
+              display: none !important;
+            }
+            ul {
+              padding-left: 20px;
+            }
+            li {
+              margin-bottom: 6px;
+            }
+          </style>
+        </head>
+        <body>
+          ${content}
+        </body>
+      </html>
+    `);
+      printWindow.document.close();
+
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+      };
+    }
+  };
+
+
 
 
   return (
@@ -292,7 +373,7 @@ const CloseRegisterFormLayout = ({
                               {isLastCashRow && (
                                 <tr>
                                   <td colSpan={5} className="p-3 border text-blue-800 text-sm font-semibold text-right">
-                                    🧾 Available Cash: R {cashTotal.toFixed(2)}
+                                    🧾 Total Cash: R {cashTotal.toFixed(2)}
                                   </td>
                                 </tr>
                               )}
@@ -309,7 +390,7 @@ const CloseRegisterFormLayout = ({
                 </table>
 
                 {/* Cash Deposit Section */}
-                <div className="mt-6 p-4 border-t">
+                {/* <div className="mt-6 p-4 border-t">
                   <label className="block mb-2 font-semibold text-gray-800 text-base">
                     Enter Cash to Deposit in Bank
                   </label>
@@ -331,7 +412,7 @@ const CloseRegisterFormLayout = ({
                     className="w-full p-2 border border-gray-300 rounded-md text-sm"
                   />
 
-                  <ATMButton >PayOut</ATMButton>
+                  <ATMButton >Pay Out</ATMButton>
 
                   {values.bankDeposit !== '' &&
                     parseFloat(values.bankDeposit) > cashTotal && (
@@ -350,7 +431,56 @@ const CloseRegisterFormLayout = ({
                       })()}
                     </div>
                   )}
+                </div> */}
+
+                <div className="mt-6 p-4 border-t">
+                  <label className="block mb-2 font-semibold text-gray-800 text-base">
+                    Enter Cash to Deposit in Bank
+                  </label>
+
+                  <div className="grid grid-cols-3 gap-4 items-center">
+                    <div className='col-span-2'>
+                      <ATMTextField
+                        name="bankDeposit"
+                        value={values.bankDeposit}
+                        onChange={(e) => {
+                          const input = e.target.value;
+                          const num = parseFloat(input);
+                          if (!isNaN(num) && num <= parseFloat(values.manual?.[lastCashRowKey] || '0')) {
+                            setFieldValue('bankDeposit', input);
+                          } else if (input === '') {
+                            setFieldValue('bankDeposit', '');
+                          }
+                        }}
+                        onBlur={handleBlur}
+                        placeholder="Enter amount"
+                        className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+
+
+                  </div>
+
+                  {values.bankDeposit !== '' &&
+                    parseFloat(values.bankDeposit) > parseFloat(values.manual?.[lastCashRowKey] || '0') && (
+                      <div className="text-red-600 text-sm mt-2">
+                        You cannot deposit more than R {cashTotal}
+                      </div>
+                    )}
+
+                  {values.bankDeposit > 0 && (
+                    <div className="mt-3 text-sm text-blue-700 font-semibold">
+                      Carry Forward to Next Day Opening Balance: R{' '}
+                      {(() => {
+                        const deposit = parseFloat(values.bankDeposit) || 0;
+                        const carryForward = Math.max(parseFloat(values.manual?.[lastCashRowKey] || '0') - deposit, 0);
+                        return carryForward.toFixed(2);
+                      })()}
+                    </div>
+                  )}
                 </div>
+
+
               </div>
             </div>
           </div>
@@ -398,87 +528,23 @@ const CloseRegisterFormLayout = ({
         </div>
       )}
 
-      {showCashUsageModal && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-red-600">Opening Balance Used</h3>
-            <p className="text-sm text-gray-700">
-              You’ve entered a cash value less than the opening balance.
-              Please provide a reason and upload payment slip.
-            </p>
 
-            <textarea
-              className="w-full border p-2 rounded"
-              placeholder="Enter reason"
-              value={values?.cashUsageReason}
-              onChange={(e) => setFieldValue('cashUsageReason', e.target.value)}
-            />
 
-            <ATMNumberField label='Enter Amount' name="cashUsageAmount" value={values?.cashUsageAmount} onChange={(newValue: any) => {
-              setFieldValue('cashUsageAmount', newValue);
-            }} />
 
-            <div className="">
-              <ATMFileUploader
-                name="cashUsageProofUrl"
-                value={values?.cashUsageProofUrl || ''}
-                onChange={(file: string) => {
-                  setFieldValue('cashUsageProofUrl', file);
-                }}
-                label="cash proof upload"
-                accept=".jpg, .jpeg, .png, .gif"
-                folderName='cashproof'
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 mt-4">
-              {/* <button
-                onClick={() => setShowCashUsageModal(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-              >
-                Cancel
-              </button> */}
-              <ATMButton variant='outlined' onClick={() => setShowCashUsageModal(false)}>
-                Cancel
-              </ATMButton>
-              <ATMButton onClick={() => {
-                if (!values?.cashUsageReason.trim()) {
-                  showToast('error', 'Reason and proof are required.');
-                  return;
-                }
-                // setFieldValue('cashUsageReason', cashUsageReason);
-                // setFieldValue('cashUsageProof', cashUsageProof);
-                setShowCashUsageModal(false);
-              }}>
-                Save
-              </ATMButton>
-              {/* <button
-                onClick={() => {
-                  if (!values?.cashUsageReason.trim()) {
-                    showToast('error','Reason and proof are required.');
-                    return;
-                  }
-                  // setFieldValue('cashUsageReason', cashUsageReason);
-                  // setFieldValue('cashUsageProof', cashUsageProof);
-                  setShowCashUsageModal(false);
-                }}
-                className="bg-primary-60 hover:bg-primary-70 text-white px-4 py-2 rounded"
-              >
-                Save
-              </button> */}
-            </div>
-          </div>
-        </div>
-      )}
       {showSummary && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center overflow-auto">
-          <div className="bg-white rounded-xl p-6 max-w-3xl w-full space-y-6 shadow-lg">
+        <div ref={summaryRef} className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+          <div className="bg-white rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto space-y-6 shadow-lg">
+
             <h2 className="text-xl font-bold text-center">Register Summary</h2>
 
-            <div className="space-y-4 text-sm text-gray-800">
+            <div className="space-y-4 text-sm text-gray-800 overflow-auto">
               <p><strong>Opening Balance:</strong> R {openingBalance?.toFixed(2) || '0.00'}</p>
               <p><strong>Bank Deposit:</strong> R {formikProps.values.bankDeposit || '0.00'}</p>
-
+              <p><strong>Carry Forword:</strong> R {(() => {
+                const deposit = parseFloat(values.bankDeposit) || 0;
+                const carryForward = Math.max(cashTotal - deposit, 0);
+                return carryForward.toFixed(2);
+              })()}</p>
               {Object.keys(groupedResult).map((date) => (
                 <div key={date}>
                   <h3 className="text-base font-semibold text-primary-60 mb-2">
@@ -525,17 +591,49 @@ const CloseRegisterFormLayout = ({
                 </div>
               ))}
 
-              {values.cashUsageReason && (
-                <div className="mt-6 border-t pt-4">
-                  <p className="text-red-600 font-semibold mb-1">⚠️ Opening Balance Used : R {parseFloat(updatedResult[0]?.totalAmount || '0') - parseFloat(values.manual?.[lastCashRowKey])}</p>
-                  <p><strong>Reason:</strong> {values.cashUsageReason}</p>
-                  {values.cashUsageProofUrl && (
-                    <p className="text-blue-600">
-                      Proof File: <a href={`${process.env.REACT_APP_BASE_URL}/${values.cashUsageProofUrl}`} target="_blank" rel="noreferrer" className="underline">View</a>
-                    </p>
-                  )}
+              {opningData?.register?.cashUsage?.length > 0 && (
+                <div className="mt-8 rounded-xl border border-red-300 bg-red-50 p-6 shadow-sm">
+                  <h3 className="text-lg font-bold text-red-700 flex items-center mb-4">
+                    ⚠️ <span className="ml-2">Cash Usage Entries</span>
+                  </h3>
+
+                  <div className="space-y-1">
+                    <h4 className="text-base font-semibold text-gray-800 underline underline-offset-4">
+                      Added Payouts:
+                    </h4>
+
+                    <ul className="space-y-2">
+                      {opningData?.register?.cashUsage?.map((usage: any, idx: number) => (
+                        <li
+                          key={idx}
+                          className="flex flex-col md:flex-row md:items-center md:justify-between bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+                        >
+                          <span className="text-sm text-gray-700">
+                            <strong className="text-gray-900">{idx + 1}.</strong> {usage.reason} — R
+                            {usage.amount}
+                          </span>
+
+                          {usage.proofUrl && (
+                            <a
+                              href={`${process.env.REACT_APP_BASE_URL}/${usage.proofUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-3 md:mt-0"
+                            >
+                              <ATMButton >
+                                📎 View Proof
+                              </ATMButton>
+                            </a>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
+
+
+
             </div>
 
             <div className="flex justify-end gap-4 pt-4 border-t pt-4">
@@ -548,6 +646,9 @@ const CloseRegisterFormLayout = ({
               >
               
               </button> */}
+              <ATMButton variant='outlined' onClick={handlePrint}>
+                Print
+              </ATMButton>
               <ATMButton onClick={() => {
                 setShowSummary(false);
                 formikProps.submitForm();

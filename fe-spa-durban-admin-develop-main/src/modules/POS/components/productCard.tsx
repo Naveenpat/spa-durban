@@ -56,7 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onItemClick, handleA
             <div className="w-full h-[130px] bg-gray-100 relative">
                 <img
                     src={
-                        product.itemUrl
+                        product.itemUrl 
                             ? `${process.env.REACT_APP_BASE_URL}/${product.itemUrl}`
                             : '/no-image.jpg'
                     }

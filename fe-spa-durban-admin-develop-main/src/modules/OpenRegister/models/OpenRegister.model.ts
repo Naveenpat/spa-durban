@@ -14,23 +14,32 @@ export type PaymentMode = {
   _id: string;
   totalAmount: number;
   paymentModeName: string;
-  bankDeposit:any;
-  reasons:any;
-  cashUsageProofUrl:string;
-  cashUsageReason:string;
-  cashUsageAmount:string;
+  bankDeposit: any;
+  reasons: any;
+ cashUsages: [{
+    reason: string;
+    amount: string;
+    proofUrl: string;
+    createdAt: Date;
+  }];
 };
 
-export type RegisterValue ={
-  openedAt:Date;
-  _id:string;
-  openingBalance:number;
-  carryForwardBalance:number;
-  closeRegister:any;
-  registerStatus:string;
-  cashUsageReason:string;
+export type RegisterValue = {
+  openedAt: Date;
+  _id: string;
+  openingBalance: number;
+  carryForwardBalance: number;
+  closeRegister: any;
+  registerStatus: string;
+  bankDeposit: number;
+  cashAmount: number;
   cashUsageProofUrl:string;
-  bankDeposit:number;
-  cashAmount:number;
-  cashUsageAmount:string;
+  cashUsageReason:string;
+  actions:any;
+   cashUsages: [{
+    reason: string;
+    amount: string;
+    proofUrl: string;
+    createdAt: Date;
+  }];
 };

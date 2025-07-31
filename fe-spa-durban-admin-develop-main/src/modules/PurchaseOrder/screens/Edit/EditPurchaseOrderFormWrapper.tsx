@@ -91,7 +91,7 @@ const EditPurchaseOrderFormWrapper = () => {
           amountPaid: values?.amountPaid,
           shippingCharges: values?.shippingCharges || 0,
           amountReceived: values?.amountReceived?.map((el: any) => ({
-            paymentModeId: el?.paymentModeId?._id,
+            paymentModeId: el?.paymentModeId,
             amount: el?.amount.toString(),
             txnNumber: el?.txnNumber
           })),
@@ -99,7 +99,7 @@ const EditPurchaseOrderFormWrapper = () => {
             productId: product?.product?._id,
             quantity: product?.quantity,
             rate: product?.rate,
-            tax: product?.product?.taxId,
+            tax: product?.product?.tax,
             discount: product?.discount || 0,
             discountType: product?.discountType,
           })),
@@ -110,7 +110,7 @@ const EditPurchaseOrderFormWrapper = () => {
         showToast('error', res?.error?.data?.message);
       } else {
         if (res?.data?.status) {
-          showToast('success', res?.data?.message);
+          showToast('success', 'Purchase Order Updated Successfully');
           navigate('/purchase-order')
           resetForm();
         } else {

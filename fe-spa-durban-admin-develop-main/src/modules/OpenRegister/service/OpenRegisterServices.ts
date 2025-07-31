@@ -43,7 +43,7 @@ export const registerApi = apiSlice.injectEndpoints({
         body,
       }: {
         registerId: string;
-        body: OpenRegisterFormValues;
+        body:any;
       }) => {
         return {
           url: `/register/${registerId}`,

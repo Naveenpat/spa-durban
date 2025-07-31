@@ -992,11 +992,19 @@ const getRegisterChartDataByOutlet = catchAsync(async (req: Request, res: Respon
   }));
 
   // --- Format 2: Final Cash vs Opening ---
-  const finalCashVsOpening = rawData.map((item) => ({
+ const finalCashVsOpening = rawData.map((item) => {
+  const payoutCash = Array.isArray(item.cashUsage)
+    ? item.cashUsage.reduce((sum:any, entry:any) => sum + (parseFloat(entry.amount) || 0), 0)
+    : 0;
+
+  return {
     date: item.openedAt?.toISOString().split("T")[0],
     openingBalance: item.openingBalance || 0,
     finalCash: item.cashAmount || 0,
-  }));
+    payoutCash, // ✅ new field
+  };
+});
+
 
   // --- Format 3: Payment Mode Breakdown ---
   const paymentModeBreakdown = rawData.map((item) => ({

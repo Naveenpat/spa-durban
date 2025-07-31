@@ -8,6 +8,7 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useFetchData } from 'src/hooks/useFetchData';
 import { useGetRegisterByCurrentDateQuery } from '../OpenRegister/service/OpenRegisterServices';
+import { showToast } from 'src/utils/showToaster';
 
 type Props = {
   formikProps: FormikProps<any>;
@@ -85,6 +86,10 @@ const POS = ({ formikProps }: Props) => {
           <ItemList
             isDisabled={!!(closeRegisterData as any)?.data?.register?.isClosed}
             onItemClick={(item) => {
+              if(!(closeRegisterData as any)?.data?.register?.isOpened){
+                showToast('error','First Open Register! For Starting Sale');
+                return;
+              }else{
               const itemIndex = values?.items?.findIndex(
                 (selected: any) => selected._id === item._id,
               );
@@ -99,6 +104,7 @@ const POS = ({ formikProps }: Props) => {
                 });
               }
               setFieldValue('items', newCartItems);
+            }
             }}
             onAllItemsProcessed={(items) => setFieldValue('items', items)}
           />

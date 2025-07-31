@@ -51,39 +51,68 @@ const generateCloseRegisterHTML = (
   bankDeposit: any,
   carryForwardBalance: any,
   outletData: any,
-  openingBalance: any
+  openingBalance: any,
+  cashUsage: any = []
 ) => {
-  const rows = closeRegister
+  const registerRows = closeRegister
     .map(
       (item: any) => `
         <tr>
           <td>${item.paymentModeName}</td>
           <td>R ${item.totalAmount}</td>
-          <td>R ${item.manual}</td>
+          <td>R ${item.manual || '-'}</td>
         </tr>
       `
     )
     .join('');
 
+  const usageRows = cashUsage.length
+    ? cashUsage
+        .map(
+          (usage: any, idx: number) => `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>${usage.reason}</td>
+            <td>R ${usage.amount}</td>
+            <td>${
+              usage.proofUrl
+                ? `<a href="${process.env.REACT_APP_BASE_URL}/${usage.proofUrl}" target="_blank">View Proof</a>`
+                : '-'
+            }</td>
+          </tr>
+        `
+        )
+        .join('')
+    : `<tr><td colspan="4">No cash usage entries available.</td></tr>`;
+
   return `
     <html>
       <head>
         <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            color: #333;
+          }
+          h2, h3 {
+            margin-bottom: 10px;
+          }
           table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 14px;
           }
           th, td {
-            border: 1px solid #333;
+            border: 1px solid #999;
             padding: 8px;
             text-align: left;
           }
           th {
-            background-color: #f2f2f2;
+            background-color: #f9f9f9;
           }
-          h2, p {
-            font-family: Arial, sans-serif;
+          a {
+            color: #1a0dab;
           }
         </style>
       </head>
@@ -100,17 +129,34 @@ const generateCloseRegisterHTML = (
             </tr>
           </thead>
           <tbody>
-            ${rows}
+            ${registerRows}
           </tbody>
         </table>
 
         <p><strong>Opening Balance:</strong> R ${openingBalance}</p>
         <p><strong>Bank Deposit:</strong> R ${bankDeposit}</p>
         <p><strong>Carry Forward Balance:</strong> R ${carryForwardBalance}</p>
+
+        <h3 style="margin-top:40px;">Cash Usage Entries</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Reason</th>
+              <th>Amount</th>
+              <th>Proof</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${usageRows}
+          </tbody>
+        </table>
       </body>
     </html>
   `;
 };
+
 
 
 
@@ -536,7 +582,7 @@ const createCloseRegister = catchAsync(async (req: AuthenticatedRequest, res: Re
       reason: cashUsageReason,
       amount: cashUsageAmount,
       proofUrl: cashUsageProofUrl,
-      date: new Date(),
+      createdAt: new Date(),
     });
   }
 
@@ -553,7 +599,8 @@ const createCloseRegister = catchAsync(async (req: AuthenticatedRequest, res: Re
     deposit,
     carryForwardBalance,
     outletData,
-    openingBalance
+    openingBalance,
+    existingRegister?.cashUsage
   );
 
   const pdfBuffer = await generatePDFBuffer(htmlContent);
@@ -640,24 +687,54 @@ const getRegisters = catchAsync(
   }
 );
 
-const updateRegister = catchAsync(
-  async (req: AuthenticatedRequest, res: Response) => {
-    if (!req.userData) {
-      throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
-    }
-    const register = await registerService.updateRegisterById(
-      req.params.registerId,
-      req.body
-    );
-    return res.status(httpStatus.OK).send({
-      message: "Updated successfully!",
-      data: register,
-      status: true,
-      code: "OK",
-      issue: null,
-    });
+// const updateRegister = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     if (!req.userData) {
+//       throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
+//     }
+//     const register = await registerService.updateRegisterById(
+//       req.params.registerId,
+//       req.body
+//     );
+//     return res.status(httpStatus.OK).send({
+//       message: "Updated successfully!",
+//       data: register,
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     });
+//   }
+// );
+
+
+const updateRegister = catchAsync(async (req: Request, res: Response) => {
+  const { registerId } = req.params;
+  let { cashUsages, ...otherFields } = req.body;
+
+  const existingRegister = await SalesRegister.findById(registerId);
+  if (!existingRegister) {
+    return res.status(404).json({ success: false, message: 'Register not found' });
   }
-);
+
+  // Normalize single object to array
+  if (cashUsages && !Array.isArray(cashUsages)) {
+    cashUsages = [cashUsages]; // wrap in array
+  }
+
+  if (Array.isArray(cashUsages) && cashUsages.length > 0) {
+    existingRegister.cashUsage.push(...cashUsages); // append to existing
+  }
+
+  Object.assign(existingRegister, otherFields);
+  await existingRegister.save();
+
+  return res.status(200).json({
+    success: true,
+    message: 'Register updated successfully',
+    data: existingRegister,
+  });
+});
+
 
 const deleteRegister = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -910,14 +987,14 @@ const getRegisterCurentDate = catchAsync(
     const lastClosedRegister = await SalesRegister.findOne({
       outletId,
       createdBy: userId,
-      isClosed: true,
-      isDeleted: false,
+      isOpened: true,
+      // isDeleted: false,
     })
-      .sort({ closedAt: -1 })
+      .sort({ openedAt: -1 })
       .lean();
 
-    const startDate = lastClosedRegister?.closedAt
-      ? new Date(lastClosedRegister.closedAt.getTime() + 1)
+    const startDate = lastClosedRegister?.openedAt
+      ? new Date(lastClosedRegister.openedAt.getTime() + 1)
       : new Date(new Date().setHours(0, 0, 0, 0));
 
     const endDate = new Date();
@@ -934,7 +1011,7 @@ const getRegisterCurentDate = catchAsync(
         $match: {
           outletId: new mongoose.Types.ObjectId(outletId),
           status: "",
-          createdAtDate: {
+          invoiceDate: {
             $gte: startDate,
             $lte: endDate,
           },
@@ -945,7 +1022,7 @@ const getRegisterCurentDate = catchAsync(
         $group: {
           _id: {
             date: {
-              $dateToString: { format: "%Y-%m-%d", date: "$createdAtDate" },
+              $dateToString: { format: "%Y-%m-%d", date: "$invoiceDate" },
             },
             paymentModeId: "$amountReceived.paymentModeId",
           },
@@ -988,7 +1065,7 @@ const getRegisterCurentDate = catchAsync(
           payments: 1,
         },
       },
-      { $sort: { date: 1 } },
+      { $sort: { invoiceDate: 1 } },
     ];
 
     const result = await Invoice.aggregate(pipeline);

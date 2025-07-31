@@ -42,6 +42,10 @@ import { IconArrowRight } from '@tabler/icons-react';
 import { isAuthorized } from 'src/utils/authorization';
 import { Tooltip } from '@mui/material';
 import ShowConfirmation from 'src/utils/ShowConfirmation';
+import { ATMButton } from '../ATMButton/ATMButton';
+import ATMFileUploader from '../FormElements/ATMFileUploader/ATMFileUploader';
+import ATMNumberField from '../FormElements/ATMNumberField/ATMNumberField';
+import { useGetRegisterByCurrentDateQuery, useUpdateRegisterMutation } from 'src/modules/OpenRegister/service/OpenRegisterServices';
 type Props = {
   hideCollapseMenuButton?: boolean;
   showOutletDropdown?: boolean;
@@ -102,14 +106,28 @@ const ATMAppHeader = ({
   const [isOpenChangePasswordDialog, setIsOpenChangePassword] = useState(false);
   const [isOpenSalseReportDialog, setIsOpenSalseReportDialog] = useState(false);
   const [isOpenRegistertDialog, setIsOpenRegistertDialog] = useState(false);
-
+  const [showCashUsageModal, setShowCashUsageModal] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({
     top: 0,
     right: 0,
   });
+  const [tempCashUsage, setTempCashUsage] = useState({
+    reason: '',
+    amount: '',
+    proofUrl: '',
+    createdAt: new Date()
+  });
+
+
+
+  const { data: registerData } = useFetchData(useGetRegisterByCurrentDateQuery, {
+    body: outlet && (outlet as any)._id,
+    dataType: 'VIEW',
+  });
+
   const buttonRef = useRef<HTMLDivElement>(null);
   const [updateInvoice] = useUpdateInvoiceMutation();
-
+  const [updateRegister] = useUpdateRegisterMutation();
   useEffect(() => {
     const handleClickOutside = (event: any) => {
       if (buttonRef.current && !buttonRef?.current?.contains(event.target)) {
@@ -258,6 +276,66 @@ const ATMAppHeader = ({
   const toTitleCase = (str: string = '') => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
+
+
+  const handlePayout = async () => {
+    const registerId = (registerData as any)?.data?.register?._id;
+
+    if (!registerId) {
+      showToast('error', 'Please open a register for this outlet');
+      return;
+    }
+
+    if(!tempCashUsage?.reason){
+      showToast('error','Please enter any reason');
+      return
+    }
+
+     if(!tempCashUsage?.amount){
+      showToast('error','Please enter amount');
+      return
+    }
+
+    try {
+      const res = await updateRegister({
+        registerId,
+        body: {
+          cashUsages: [tempCashUsage], // Correct property
+        },
+      });
+
+
+      if (res?.data?.success) {
+        showToast('success', `You used R ${tempCashUsage?.amount} on cash`);
+        setShowCashUsageModal(false);
+        setTempCashUsage({
+          reason: '',
+          amount: '',
+          proofUrl: '',
+          createdAt: new Date()
+        })
+      } else {
+        showToast('error', 'Failed to upload pay out');
+        setShowCashUsageModal(false);
+      }
+      // if (res?.error) {
+      //   showToast('error', 'Failed to upload pay out');
+      //   setShowCashUsageModal(false);
+      // } else if (res?.data?.status) {
+      //   refetch();
+      //   showToast('success', res?.data?.message);
+      //   setShowCashUsageModal(false);
+      // } else {
+      //   showToast('success', res?.data?.message);
+      //   setShowCashUsageModal(false);
+      // }
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Failed to submit payout');
+      setShowCashUsageModal(false);
+    }
+  };
+
 
 
   const tableHeaders: TableHeader<any>[] = [
@@ -434,18 +512,21 @@ const ATMAppHeader = ({
           >
             <span>Open Registers</span>
           </button>
-          <button
-            type="button"
-            style={{
-              height: '35px',
-              fontSize: '11px',
-              width: '125px',
-            }}
-            onClick={() => dispatch(setIsCloseAddDialog(true))}
-            className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
-          >
-            <span>Close Registers</span>
-          </button>
+          {(registerData as any)?.data?.register !== null && (
+            <button
+              type="button"
+              style={{
+                height: '35px',
+                fontSize: '11px',
+                width: '125px',
+              }}
+              onClick={() => dispatch(setIsCloseAddDialog(true))}
+              className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
+            >
+              <span>Close Registers</span>
+            </button>
+          )}
+
           <button
             type="button"
             style={{
@@ -458,8 +539,24 @@ const ATMAppHeader = ({
           >
             <span>Sales Reporting</span>
           </button>
+          {(registerData as any)?.data?.register !== null && (
+            <button
+              type="button"
+              style={{
+                height: '35px',
+                fontSize: '11px',
+                width: '125px',
+              }}
+              className="font-semibold rounded-lg w-full h-full flex items-center justify-center text-sm px-4 transition-all duration-300 shadow bg-primary text-white border border-primary hover:bg-primary-30"
+              onClick={() => setShowCashUsageModal(true)}
+            >
+              <span>Pay Out</span>
+            </button>
+          )}
+
         </div>
       )}
+
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-4">
           <button
@@ -589,6 +686,59 @@ const ATMAppHeader = ({
             setNotes('');
           }}
         />
+      )}
+
+      {showCashUsageModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-red-600">Payout Spends</h3>
+            <p className="text-sm text-gray-700">
+              You've entered less cash than expected. If you spent some cash (like chai, snacks, transport, etc.), please enter the reason, amount, and upload a proof slip or bill (if available).
+            </p>
+
+
+            <textarea
+              className="w-full border p-2 rounded"
+              placeholder="Enter reason *"
+              value={tempCashUsage.reason}
+              onChange={(e) =>
+                setTempCashUsage((prev) => ({ ...prev, reason: e.target.value }))
+              }
+            />
+
+            <ATMNumberField label='Enter Amount *' name="cashUsageAmount"
+              value={tempCashUsage.amount}
+              onChange={(val) =>
+                setTempCashUsage((prev) => ({ ...prev, amount: val }))
+              }
+            />
+
+            <div className="">
+              <ATMFileUploader
+                name="cashUsageProofUrl"
+                value={tempCashUsage.proofUrl}
+                onChange={(file) =>
+                  setTempCashUsage((prev) => ({ ...prev, proofUrl: file }))
+                }
+                label="cash proof upload (optional)"
+                accept=".jpg, .jpeg, .png, .gif"
+                folderName='cashproof'
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 mt-4">
+              <ATMButton variant='outlined' onClick={() => setShowCashUsageModal(false)}>
+                Cancel
+              </ATMButton>
+              <ATMButton
+                onClick={() => handlePayout()}
+              >
+                Submit
+              </ATMButton>
+
+            </div>
+          </div>
+        </div>
       )}
 
       {/* {isOpenEditDialog && (

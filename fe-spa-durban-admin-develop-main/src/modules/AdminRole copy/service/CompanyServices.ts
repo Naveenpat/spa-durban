@@ -97,7 +97,14 @@ export const companyApi = apiSlice.injectEndpoints({
       query: ({ companyId, outletId, startDate, endDate, reportDuration }) => {
         const params = new URLSearchParams();
 
-        if (outletId) params.append('outletId', outletId);
+        // ✅ Support multiple outlet IDs (array or single)
+        if (Array.isArray(outletId)) {
+          outletId.forEach((id) => {
+            if (id) params.append('outletId', id);
+          });
+        } else if (typeof outletId === 'string') {
+          params.append('outletId', outletId);
+        }
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);
         if (reportDuration) params.append('reportDuration', reportDuration);

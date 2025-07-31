@@ -243,7 +243,7 @@ router.put(
 router.put(
   "/:registerId",
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  validate(update),
+  // validate(update),
   updateRegister
 );
 

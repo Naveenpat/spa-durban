@@ -254,26 +254,31 @@ const getCompanySalesReportPaginated = catchAsync(async (req: AuthenticatedReque
 
   const filter: Record<string, any> = { isDeleted: false };
 
-  // Outlet / Company filter
-  if (outletId && mongoose.Types.ObjectId.isValid(outletId as string)) {
-    filter.outletId = new mongoose.Types.ObjectId(outletId as string);
-  } else if (companyId) {
-    const outlets = await Outlet.find({ companyId, isDeleted: false }, { _id: 1 });
-    const outletIds = outlets.map((o) => o._id);
-    if (!outletIds.length) {
-      return res.status(httpStatus.OK).send({
-        data: {
-          invoices: [],
-          totalSalesData: 0,
-          totalCount: 0,
-          page: Number(page),
-          limit: Number(limit),
-        },
-        status: true,
-        code: 'OK',
-        issue: null,
-      });
+  // ✅ Step 1: Fetch all outlet IDs under this company
+  let outlets = await Outlet.find({ companyId, isDeleted: false }, { _id: 1 });
+
+  let outletIdList: string[] = [];
+
+  const outletIdParam = req.query.outletId;
+
+  if (Array.isArray(outletIdParam)) {
+    outletIdList = outletIdParam
+      .map((id) => (typeof id === 'string' ? id : ''))
+      .filter((id) => mongoose.Types.ObjectId.isValid(id));
+  } else if (typeof outletIdParam === 'string') {
+    if (mongoose.Types.ObjectId.isValid(outletIdParam)) {
+      outletIdList = [outletIdParam];
     }
+  }
+
+
+  if (outletIdList.length > 0) {
+    outlets = outlets.filter((o: any) => outletIdList.includes(o._id.toString()));
+  }
+
+  const outletIds = outlets.map((o: any) => o._id);
+
+  if (outletIds.length > 0) {
     filter.outletId = { $in: outletIds };
   }
 
@@ -377,6 +382,178 @@ const getCompanySalesReportPaginated = catchAsync(async (req: AuthenticatedReque
 });
 
 
+// const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+//   const companyId = req.params.id;
+//   const { outletId, startDate, endDate, reportDuration } = req.query;
+
+//   if (!mongoose.Types.ObjectId.isValid(companyId)) {
+//     return res.status(httpStatus.BAD_REQUEST).json({
+//       message: "Invalid company ID",
+//     });
+//   }
+
+//   // Fetch outlet IDs under this company
+//   let outlets = await Outlet.find({ companyId, isDeleted: false }, { _id: 1 });
+
+//   if (outletId && mongoose.Types.ObjectId.isValid(outletId as string)) {
+//     outlets = outlets.filter((o:any) => o._id.toString() === outletId);
+//   }
+
+//   const outletIds = outlets.map((o:any) => o._id);
+
+//   if (!outletIds.length) {
+//     return res.status(httpStatus.OK).send({
+//       message: "No outlets found",
+//       data: {
+//         salesByDate: [],
+//         salesByPaymentMode: [],
+//         salesByOutlet: [],
+//         salesByStatus: [],
+//         topCustomers: [],
+//         topItems: [],
+//       },
+//     });
+//   }
+
+//   const filter: any = {
+//     outletId: { $in: outletIds },
+//     isDeleted: false,
+//   };
+
+//   if (startDate && endDate) {
+//     filter.invoiceDate = {
+//       $gte: new Date(startDate as string),
+//       $lte: new Date(endDate as string),
+//     };
+//   }
+
+//   // Determine grouping by date unit
+//   let groupFormat = "%Y-%m-%d";
+//   if (reportDuration === "MONTHLY") {
+//     groupFormat = "%Y-%m";
+//   } else if (reportDuration === "YEARLY") {
+//     groupFormat = "%Y";
+//   }
+
+//   const [
+//     salesByDate,
+//     salesByPaymentMode,
+//     salesByOutlet,
+//     salesByStatus,
+//     topCustomers,
+//     topItems,
+//   ] = await Promise.all([
+//     Invoice.aggregate([
+//       { $match: filter },
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: groupFormat, date: "$invoiceDate" } },
+//           total: { $sum: "$totalAmount" },
+//         },
+//       },
+//       { $sort: { _id: 1 } },
+//     ]),
+
+//     Invoice.aggregate([
+//       { $match: filter },
+//       { $unwind: "$amountReceived" },
+//       {
+//         $lookup: {
+//           from: "paymentmodes",
+//           localField: "amountReceived.paymentModeId",
+//           foreignField: "_id",
+//           as: "paymentModeDetails",
+//         },
+//       },
+//       {
+//         $addFields: {
+//           modeName: {
+//             $arrayElemAt: ["$paymentModeDetails.modeName", 0],
+//           },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$modeName",
+//           total: { $sum: "$amountReceived.amount" },
+//         },
+//       },
+//     ]),
+
+//     Invoice.aggregate([
+//       { $match: filter },
+//       {
+//         $lookup: {
+//           from: "outlets",
+//           localField: "outletId",
+//           foreignField: "_id",
+//           as: "outlet",
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: { $arrayElemAt: ["$outlet.name", 0] },
+//           total: { $sum: "$totalAmount" },
+//         },
+//       },
+//     ]),
+
+//     Invoice.aggregate([
+//       { $match: filter },
+//       {
+//         $group: {
+//           _id: "$status",
+//           total: { $sum: "$totalAmount" },
+//         },
+//       },
+//     ]),
+
+//     Invoice.aggregate([
+//       { $match: filter },
+//       {
+//         $lookup: {
+//           from: "customers",
+//           localField: "customerId",
+//           foreignField: "_id",
+//           as: "customer",
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: { $arrayElemAt: ["$customer.customerName", 0] },
+//           total: { $sum: "$totalAmount" },
+//         },
+//       },
+//       { $sort: { total: -1 } },
+//       { $limit: 5 },
+//     ]),
+
+//     Invoice.aggregate([
+//       { $match: filter },
+//       { $unwind: "$items" },
+//       {
+//         $group: {
+//           _id: "$items.itemName",
+//         total: { $sum: "$items.quantity" },
+//         },
+//       },
+//       { $sort: { total: -1 } },
+//       { $limit: 5 },
+//     ]),
+//   ]);
+
+//   return res.status(httpStatus.OK).send({
+//     message: "Company sales summary fetched successfully",
+//     data: {
+//       salesByDate,
+//       salesByPaymentMode,
+//       salesByOutlet,
+//       salesByStatus,
+//       topCustomers,
+//       topItems,
+//     },
+//   });
+// });
 const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const companyId = req.params.id;
   const { outletId, startDate, endDate, reportDuration } = req.query;
@@ -387,15 +564,33 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
     });
   }
 
-  // Fetch outlet IDs under this company
+  // ✅ Step 1: Fetch all outlet IDs under this company
   let outlets = await Outlet.find({ companyId, isDeleted: false }, { _id: 1 });
 
-  if (outletId && mongoose.Types.ObjectId.isValid(outletId as string)) {
-    outlets = outlets.filter((o:any) => o._id.toString() === outletId);
+  let outletIdList: string[] = [];
+
+  const outletIdParam = req.query.outletId;
+
+  if (Array.isArray(outletIdParam)) {
+    outletIdList = outletIdParam
+      .map((id) => (typeof id === 'string' ? id : ''))
+      .filter((id) => mongoose.Types.ObjectId.isValid(id));
+  } else if (typeof outletIdParam === 'string') {
+    if (mongoose.Types.ObjectId.isValid(outletIdParam)) {
+      outletIdList = [outletIdParam];
+    }
   }
 
-  const outletIds = outlets.map((o:any) => o._id);
 
+  if (outletIdList.length > 0) {
+    outlets = outlets.filter((o: any) => outletIdList.includes(o._id.toString()));
+  }
+
+  const outletIds = outlets.map((o: any) => o._id);
+
+
+
+  console.log('----outletIds', outletIds)
   if (!outletIds.length) {
     return res.status(httpStatus.OK).send({
       message: "No outlets found",
@@ -411,9 +606,12 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
   }
 
   const filter: any = {
-    outletId: { $in: outletIds },
     isDeleted: false,
   };
+
+  if (outletIds.length > 0) {
+    filter.outletId = { $in: outletIds };
+  }
 
   if (startDate && endDate) {
     filter.invoiceDate = {
@@ -422,7 +620,7 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
     };
   }
 
-  // Determine grouping by date unit
+  // ✅ Step 4: Determine grouping by duration
   let groupFormat = "%Y-%m-%d";
   if (reportDuration === "MONTHLY") {
     groupFormat = "%Y-%m";
@@ -430,6 +628,7 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
     groupFormat = "%Y";
   }
 
+  // ✅ Step 5: Run all aggregations in parallel
   const [
     salesByDate,
     salesByPaymentMode,
@@ -438,6 +637,7 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
     topCustomers,
     topItems,
   ] = await Promise.all([
+    // Sales by Date
     Invoice.aggregate([
       { $match: filter },
       {
@@ -449,6 +649,7 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
       { $sort: { _id: 1 } },
     ]),
 
+    // Sales by Payment Mode
     Invoice.aggregate([
       { $match: filter },
       { $unwind: "$amountReceived" },
@@ -475,6 +676,7 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
       },
     ]),
 
+    // Sales by Outlet
     Invoice.aggregate([
       { $match: filter },
       {
@@ -493,6 +695,7 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
       },
     ]),
 
+    // Sales by Status
     Invoice.aggregate([
       { $match: filter },
       {
@@ -503,6 +706,7 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
       },
     ]),
 
+    // Top 5 Customers
     Invoice.aggregate([
       { $match: filter },
       {
@@ -523,13 +727,14 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
       { $limit: 5 },
     ]),
 
+    // Top 5 Selling Items by Quantity
     Invoice.aggregate([
       { $match: filter },
       { $unwind: "$items" },
       {
         $group: {
           _id: "$items.itemName",
-        total: { $sum: "$items.quantity" },
+          total: { $sum: "$items.quantity" },
         },
       },
       { $sort: { total: -1 } },
@@ -537,6 +742,7 @@ const getCompanySalesChartData = catchAsync(async (req: AuthenticatedRequest, re
     ]),
   ]);
 
+  // ✅ Step 6: Return results
   return res.status(httpStatus.OK).send({
     message: "Company sales summary fetched successfully",
     data: {

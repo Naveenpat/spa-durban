@@ -48,6 +48,10 @@ export const getFormattedTimestamp = (): string => {
 //   return queryArray.length ? queryArray : null
 // }
 
+const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape special regex chars
+};
+
 export const getSearchQuery = (
   searchIn: string[] | undefined,
   searchKeys: string[],
@@ -56,7 +60,8 @@ export const getSearchQuery = (
   let queryArray: Record<string, any>[] = [];
 
   if (searchValue && searchValue.trim() !== "") {
-    const value = { $regex: `^${searchValue}`, $options: "i" }; // Starts with
+    // const value = { $regex: `^${searchValue}`, $options: "i" }; // Starts with
+    const value = { $regex: escapeRegExp(searchValue), $options: "i" }; // Anywhere in string
     const searchFields = searchIn && searchIn.length ? searchIn : searchKeys;
 
     for (const key of searchFields) {
