@@ -556,7 +556,7 @@ const PaymentFormLayout = ({
               </div>
             </div>
           </div>
-          {!isPreviewed || previewData?.invoiceData?.totalAmount === 0 ? (
+          {!isPreviewed ? (
             <div className=" w-[500px]"></div>
           ) : (
             <div className="flex flex-col justify-between p-2 border rounded-lg w-[500px]">

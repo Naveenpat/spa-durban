@@ -138,3 +138,4 @@ export const allMimetype = [
 ]
 
 export const pdfMimeType = ["application/pdf"]
+export const csvMimeType = ['text/csv']

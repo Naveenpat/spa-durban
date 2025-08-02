@@ -81,7 +81,7 @@ const markGiftCardCouponAsUsed = async (
   if (alreadyUsed) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Gift Card coupon already used by this customer');
   }
-
+  coupon.isActive = false;
   coupon.usedBy.push(new mongoose.Types.ObjectId(customerId));
   await coupon.save();
 

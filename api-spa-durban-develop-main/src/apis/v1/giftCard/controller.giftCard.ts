@@ -16,7 +16,9 @@ import {
   checkInvalidParams,
   getDateFilterQuery,
 } from "../../../utils/utils"
-import { searchKeys, allowedDateFilterKeys } from "./schema.giftCard"
+import GiftCard, { searchKeys, allowedDateFilterKeys } from "./schema.giftCard"
+import XLSX from "xlsx";
+import fs from "fs";
 
 const createGiftCard = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -248,6 +250,59 @@ const toggleGiftCardStatus = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const uploadGiftCardCsv = catchAsync(async (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      message: "CSV or Excel file is required.",
+      status: false,
+      code: "BAD_REQUEST",
+      issue: "No file uploaded",
+    });
+  }
+
+  try {
+    // Read the file
+    const workbook = XLSX.readFile(req.file.path);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet);
+
+    // Map the Excel fields to DB fields
+    const giftCardstt = (data as any[]).map((row) => ({
+      giftCardName: row.number,
+      giftCardAmount: Number(row.balance || 0),
+      total_sold: Number(row.total_sold || 0),
+      total_redeemed: Number(row.total_redeemed || 0),
+      giftCardExpiryDate:new Date(new Date().setFullYear(new Date().getFullYear() + 10)),
+      type:"WHOEVER_BOUGHT"
+    }));
+
+    // Save to DB
+    await GiftCard.insertMany(giftCardstt);
+
+    // Remove file after import
+    fs.unlinkSync(req.file.path);
+
+    return res.status(httpStatus.CREATED).json({
+      message: "Gift cards uploaded successfully.",
+      data: {
+        inserted: giftCardstt.length,
+      },
+      status: true,
+      code: "CREATED",
+      issue: null,
+    });
+  } catch (error) {
+    console.error("Error uploading CSV:", error);
+
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: "Failed to process CSV file.",
+      status: false,
+      code: "SERVER_ERROR",
+      issue: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
 export {
   createGiftCard,
   getGiftCards,
@@ -255,4 +310,5 @@ export {
   updateGiftCard,
   deleteGiftCard,
   toggleGiftCardStatus,
+  uploadGiftCardCsv
 }

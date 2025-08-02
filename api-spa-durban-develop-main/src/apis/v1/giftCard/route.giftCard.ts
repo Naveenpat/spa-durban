@@ -6,6 +6,7 @@ import {
   updateGiftCard,
   deleteGiftCard,
   toggleGiftCardStatus,
+  uploadGiftCardCsv,
 } from "./controller.giftCard"
 import validate from "../../../middleware/validate"
 import {
@@ -19,7 +20,9 @@ import {
 import { authenticate } from "../../../middleware/authentication"
 import { parseBodyAndQuery } from "../../../middleware/parseBodyAndQuery"
 import { UserEnum, TokenEnum } from "../../../utils/enumUtils"
-
+import multer from "multer";
+import path from "path";
+import { fileUpload } from "../../../middleware/multerFileUpload"
 const router = Router()
 
 /**
@@ -289,4 +292,11 @@ router.put(
   toggleGiftCardStatus
 )
 
+// POST /api/giftcard/upload-csv
+router.post(
+  "/upload-csv",
+  // authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  fileUpload.single("file"),
+  uploadGiftCardCsv
+);
 export default router

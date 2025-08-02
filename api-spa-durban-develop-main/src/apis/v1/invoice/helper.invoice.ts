@@ -107,6 +107,11 @@ const getGiftCardDiscount = async (
   if (!giftCard) {
     throw new ApiError(httpStatus.NOT_FOUND, "Invalid gift card.");
   }
+
+  if (!giftCard.isActive) {
+  throw new ApiError(httpStatus.BAD_REQUEST, "Gift card already redeemed.");
+  }
+
   if (
     giftCard.type === GiftCardTypeEnum.specificCustomer &&
     giftCard.customerId.toString() !== customerId.toString()

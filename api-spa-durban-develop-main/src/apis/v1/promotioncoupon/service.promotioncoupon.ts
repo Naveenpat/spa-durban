@@ -219,26 +219,26 @@ const aggregateAllCoupons = async (customerId: string, items: string[]) => {
   //   type: 'GiftCard',
   // }));
 
-  const giftCardDocs = await GiftCard.find({
-  giftCardExpiryDate: { $gte: today },
-  isDeleted: false,
-  isActive: true,
-  $or: [
-    { customerId: customerId },              // personalized
-    { customerId: null, type: 'WHOEVER_BOUGHT' } // public gift cards
-  ],
-  usedBy: { $nin: [customerId] }
-}).lean();
+//   const giftCardDocs = await GiftCard.find({
+//   giftCardExpiryDate: { $gte: today },
+//   isDeleted: false,
+//   isActive: true,
+//   $or: [
+//     { customerId: customerId },              // personalized
+//     { customerId: null, type: 'WHOEVER_BOUGHT' } // public gift cards
+//   ],
+//   usedBy: { $nin: [customerId] }
+// }).lean();
 
 // console.log('------giftCardDocs',giftCardDocs)
 
-const giftCards = giftCardDocs.map((doc) => ({
-  _id: doc._id,
-  code: doc.giftCardName,
-  discount: doc.giftCardAmount,
-  validTill: doc.giftCardExpiryDate,
-  type: 'GiftCard',
-}));
+// const giftCards = giftCardDocs.map((doc) => ({
+//   _id: doc._id,
+//   code: doc.giftCardName,
+//   discount: doc.giftCardAmount,
+//   validTill: doc.giftCardExpiryDate,
+//   type: 'GiftCard',
+// }));
 
 
   // 🎯 3. Birthday Coupons
@@ -283,7 +283,7 @@ const giftCards = giftCardDocs.map((doc) => ({
 
 
   // 🔄 Combine and Sort All Coupons
-  const allCoupons = [...promotionalCoupons, ...giftCards, ...birthdayCoupons, ...rewardCouponDocs];
+  const allCoupons = [...promotionalCoupons,...birthdayCoupons, ...rewardCouponDocs];
 
   return allCoupons.sort(
     (a, b) => new Date(a.validTill).getTime() - new Date(b.validTill).getTime()

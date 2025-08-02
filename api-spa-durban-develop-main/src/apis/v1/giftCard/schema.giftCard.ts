@@ -15,6 +15,8 @@ export interface GiftCardDocument extends Document {
   usedBy: Types.ObjectId[];
   isDeleted: boolean
   isActive: boolean
+  total_sold:number
+  total_redeemed:number
 }
 
 export interface GiftCardModel extends mongoose.Model<GiftCardDocument> {
@@ -67,7 +69,15 @@ const GiftCardSchema = new mongoose.Schema<GiftCardDocument>(
         return formattedDate
       },
     },
-    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Customer',default:[] }],
+    total_sold: {
+      type: Number,
+      default: 0
+    },
+    total_redeemed: {
+      type: Number,
+      default: 0
+    },
+    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Customer', default: [] }],
     isDeleted: {
       type: Boolean,
       default: false,

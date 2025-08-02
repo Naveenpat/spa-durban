@@ -87,6 +87,7 @@ export enum AllFileTypeEnum {
   image = "IMAGE",
   document = "DOCUMENT",
   video = "VIDEO",
+  csv = 'CSV'
 }
 
 export enum TicketTypeEnum {

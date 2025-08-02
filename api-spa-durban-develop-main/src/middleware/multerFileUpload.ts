@@ -8,6 +8,7 @@ import {
   videoMimetype,
   documentMimeType,
   allMimetype,
+  csvMimeType,
 } from "../helper/mimeTypes"
 import { AllFileTypeEnum } from "../utils/enumUtils"
 
@@ -64,6 +65,9 @@ const fileFilter = (
     case AllFileTypeEnum.document:
       mimeTypeToCheck = documentMimeType
       break
+    case AllFileTypeEnum.csv:
+      mimeTypeToCheck = csvMimeType   // ✅ ये लाइन जोड़ी
+      break
     default:
       mimeTypeToCheck = allMimetype
       break
@@ -78,7 +82,7 @@ const fileFilter = (
 
 export const fileUpload = multer({
   storage,
-  fileFilter,
+  // fileFilter,
   // limits: {
   //   fileSize: 1024 * 1024 * 5, // 5MB file size limit
   // },
