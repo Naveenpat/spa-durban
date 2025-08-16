@@ -28,6 +28,8 @@ const EditCategoryFormWrapper = ({ onClose, categoryId }: Props) => {
     categoryName: (data as any)?.data?.categoryName,
     description: (data as any)?.data?.description,
     colorCode: (data as any)?.data?.colorCode,
+    categoryImageUrl:(data as any)?.data?.categoryImageUrl,
+    termsAndConditions:(data as any)?.data?.termsAndConditions
   };
 
   const validationSchema = object().shape({

@@ -12,4 +12,6 @@ export type CategoryFormValues = {
   categoryName: string;
   description: string;
   colorCode?:string;
+  categoryImageUrl:string;
+  termsAndConditions:string;
 };

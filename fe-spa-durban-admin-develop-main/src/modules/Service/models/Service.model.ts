@@ -2,9 +2,9 @@ export type Service = {
   serviceName: string;
   serviceCode: string;
   categoryId: string;
-  categoryName: string;
+  categoryName: any[];
   subCategoryId: string;
-  subCategoryName: string;
+  subCategoryName: any[];
   serviceImageUrl: string;
   sellingPrice: number;
   createdAt: Date;
@@ -15,8 +15,8 @@ export type Service = {
 
 export type ServiceFormValues = {
   serviceName: string;
-  category: any;
-  subCategory: any;
+  category: any[];
+  subCategory: any[];
   serviceCode: string;
   sellingPrice: string;
   tax: any;

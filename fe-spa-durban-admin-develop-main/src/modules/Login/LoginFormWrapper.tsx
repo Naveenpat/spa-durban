@@ -82,7 +82,7 @@ const LoginFormWrapper = () => {
     login(values).then((res: any) => {
       setSubmitting(false);
       if (res.error) {
-        showToast('error', 'Login Successfully');
+        showToast('error', 'Login Failed');
       } else {
         if (res?.data?.status) {
           afterLogin(res?.data?.data);

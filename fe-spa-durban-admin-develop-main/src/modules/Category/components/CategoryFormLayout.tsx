@@ -5,6 +5,7 @@ import { CategoryFormValues } from '../models/Category.model';
 import ATMTextArea from 'src/components/atoms/FormElements/ATMTextArea/ATMTextArea';
 import ATMCircularProgress from 'src/components/atoms/ATMCircularProgress/ATMCircularProgress';
 import { SketchPicker } from 'react-color';
+import ATMFileUploader from 'src/components/atoms/FormElements/ATMFileUploader/ATMFileUploader';
 type Props = {
   formikProps: FormikProps<CategoryFormValues>;
   onClose: () => void;
@@ -68,6 +69,35 @@ const CategoryFormLayout = ({
               onChangeComplete={(e) => setFieldValue('colorCode', e.hex)}
             />
           </div>
+           <div className="col-span-3">
+              <ATMTextArea
+                required
+                name="termsAndConditions"
+                value={values.termsAndConditions}
+                onChange={(e) =>
+                  setFieldValue('termsAndConditions', e.target.value)
+                }
+                label="Terms & Conditions"
+                placeholder="Enter Terms & Conditions "
+                onBlur={handleBlur}
+                isTouched={touched?.termsAndConditions}
+                errorMessage={errors?.termsAndConditions}
+                isValid={!errors?.termsAndConditions}
+              />
+            </div>
+
+            <div>
+              <ATMFileUploader
+                name="categoryImageUrl"
+                value={values.categoryImageUrl}
+                onChange={(file: string) => {
+                  setFieldValue('categoryImageUrl', file);
+                }}
+                label="Image"
+                accept=".jpg, .jpeg, .png, .gif"
+                folderName='category'
+              />
+            </div>
         </div>
       )}
     </MOLFormDialog>

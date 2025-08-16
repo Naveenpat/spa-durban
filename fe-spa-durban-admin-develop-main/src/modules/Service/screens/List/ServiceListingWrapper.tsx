@@ -131,18 +131,24 @@ const ServiceListingWrapper = (props: Props) => {
       headerName: 'Code',
       flex: 'flex-[1_0_0%]',
     },
-    {
-      fieldName: 'categoryName',
-      headerName: 'Category',
-      flex: 'flex-[1_0_0%]',
-      align: 'start',
-    },
-    {
-      fieldName: 'subCategoryName',
-      headerName: 'Sub Category',
-      flex: 'flex-[1_0_0%]',
-      renderCell: (item) => item?.subCategoryName || '-',
-    },
+   {
+  fieldName: 'categoryName',
+  headerName: 'Category',
+  flex: 'flex-[1_0_0%]',
+  align: 'start',
+  renderCell: (item:any) => item?.categoryName
+  .map((c:any) => c.categoryNames)
+  .join(", "),
+},
+{
+  fieldName: 'subCategoryName',
+  headerName: 'Sub Category',
+  flex: 'flex-[1_0_0%]',
+  renderCell: (item:any) => item?.subCategoryName
+  .map((c:any) => c.subCategoryNames)
+  .join(", "),
+},
+
 
     {
       fieldName: 'sellingPrice',

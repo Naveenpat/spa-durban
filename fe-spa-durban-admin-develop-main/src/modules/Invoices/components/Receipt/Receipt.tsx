@@ -125,7 +125,7 @@ const Receipt = () => {
 
         let pdfBlob = pdf.output('blob');
         const blobUrl = URL.createObjectURL(pdfBlob);
-        window.open(blobUrl, '_blank');
+        // window.open(blobUrl, '_blank');
         const formData = new FormData();
         formData.append('file', pdfBlob, 'receipt.pdf');
         formData.append('emailBody', 'any');

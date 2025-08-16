@@ -13,6 +13,8 @@ export type Invoices = {
   status: string;
   action?: any;
   voidNote:any;
+  giftCardCode:any;
+  giftCardDiscount:any;
   _id: string;
 };
 export type SalesReport = {

@@ -16,6 +16,8 @@ export const create: { body: ObjectSchema } = {
     categoryName: Joi.string().lowercase().required(),
     description: Joi.string().lowercase().allow(""),
     colorCode: Joi.string().lowercase().allow(""),
+    categoryImageUrl: Joi.string().lowercase().allow(""),
+    termsAndConditions:Joi.string().lowercase().allow("")
   }),
 };
 
@@ -30,7 +32,9 @@ export const update: { params: ObjectSchema; body: ObjectSchema } = {
     categoryName: Joi.string().lowercase().required(),
     description: Joi.string().lowercase().allow(""),
     colorCode: Joi.string().lowercase().allow(""),
-  }),
+    categoryImageUrl: Joi.string().lowercase().allow(""),
+    termsAndConditions: Joi.string().lowercase().allow("")
+  }), 
 };
 
 /**

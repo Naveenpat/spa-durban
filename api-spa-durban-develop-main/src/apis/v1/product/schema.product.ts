@@ -27,6 +27,7 @@ export interface ProductDocument extends Document {
   isDeleted: boolean;
   isActive: boolean;
   availableQuantity: number;
+  categoryIds?:ObjectId
 }
 
 export interface ProductModel extends mongoose.Model<ProductDocument> {

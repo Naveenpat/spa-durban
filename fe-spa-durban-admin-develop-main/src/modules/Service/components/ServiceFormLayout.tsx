@@ -60,8 +60,8 @@ const ServiceFormLayout = ({
           },
           {
             fieldName: 'categoryId',
-            value: values?.category?._id,
-          },
+            value: values?.category?.map(cat => cat._id) || [],
+          }
         ]),
       },
     });
@@ -169,7 +169,7 @@ const ServiceFormLayout = ({
             </div>
             {/*Category */}
             <div>
-              <ATMSelect
+              {/* <ATMSelect
                 required
                 name="category"
                 value={values.category}
@@ -185,11 +185,24 @@ const ServiceFormLayout = ({
                 onBlur={handleBlur}
                 isValid={!errors?.category}
                 isLoading={isCategoriesLoading}
+              /> */}
+              <ATMMultiSelect
+                name="category"
+                value={values.category}
+                onChange={(newValue) => setFieldValue('category', newValue)}
+                label="Category"
+                placeholder="Select Category"
+                options={categories}
+                onBlur={handleBlur}
+                isValid={!errors?.category}
+                getOptionLabel={(option: any) => option?.categoryName}
+                valueAccessKey="_id"
+                isLoading={isCategoriesLoading}
               />
             </div>
             {/*Sub Category */}
             <div>
-              <ATMSelect
+              {/* <ATMSelect
                 name="subCategory"
                 value={values.subCategory}
                 onChange={(newValue) => setFieldValue('subCategory', newValue)}
@@ -200,6 +213,19 @@ const ServiceFormLayout = ({
                 onBlur={handleBlur}
                 isValid={!errors?.subCategory}
                 getOptionLabel={(option: any) => option?.subCategoryName}
+                isLoading={isSubCategoriesLoading}
+              /> */}
+              <ATMMultiSelect
+                name="subCategory"
+                value={values.subCategory}
+                onChange={(newValue) => setFieldValue('subCategory', newValue)}
+                label="Sub Category"
+                placeholder="Select Sub Category"
+                options={subCategories}
+                onBlur={handleBlur}
+                isValid={!errors?.subCategory}
+                getOptionLabel={(option: any) => option?.subCategoryName}
+                valueAccessKey="_id"
                 isLoading={isSubCategoriesLoading}
               />
             </div>
@@ -262,7 +288,7 @@ const ServiceFormLayout = ({
                 isTouched={touched?.duration}
                 errorMessage={errors?.duration}
                 isValid={!errors?.duration}
-                // isAllowDecimal
+              // isAllowDecimal
               />
             </div>
             <div className="col-span-1">
@@ -277,7 +303,7 @@ const ServiceFormLayout = ({
                 isTouched={touched?.cashback}
                 errorMessage={errors?.cashback}
                 isValid={!errors?.cashback}
-                // isAllowDecimal
+              // isAllowDecimal
               />
             </div>
             {/*Outlet */}
@@ -337,7 +363,7 @@ const ServiceFormLayout = ({
                 onChange={(file: string) => {
                   setFieldValue('serviceImageUrl', file);
                 }}
-                label="Image"
+                label="Image (360px * 360px)"
                 accept=".jpg, .jpeg, .png, .gif"
                 folderName='services'
               />
@@ -416,7 +442,7 @@ const ServiceFormLayout = ({
                             <ATMNumberField
                               name=""
                               value={`${Number(product?.quantity || '0') * Number(product?.product?.sellingPrice || '0')}`}
-                              onChange={() => {}}
+                              onChange={() => { }}
                               label=""
                               onBlur={handleBlur}
                               disabled
@@ -455,11 +481,10 @@ const ServiceFormLayout = ({
                       ))}
 
                     <div
-                      className={`flex items-center justify-center gap-1 p-3 border border-dashed rounded cursor-pointer bg-gray-50 ${
-                        !isLastProductFilled()
-                          ? 'opacity-50 cursor-not-allowed'
-                          : ''
-                      }`}
+                      className={`flex items-center justify-center gap-1 p-3 border border-dashed rounded cursor-pointer bg-gray-50 ${!isLastProductFilled()
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                        }`}
                       onClick={() => {
                         if (isLastProductFilled()) {
                           arrayHelpers.push({

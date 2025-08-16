@@ -15,8 +15,8 @@ export interface Product {
 export interface ServiceDocument extends Document {
   _id: ObjectId;
   serviceName: string;
-  categoryId: ObjectId;
-  subCategoryId: ObjectId;
+  categoryIds: ObjectId;
+  subCategoryIds: ObjectId;
   serviceCode: string;
   sellingPrice: number;
   outletIds: ObjectId;
@@ -63,14 +63,14 @@ const ServiceSchema = new mongoose.Schema<ServiceDocument>(
       trim: true,
       lowercase: true,
     },
-    categoryId: {
-      type: mongoose.Types.ObjectId,
+    categoryIds: {
+      type: [mongoose.Types.ObjectId],
       ref: "Category",
       required: false,
       trim: true,
     },
-    subCategoryId: {
-      type: mongoose.Types.ObjectId,
+    subCategoryIds: {
+      type: [mongoose.Types.ObjectId],
       ref: "SubCategory",
       default: null,
       trim: true,

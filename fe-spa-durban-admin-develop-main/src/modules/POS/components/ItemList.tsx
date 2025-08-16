@@ -1,5 +1,5 @@
 import { IconX, IconPlus, IconMinus, IconPencil, IconPin } from '@tabler/icons-react';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import ATMSearchBox from 'src/components/atoms/ATMSearchBox/ATMSearchBox';
@@ -23,12 +23,23 @@ import { IconLoader2 } from '@tabler/icons-react';
 import { IconChevronDown } from '@tabler/icons-react';
 import { IconPinFilled } from '@tabler/icons-react';
 import ProductCard from './productCard';
+import ATMSelect from 'src/components/atoms/FormElements/ATMSelect/ATMSelect';
+import ATMDialog from 'src/components/atoms/ATMDialog/ATMDialog';
+import ATMTextField from 'src/components/atoms/FormElements/ATMTextField/ATMTextField';
+import ATMNumberField from 'src/components/atoms/FormElements/ATMNumberField/ATMNumberField';
+import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
 
 type Props = {
   onItemClick: (item: any) => void;
   onAllItemsProcessed: (item: any) => void;
   isDisabled: boolean;
 };
+
+interface SelectedService {
+  _id: string;
+  itemName: string;
+  sellingPrice: number;
+}
 
 const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
   const [updateService] = useUpdateServiceToTopMutation();
@@ -42,6 +53,19 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
   const { outlet } = useSelector((state: RootState) => state.auth);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [openEditServiceModal, setEditServiceModal] = useState(false);
+  const [serviceId, setServiceId] = useState<string>("");
+  const [serviceName, setServiceName] = useState<string>("");
+  const [sellingPrice, setSellingPrice] = useState<number>(0);
+
+
+  const handleEditService = (service: SelectedService) => {
+    setServiceId(service._id);
+    setServiceName(service.itemName);
+    setSellingPrice(service.sellingPrice);
+  };
+
+
   const handleCheckboxChange = (_id: string) => {
     setSelectedCategories((prevSelected) =>
       prevSelected.includes(_id)
@@ -58,23 +82,65 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
   const [showAction, setShowAction] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { data, isLoading, refetch, isFetching } = useFetchData(useGetItemsQuery, {
-    body: {
-      page: page,            // <-- Add this
-      limit: 12,
-      searchValue: searchValue,
-      filterBy: JSON.stringify([
-        {
-          fieldName: 'categoryId',
-          value: selectedCategories,
-        },
-      ]),
-      outletId: (outlet as any)?._id,
-    },
-    options: {
-      skip: !isSearch,
-    },
-  });
+  // const { data, isLoading, refetch, isFetching } = useFetchData(useGetItemsQuery, {
+  //   body: {
+  //     page: page,            // <-- Add this
+  //     limit: 15,
+  //     searchValue: searchValue,
+  //     filterBy: JSON.stringify([
+  //       {
+  //         fieldName: 'categoryId',
+  //         value: selectedCategories,
+  //       },
+  //     ]),
+  //     outletId: (outlet as any)?._id,
+  //   },
+  //   options: {
+  //     skip: !isSearch,
+  //   },
+  // });
+
+  const { data, isLoading, refetch, isFetching } = useFetchData(
+    useGetItemsQuery,
+    {
+      body: useMemo(() => {
+        const filters: any[] = [];
+
+        if (selectedCategories?.length > 0) {
+          filters.push({
+            fieldName: "categoryId",
+            value: selectedCategories,
+          });
+        }
+
+        // agar searchValue empty hai to filter me add mat karo
+        if (searchValue?.trim()) {
+          filters.push({
+            fieldName: "search",
+            value: searchValue.trim(),
+          });
+        }
+
+        return {
+          page,
+          limit: 15,
+          searchValue: searchValue?.trim() || "", // empty ho to bhi bhej do
+          filterBy: JSON.stringify(filters),
+          outletId: (outlet as any)?._id,
+        };
+      }, [page, searchValue, selectedCategories, outlet]),
+
+      options: {
+        skip: !isSearch, // sirf jab search on ho
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (!searchValue?.trim()) {
+      refetch();
+    }
+  }, [searchValue, refetch]);
 
 
   // console.log('---------data', data)
@@ -156,6 +222,33 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
       },
     );
   }
+
+  const categoryOptions = [
+    { _id: "", categoryName: "Select Category" },
+    ...(categoryData ?? [])
+  ];
+
+  const handleEditServicess = () => {
+    const formattedValues = {
+    name: serviceName,
+    price: sellingPrice
+  }
+
+  updateService({ serviceId, body: formattedValues })
+  .then((res:any)=>{
+    setEditServiceModal(false);
+    if (res?.error) {
+
+    }else{
+      if (res?.data?.status) {
+        refetch();
+        
+      }
+    }
+  })
+  };
+
+
   return (
     <div className={`flex flex-col w-full h-full gap-2 p-4 overflow-auto ${isDisabled ? 'pointer-events-none opacity-30' : ''}`}>
       {/* Search Box */}
@@ -164,56 +257,50 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
           Register Closed
         </div>
       )}
-      <div className="flex items-stretch gap-2">
-        <ATMSearchBox
-          value={searchValue}
-          onChange={(e) => {
-            if (e.target?.value) {
-              setIsSearch(false);
-            } else {
+      <div className="flex flex-col md:flex-row gap-2">
+        <div className="w-full md:w-1/2">
+          <ATMSearchBox
+            value={searchValue}
+            onChange={(e) => {
+              if (e.target?.value) {
+                setIsSearch(false);
+              } else {
+                setIsSearch(true);
+              }
+              setSearchValue(e?.target?.value);
+            }}
+            placeholder="Search product or service"
+            onClear={() => {
+              setSearchValue('');
+            }}
+            autoFocused
+            onFocus={() => setBarcodeValue('')}
+            onKeyUp={(e) => {
+              // if (e.key === 'Enter') {
               setIsSearch(true);
-            }
-            setSearchValue(e?.target?.value);
-          }}
-          placeholder="Search product or service"
-          onClear={() => {
-            setSearchValue('');
-          }}
-          autoFocused
-          onFocus={() => setBarcodeValue('')}
-          onKeyUp={(e) => {
-            if (e.key === 'Enter') {
-              setIsSearch(true);
-            }
-          }}
-        />
+              // }
+            }}
+          />
+        </div>
+        <div className="w-full md:w-1/2">
+          <ATMSelect
+            options={categoryOptions}
+            value={selectedCategories}
+            onChange={(newValue) => {
+              if (!newValue || !newValue._id) {
+                // Agar "Select Category" option choose hua
+                setSelectedCategories([]);
+              } else {
+                setSelectedCategories(newValue._id);
+              }
+            }}
 
-        <ATMBarcodeField
-          value={barcodeValue}
-          onChange={(e) => {
-            setBarcodeValue(e?.target?.value);
-          }}
-          placeholder="Barcode"
-          onFocus={() => setSearchValue('')}
-          onKeyUp={(e) => {
-            if (e.key === 'Enter') {
-              getProductDetails(barcodeValue).then((res: any) => {
-                if (res?.error) {
-                } else {
-                  if (res?.data?.status) {
-                    if (audioRef.current) {
-                      audioRef.current.play();
-                    }
-                    onItemClick(res?.data?.data);
-                  } else {
-                  }
-                }
-                setBarcodeValue('');
-              });
-            }
-          }}
-        />
-
+            valueAccessKey="_id"
+            getOptionLabel={(option: any) => option?.categoryName}
+            placeholder="Please Select Category"
+            isClearable={false}
+          />
+        </div>
         {/* <div>
           <div
             onClick={() => navigate('/dashboard')}
@@ -292,15 +379,21 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
 
         >
           {isLoading ? (
-            Array(12)
+            Array(15)
               ?.fill(null)
               ?.map((_, index) => <ItemLoadingCard key={index} />)
           ) : items?.length === 0 ? (
             <NoItemFound />
           ) : (
             items?.map((product, index) => {
+              const matchedCategories = categoryData?.filter((cat) =>
+                product.categoryIds?.includes(cat._id)
+              );
+
+              // Agar ek hi category image dikhani hai to first le lo
+              const categoryImageUrl = matchedCategories?.[0]?.categoryImageUrl || null;
               return (
-                <ProductCard key={index} product={product} onItemClick={onItemClick} handleAction={handleAction} />
+                <ProductCard key={index} product={product} categoryImageUrl={categoryImageUrl} onItemClick={onItemClick} handleAction={handleAction} setEditServiceModal={setEditServiceModal} handleEditService={handleEditService} />
               );
             })
           )}
@@ -334,6 +427,56 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
         <source src="/beep.wav" type="audio/wav" />
         Your browser does not support the audio element.
       </audio>
+
+
+      {openEditServiceModal && (
+        <ATMDialog>
+          <div className="p-6 w-full space-y-6">   {/* 👈 padding aur spacing */}
+
+            {/* Heading */}
+            <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">
+              Edit Service
+            </h2>
+
+            {/* Service Name Field */}
+            <ATMTextField
+              required
+              name="serviceName"
+              value={serviceName}
+              onChange={(e) => setServiceName(e.target.value)}
+              label="Service Name"
+              placeholder="Enter Service Name"
+            />
+
+            {/* Selling Price Field */}
+            <ATMNumberField
+              required
+              name="sellingPrice"
+              value={sellingPrice.toString()}
+              onChange={(value: string) => setSellingPrice(Number(value))}
+              label="Selling Price"
+              placeholder="Enter Selling Price"
+              isAllowDecimal
+            />
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4">
+              <ATMButton
+                onClick={() => setEditServiceModal(false)}
+                variant="outlined"
+                color="neutral"
+              >
+                Cancel
+              </ATMButton>
+              <ATMButton onClick={handleEditServicess} type="submit" color="primary" variant="contained">
+                Update
+              </ATMButton>
+            </div>
+          </div>
+        </ATMDialog>
+      )}
+
+
     </div>
   );
 };

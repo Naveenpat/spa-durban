@@ -17,6 +17,8 @@ const AddCategoryFormWrapper = ({ onClose }: Props) => {
     categoryName: '',
     description: '',
     colorCode: '',
+    categoryImageUrl:'',
+    termsAndConditions:''
   };
 
   const validationSchema = object().shape({

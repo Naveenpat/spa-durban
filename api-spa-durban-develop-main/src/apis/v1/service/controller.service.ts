@@ -333,12 +333,13 @@ const getServices = catchAsync(
       {
         $lookup: {
           from: "categories", // The collection name in MongoDB
-          localField: "categoryId", // The field in the Service collection
+          localField: "categoryIds", // The field in the Service collection
           foreignField: "_id", // The field in the Category collection
           as: "categoryDetails", // The field name for the joined category data
           pipeline: [
             {
               $project: {
+                _id: 1,
                 categoryName: 1,
               },
             },
@@ -348,12 +349,13 @@ const getServices = catchAsync(
       {
         $lookup: {
           from: "subcategories", // The collection name in MongoDB
-          localField: "subCategoryId", // The field in the Service collection
+          localField: "subCategoryIds", // The field in the Service collection
           foreignField: "_id", // The field in the Subcategory collection
           as: "subCategoryDetails", // The field name for the joined subcategory data
           pipeline: [
             {
               $project: {
+                _id: 1,
                 subCategoryName: 1,
               },
             },
@@ -363,11 +365,51 @@ const getServices = catchAsync(
       {
         $addFields: {
           categoryName: {
-            $arrayElemAt: ["$categoryDetails.categoryName", 0],
+            $map: {
+              input: "$categoryDetails",
+              as: "category",
+              in: {
+                catId: "$$category._id",
+                categoryNames: "$$category.categoryName",
+              },
+            },
           },
-          subCategoryName: {
-            $arrayElemAt: ["$subCategoryDetails.subCategoryName", 0],
+          // categoryName: {
+          //   $reduce: {
+          //     input: "$categoryDetails.categoryName",
+          //     initialValue: "",
+          //     in: {
+          //       $concat: [
+          //         "$$value",
+          //         { $cond: [{ $eq: ["$$value", ""] }, "", ", "] },
+          //         "$$this"
+          //       ]
+          //     }
+          //   }
+          // },
+           subCategoryName: {
+            $map: {
+              input: "$subCategoryDetails",
+              as: "subcategory",
+              in: {
+                subId: "$$subcategory._id",
+                subCategoryNames: "$$subcategory.subCategoryName",
+              },
+            },
           },
+          // subCategoryName: {
+          //   $reduce: {
+          //     input: "$subCategoryDetails.subCategoryName",
+          //     initialValue: "",
+          //     in: {
+          //       $concat: [
+          //         "$$value",
+          //         { $cond: [{ $eq: ["$$value", ""] }, "", ", "] },
+          //         "$$this"
+          //       ]
+          //     }
+          //   }
+          // },
           taxId: {
             $arrayElemAt: ["$tax._id", 0],
           },

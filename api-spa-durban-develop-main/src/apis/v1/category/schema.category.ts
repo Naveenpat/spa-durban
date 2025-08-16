@@ -11,6 +11,8 @@ export interface CategoryDocument extends Document {
   categoryName: string;
   description: string;
   colorCode: string;
+  categoryImageUrl: string;
+  termsAndConditions:string;
   isDeleted: boolean;
   isActive: boolean;
 }
@@ -54,6 +56,16 @@ const CategorySchema = new mongoose.Schema<CategoryDocument>(
     colorCode: {
       type: String,
       default: "",
+    },
+    categoryImageUrl: {
+      type: String,
+      default: "",
+      trim: true,
+      lowercase: true,
+    },
+    termsAndConditions:{
+       type: String,
+       default: ""
     },
     isDeleted: {
       type: Boolean,

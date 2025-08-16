@@ -458,6 +458,7 @@ const skip = (page - 1) * limit;
       colorCode?: string;
       priority?: number;
       pinned?: boolean;
+      categoryIds?:mongoose.Schema.Types.ObjectId | []
     }> = [];
 
     const productResult = await productService.aggregateQuery([
@@ -608,6 +609,13 @@ const skip = (page - 1) * limit;
           colorCode: {
             $arrayElemAt: ["$categoryData.colorCode", 0],
           },
+           categoryIds: {
+        $cond: {
+          if: { $isArray: "$categoryId" },
+          then: "$categoryId",
+          else: [{ $ifNull: ["$categoryId", null] }],
+        },
+      },
         },
       },
       {
@@ -636,6 +644,7 @@ const skip = (page - 1) * limit;
           taxPercent,
           productImageUrl,
           availableQuantity,
+          categoryIds,
         } = productResult[each];
         dataToSend.push({
           _id: _id,
@@ -651,6 +660,7 @@ const skip = (page - 1) * limit;
           type: "PRODUCT",
           availableQuantity: availableQuantity,
           bookingTreatmentsId: "",
+          categoryIds: categoryIds || [],
         });
       }
     }
@@ -670,6 +680,7 @@ const skip = (page - 1) * limit;
           colorCode,
           pinned,
           priority,
+          categoryIds,
         } = serviceResult[each];
 
         dataToSend.push({
@@ -689,6 +700,7 @@ const skip = (page - 1) * limit;
           colorCode: colorCode,
           pinned: pinned,
           priority: priority,
+          categoryIds: categoryIds || [], 
         });
       }
     }

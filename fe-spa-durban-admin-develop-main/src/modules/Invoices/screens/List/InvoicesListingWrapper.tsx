@@ -144,6 +144,23 @@ const InvoicesListingWrapper = (props: Props) => {
       headerName: 'Customer',
       flex: 'flex-[3_1_0%]'
     },
+    {
+      fieldName: 'giftCardCode',
+      headerName: 'Gift Code',
+      flex: 'flex-[3_1_0%]'
+    },
+    {
+      fieldName: 'giftCardDiscount',
+      headerName: 'Gift Discount',
+      flex: 'flex-[3_1_0%]',
+      renderCell: (item) => (
+        <div>
+          {' '}
+          {CURRENCY}{' '}
+          {item?.giftCardDiscount ? Number(item?.giftCardDiscount).toFixed(2) : '0'}
+        </div>
+      ),
+    },
 
     {
       fieldName: 'totalAmount',

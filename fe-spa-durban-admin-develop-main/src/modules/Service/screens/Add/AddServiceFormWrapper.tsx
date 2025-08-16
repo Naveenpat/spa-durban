@@ -12,8 +12,8 @@ const AddServiceFormWrapper = () => {
 
   const initialValues: ServiceFormValues = {
     serviceName: '',
-    category: '',
-    subCategory: '',
+    category: [],
+    subCategory: [],
     tax: '',
     outlets: [],
     sellingPrice: '',
@@ -49,8 +49,8 @@ const AddServiceFormWrapper = () => {
   ) => {
     const formattedValues = {
       serviceName: values?.serviceName,
-      categoryId: values?.category?._id,
-      subCategoryId: values?.subCategory?._id || null,
+      categoryIds: values?.category?.map((outlet) => outlet?._id),
+      subCategoryIds: values?.subCategory?.map((outlet) => outlet?._id) || null,
       serviceCode: values?.serviceCode,
       sellingPrice: Number(values?.sellingPrice),
       taxId: values?.tax?._id || null,
