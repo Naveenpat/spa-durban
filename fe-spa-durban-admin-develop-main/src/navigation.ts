@@ -414,6 +414,16 @@ const navigation: (params?: {
           },
           // permission: 'NAV_POS',
         },
+        {
+          title: 'Test Get Bookings',
+          icon: IconCashBanknote,
+          path: 'test-query-page',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          // permission: 'NAV_POS',
+        },
       ],
     },
   ];

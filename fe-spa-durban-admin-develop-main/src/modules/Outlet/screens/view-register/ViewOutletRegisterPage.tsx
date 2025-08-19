@@ -105,7 +105,7 @@ const ViewOutletRegisterPage = () => {
     },
     {
       fieldName: 'carryForwardBalance',
-      headerName: 'Carry Forward Balance',
+      headerName: 'C/F Balance',
       flex: 'flex-[1_1_0%]',
     },
     {

@@ -374,7 +374,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
             height: '76vh', //'787px',
             overflow: 'auto',
             scrollbarWidth: 'none',
-            justifyContent: 'center'
+            justifyContent: 'start'
           }}
 
         >

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import httpStatus from "http-status";
 import { pick } from "../../../../utilities/pick";
 import ApiError from "../../../../utilities/apiError";
@@ -28,6 +28,8 @@ import { searchKeys, allowedDateFilterKeys } from "./schema.service";
 import { UserEnum } from "../../../utils/enumUtils";
 import mongoose from "mongoose";
 import axios from "axios";
+import pool from "../../../../database/postgres";
+
 const createService = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     let { categoryId, subCategoryId, outletIds, products, taxId } = req.body;
@@ -387,7 +389,7 @@ const getServices = catchAsync(
           //     }
           //   }
           // },
-           subCategoryName: {
+          subCategoryName: {
             $map: {
               input: "$subCategoryDetails",
               as: "subcategory",
@@ -568,6 +570,114 @@ const toggleServiceStatus = catchAsync(async (req: Request, res: Response) => {
     issue: null,
   });
 });
+
+const getAllBookings = catchAsync(async (req: Request, res: Response) => {
+  const { storeId, mobile, email, serviceName, startDate, endDate, page = 1, limit = 10 } = req.query;
+
+  const offset = (Number(page) - 1) * Number(limit);
+
+  let conditions: string[] = [];
+  let values: any[] = [];
+  let idx = 1;
+
+  if (storeId) {
+    conditions.push(`b."StoreId" = $${idx++}`);
+    values.push(storeId);
+  }
+
+  if (mobile) {
+    conditions.push(`c."mobile" ILIKE $${idx++}`);
+    values.push(`%${mobile}%`);
+  }
+
+  if (email) {
+    conditions.push(`c."email" ILIKE $${idx++}`);
+    values.push(`%${email}%`);
+  }
+
+  if (serviceName) {
+    conditions.push(`t."name" ILIKE $${idx++}`);
+    values.push(`%${serviceName}%`);
+  }
+
+  if (startDate) {
+    conditions.push(`b."bookingDateTimeStamp" >= $${idx++}`);
+    values.push(startDate);
+  }
+
+  if (endDate) {
+    conditions.push(`b."bookingDateTimeStamp" <= $${idx++}`);
+    values.push(endDate);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  // main query with pagination
+  const query = `
+    SELECT 
+      b."id" AS "bookingId",
+      b."bookingNumber",
+      b."invoiceNumber",
+      b."duration",
+      b."bookingDateTimeStamp",
+      b."startTime",
+      b."endTime",
+      b."createdAt",
+      b."createdByUser",
+
+      -- customer info
+      c."firstName" || ' ' || c."lastName" AS "customerName",
+      c."email" AS "customerEmail",
+      c."mobile" AS "customerPhone",
+
+      -- branch/store info
+      s."name" AS "branchName",
+
+      -- treatment info
+      json_agg(t."name") AS "services"
+      
+    FROM public."Bookings" b
+    LEFT JOIN public."Customers" c ON c."id" = b."CustomerId"
+    LEFT JOIN public."Stores" s ON s."id" = b."StoreId"
+    LEFT JOIN public."BookingsTreatment" bt ON bt."BookingId" = b."id"
+    LEFT JOIN public."Treatments" t ON t."id" = bt."TreatmentId"
+    ${whereClause}
+    GROUP BY b."id", c."firstName", c."lastName", c."email", c."mobile", s."name"
+    ORDER BY b."bookingDateTimeStamp" DESC
+    LIMIT $${idx++} OFFSET $${idx++};
+  `;
+
+  values.push(limit);
+  values.push(offset);
+
+  // total count query (without pagination)
+  const countQuery = `
+    SELECT COUNT(DISTINCT b."id") AS total
+    FROM public."Bookings" b
+    LEFT JOIN public."Customers" c ON c."id" = b."CustomerId"
+    LEFT JOIN public."Stores" s ON s."id" = b."StoreId"
+    LEFT JOIN public."BookingsTreatment" bt ON bt."BookingId" = b."id"
+    LEFT JOIN public."Treatments" t ON t."id" = bt."TreatmentId"
+    ${whereClause};
+  `;
+
+  const result = await pool.query(query, values);
+  const countResult = await pool.query(countQuery, values.slice(0, idx - 3)); // count query me limit+offset nahi dena
+
+  const totalCount = Number(countResult.rows[0].total);
+
+  res.status(200).json({
+    success: true,
+    count: totalCount,
+    currentPage: Number(page),
+    totalPages: Math.ceil(totalCount / Number(limit)),
+    data: result.rows,
+  });
+});
+
+
+
+
 export {
   createService,
   getServices,
@@ -576,4 +686,5 @@ export {
   deleteService,
   toggleServiceStatus,
   addServiceToTop,
+  getAllBookings
 };

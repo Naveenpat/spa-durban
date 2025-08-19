@@ -79,6 +79,7 @@ import CompanySalesReportPage from './modules/AdminRole copy/screens/customer-sa
 import ViewOutletRegisterPage from './modules/Outlet/screens/view-register/ViewOutletRegisterPage';
 import EditPurchaseOrderFormWrapper from './modules/PurchaseOrder/screens/Edit/EditPurchaseOrderFormWrapper';
 import InventoryEditFormWrapper from './modules/PurchaseOrder/components/InventoryForm/InventoryEditFormWrapper';
+import TestQueryPage from './modules/Service/components/TestQueryPage';
 
 type Props = {};
 
@@ -320,6 +321,10 @@ const PageRoutes = (props: Props) => {
         {
           path: '/tickets',
           element: <TicketListingWrapper />,
+        },
+         {
+          path: '/test-query-page',
+          element: <TestQueryPage />,
         },
       ],
     },

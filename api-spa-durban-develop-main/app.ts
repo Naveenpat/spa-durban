@@ -8,6 +8,7 @@ import { setupMonitoring } from "./middleware/monitoringSetup"
 import { rootHandler } from "./handlers/rootHandler" // Import the root handler
 import { startBirthdayCouponCron } from "./src/cron/birthdayCoupons"
 import { runRewardCheck } from "./src/cron/rewardCheckCron"
+import { getAllBookings } from "./src/apis/v1/service/controller.service"
 // Initialize express app
 const app = express()
 /**
@@ -40,6 +41,8 @@ app.use('/v1/uploads', (req, res, next) => {
   console.log('Trying to access:', req.url);
   next();
 });
+
+app.get("/v1/new/get-all-bookings", getAllBookings);
 
 
 // Root endpoint
