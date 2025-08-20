@@ -75,6 +75,20 @@ const CloseRegisterFormLayout = ({
     cloedRegistered = opningData?.register;
   }
 
+  function getDateWiseCashTotal(cashUsage: any[]) {
+    return cashUsage.reduce((acc, usage) => {
+      const dateKey = new Date(usage.createdAt).toISOString().split("T")[0]; // yyyy-mm-dd
+      if (!acc[dateKey]) acc[dateKey] = 0;
+      acc[dateKey] += usage.amount;
+      return acc;
+    }, {} as Record<string, number>);
+  }
+  let cashUsageTotals: any;
+  if (cloedRegistered) {
+    cashUsageTotals = getDateWiseCashTotal(cloedRegistered?.cashUsage);
+  }
+
+
   const openingBalance = updatedResult?.[0]?.totalAmount || 0;
   const cashRow = updatedResult.find(
     (item) => item.paymentModeName?.toLowerCase() === 'cash'
@@ -371,11 +385,25 @@ const CloseRegisterFormLayout = ({
 
                               {/* Show Cash Total only after last cash row */}
                               {isLastCashRow && (
-                                <tr>
-                                  <td colSpan={5} className="p-3 border text-blue-800 text-sm font-semibold text-right">
-                                    🧾 Total Cash: R {cashTotal.toFixed(2)}
-                                  </td>
-                                </tr>
+                                <>
+                                  {Object.entries(cashUsageTotals).map(([date, total]: any) => {
+                                    const uniqueKey = `payout_${date}`;
+                                    return (
+                                      <tr key={uniqueKey}>
+                                        <td className="p-3 border">Payout</td>
+                                        <td className="p-3 border text-center"></td>
+                                        <td className="p-3 border text-blue-600 font-semibold text-center">
+                                          R {total}
+                                        </td>
+                                        <td></td>
+                                      </tr>
+                                    );
+                                  })}
+                                  <tr>
+                                    <td colSpan={5} className="p-3 border text-blue-800 text-sm font-semibold text-right">
+                                      🧾 Total Cash: R {cashTotal.toFixed(2)}
+                                    </td>
+                                  </tr></>
                               )}
                             </>
                           );
@@ -535,16 +563,33 @@ const CloseRegisterFormLayout = ({
         <div ref={summaryRef} className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
           <div className="bg-white rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto space-y-6 shadow-lg">
 
-            <h2 className="text-xl font-bold text-center">Register Summary</h2>
+            <h2 className="text-xl font-bold text-center">Register Closure Summary</h2>
 
             <div className="space-y-4 text-sm text-gray-800 overflow-auto">
-              <p><strong>Opening Balance:</strong> R {openingBalance?.toFixed(2) || '0.00'}</p>
-              <p><strong>Bank Deposit:</strong> R {formikProps.values.bankDeposit || '0.00'}</p>
-              <p><strong>Carry Forword:</strong> R {(() => {
-                const deposit = parseFloat(values.bankDeposit) || 0;
-                const carryForward = Math.max(cashTotal - deposit, 0);
-                return carryForward.toFixed(2);
-              })()}</p>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                {/* Left side - 3 items */}
+                <div className="space-y-1">
+                  <p><strong>Sequence No</strong>: {opningData?.register?._id}</p>
+                  <p><strong>Open Date</strong>: {new Date(opningData?.register?.openedAt).toLocaleDateString()}</p>
+                  <p><strong>Close Date</strong>: {new Date().toLocaleDateString()}</p>
+                </div>
+
+                {/* Right side - 1 item */}
+                <div className="space-y-1">
+                  <p><strong>Outlet</strong>: {opningData?.register?.outletId}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                <p><strong>Opening Balance</strong>: R {openingBalance?.toFixed(2) || '0.00'}</p>
+                <p><strong>Bank Deposit</strong>: R {formikProps.values.bankDeposit || '0.00'}</p>
+                <p><strong>Carry Forward</strong>: R {(() => {
+                  const deposit = parseFloat(values.bankDeposit) || 0;
+                  const carryForward = Math.max(cashTotal - deposit, 0);
+                  return carryForward.toFixed(2);
+                })()}</p>
+              </div>
+
               {Object.keys(groupedResult).map((date) => (
                 <div key={date}>
                   <h3 className="text-base font-semibold text-primary-60 mb-2">
@@ -591,7 +636,7 @@ const CloseRegisterFormLayout = ({
                 </div>
               ))}
 
-              {opningData?.register?.cashUsage?.length > 0 && (
+              {/* {opningData?.register?.cashUsage?.length > 0 && (
                 <div className="mt-8 rounded-xl border border-red-300 bg-red-50 p-6 shadow-sm">
                   <h3 className="text-lg font-bold text-red-700 flex items-center mb-4">
                     ⚠️ <span className="ml-2">Cash Usage Entries</span>
@@ -630,7 +675,7 @@ const CloseRegisterFormLayout = ({
                     </ul>
                   </div>
                 </div>
-              )}
+              )} */}
 
 
 

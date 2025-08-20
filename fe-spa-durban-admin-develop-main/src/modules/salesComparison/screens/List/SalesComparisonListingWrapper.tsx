@@ -7,6 +7,7 @@ import { useFetchData } from 'src/hooks/useFetchData';
 import { useFilterPagination } from 'src/hooks/useFilterPagination';
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { format, subMonths } from 'date-fns';
 
 type Props = {};
 const salesData = [
@@ -25,17 +26,31 @@ const salesData = [
 ];
 
 const SalesComparisonListingWrapper = (props: Props) => {
-  const { appliedFilters } = useFilterPagination(['reportDuration']);
+  const { appliedFilters, dateFilter } = useFilterPagination(['reportDuration']);
   const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading, totalPages, totalData } = useFetchData(
     useGetSalesReportQuery,
     {
       body: {
         reportDuration: appliedFilters?.[0]?.value,
+        startDate:dateFilter?.start_date,
+        endDate:dateFilter?.end_date
       },
     },
   );
   const safeData = data ?? [];
+
+  const today = new Date();
+  const oneMonthAgo = subMonths(today, 1);
+  useEffect(() => {
+    if (!dateFilter?.start_date && !dateFilter?.end_date) {
+      const newSearchParams = new URLSearchParams(searchParams); // Clone existing searchParams
+      newSearchParams.set('startDate', format(oneMonthAgo, 'yyyy-MM-dd') || '');
+      newSearchParams.set('endDate', format(new Date(), 'yyyy-MM-dd') || '')
+      setSearchParams(newSearchParams)
+    }
+  }, [dateFilter]);
+
 
   const yearMonths = Array.from(
     new Set(
@@ -80,6 +95,20 @@ const SalesComparisonListingWrapper = (props: Props) => {
         return option?.label.includes(value);
       },
     },
+    {
+      filterType: 'date',
+      fieldName: 'createdAt',
+      dateFilterKeyOptions: [
+        {
+          label: 'startDate',
+          value: dateFilter?.start_date || '',
+        },
+        {
+          label: 'endDate',
+          value: dateFilter?.end_date || '',
+        },
+      ],
+    }
   ];
   useEffect(() => {
     searchParams.set('reportDuration', 'MONTHLY');

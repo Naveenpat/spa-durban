@@ -426,6 +426,21 @@ const navigation: (params?: {
         },
       ],
     },
+    {
+      groupLable: 'Reports',
+      items:[
+         {
+          title: 'Outlets',
+          icon: IconReceiptTax,
+          path: 'outlet/sales-report',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'NAV_CASHBACK_RULES',
+        },
+      ]
+    }
   ];
 
   return getPermittedNavigations(navigations);

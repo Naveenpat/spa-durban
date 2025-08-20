@@ -34,15 +34,13 @@ const salesData = [
 ];
 
 const SalesReportPage = () => {
-  const { id } = useParams(); // outletId from URL
-
-
-  const { searchQuery, limit, page, dateFilter, orderBy, orderValue } =
-    useFilterPagination(['outletId', 'customerId']);
+  const { searchQuery, limit, page, dateFilter, orderBy, orderValue, appliedFilters } =
+    useFilterPagination(['outletIds', 'customerId']);
   const [searchParams, setSearchParams] = useSearchParams();
+
   const { outlets } = useSelector((state: RootState) => state.auth);
   const { data, isLoading, error } = useGetSalesReportByOutletQuery({
-    outletId: id,
+    outletId: appliedFilters?.[0]?.value,
     startDate: dateFilter?.start_date,
     endDate: dateFilter?.end_date,
     page: page,
@@ -52,7 +50,7 @@ const SalesReportPage = () => {
   });
 
   const { data: chartData } = useGetSalesChartDataReportByOutletQuery({
-    outletId: id,
+    outletId: appliedFilters?.[0]?.value,
     startDate: dateFilter?.start_date,
     endDate: dateFilter?.end_date
   });
@@ -142,6 +140,22 @@ const SalesReportPage = () => {
         },
       ],
     },
+    {
+      filterType: 'single-select',
+      label: 'Outlets',
+      fieldName: 'outletIds',
+      options:
+        outlets?.map((el) => {
+          return {
+            label: el?.name,
+            value: el?._id,
+          };
+        }) || [],
+      renderOption: (option) => option.label,
+      isOptionEqualToSearchValue: (option, value) => {
+        return option?.label.includes(value);
+      },
+    },
   ];
 
   const invoices = data?.data?.invoices || [];
@@ -154,7 +168,7 @@ const SalesReportPage = () => {
       const newSearchParams = new URLSearchParams(searchParams); // Clone existing searchParams
       newSearchParams.set('startDate', format(oneMonthAgo, 'yyyy-MM-dd') || '');
       newSearchParams.set('endDate', format(new Date(), 'yyyy-MM-dd') || '');
-      newSearchParams.set('reportDuration', 'MONTHLY');
+      newSearchParams.set('outletIds', outlets?.[0]._id);
       setSearchParams(newSearchParams)
     }
   }, [dateFilter, outlets]);
@@ -276,7 +290,7 @@ const SalesReportPage = () => {
 
 
 
-            <div className="flex-1 overflow-auto mt-3">
+            <div className="flex-1 mt-3">
               <MOLTable<SalesReport>
                 tableHeaders={tableHeaders}
                 data={invoices || []}

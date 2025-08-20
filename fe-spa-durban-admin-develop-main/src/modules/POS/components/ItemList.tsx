@@ -114,12 +114,12 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
         }
 
         // agar searchValue empty hai to filter me add mat karo
-        if (searchValue?.trim()) {
-          filters.push({
-            fieldName: "search",
-            value: searchValue.trim(),
-          });
-        }
+        // if (searchValue?.trim()) {
+        //   filters.push({
+        //     fieldName: "search",
+        //     value: searchValue.trim(),
+        //   });
+        // }
 
         return {
           page,

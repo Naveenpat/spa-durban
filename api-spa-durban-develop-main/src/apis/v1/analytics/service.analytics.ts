@@ -89,13 +89,26 @@ export const limitAndTotalCount = (
 };
 
 // Function to generate an array of year-month strings in the desired range
+// const generateYearMonths = (start: Date, end: Date) => {
+//   let startDate = startOfYear(start); // Use startOfYear for better accuracy
+//   let endDate = endOfMonth(end);
+//   let months = [];
+
+//   while (startDate <= endDate) {
+//     months.push(format(startDate, "yyyy-MM"));
+//     startDate = new Date(startDate.setMonth(startDate.getMonth() + 1));
+//   }
+
+//   return months;
+// };
+
 const generateYearMonths = (start: Date, end: Date) => {
-  let startDate = startOfYear(start); // Use startOfYear for better accuracy
+  let startDate = startOfYear(start); 
   let endDate = endOfMonth(end);
   let months = [];
 
   while (startDate <= endDate) {
-    months.push(format(startDate, "yyyy-MM"));
+    months.push(format(startDate, "MMM-yyyy")); // 👈 Format change
     startDate = new Date(startDate.setMonth(startDate.getMonth() + 1));
   }
 
@@ -852,7 +865,7 @@ const getWeeklyOutletReport = async () => {
 const getMonthlyOutletReport = async () => {
   const startYearMonth = new Date(new Date().getFullYear(), 0, 1);
   const endYearMonth = endOfMonth(new Date());
-
+ console.log('------ssssssss',startYearMonth,endYearMonth)
   // Generate year-month strings for the aggregation pipeline
   const allMonths = generateYearMonths(startYearMonth, endYearMonth);
 
@@ -976,8 +989,135 @@ const getMonthlyOutletReport = async () => {
   return result;
 };
 
+const getOutletReportByDateRange = async (start:any,end:any) => {
+
+    const startDate = new Date(start)
+    const endDate = new Date(end)
+  // Generate year-month strings for the aggregation pipeline
+  const allMonths = generateYearMonths(startDate, endDate);
+
+  // Aggregation pipeline
+
+  let aggregateQuery = [
+    {
+      $match: {
+        isDeleted: false,
+        invoiceDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          outletId: "$outletId",
+          yearMonth: {
+            $dateToString: {
+              format: "%Y-%m",
+              date: "$invoiceDate",
+            },
+          },
+        },
+        totalSales: { $sum: "$totalAmount" },
+      },
+    },
+    {
+      $lookup: {
+        from: "outlets",
+        localField: "_id.outletId",
+        foreignField: "_id",
+        as: "outlet",
+        pipeline: [
+          {
+            $match: {
+              isDeleted: false,
+              isActive: true,
+            },
+          },
+          {
+            $project: {
+              phone: 1,
+              name: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: "$outlet",
+    },
+    {
+      $group: {
+        _id: "$_id.outletId",
+        outletName: { $first: "$outlet.name" },
+        outletPhone: { $first: "$outlet.phone" },
+        outletId: { $first: "$_id.outletId" },
+        sales: {
+          $push: {
+            yearMonth: "$_id.yearMonth",
+            totalSales: "$totalSales",
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        sales: {
+          $map: {
+            input: allMonths,
+            as: "month",
+            in: {
+              yearMonth: "$$month",
+              totalSales: {
+                $ifNull: [
+                  {
+                    $arrayElemAt: [
+                      {
+                        $map: {
+                          input: "$sales",
+                          as: "sale",
+                          in: {
+                            $cond: {
+                              if: { $eq: ["$$sale.yearMonth", "$$month"] },
+                              then: "$$sale.totalSales",
+                              else: 0,
+                            },
+                          },
+                          // cond: { $eq: ["$$sale.yearMonth", "$$month"] },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                  { totalSales: 0 },
+                ],
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        outletName: 1,
+        outletPhone: 1,
+        outletId: 1,
+        sales: 1,
+      },
+    },
+  ];
+
+  // Execute the aggregation
+
+  let result = await invoiceService.getInvoiceAggrigate(aggregateQuery);
+
+  return result;
+};
+
 //
-const getOutletReportData = async (reportDuration: string) => {
+const getOutletReportData = async (reportDuration: string,startDate:string,endDate:string) => {
   //
   if (reportDuration === "MONTHLY") {
     return await getMonthlyOutletReport();
@@ -991,6 +1131,9 @@ const getOutletReportData = async (reportDuration: string) => {
   //
   if (reportDuration === "DAILY") {
     return await getDailyOutletReport();
+  }
+  if(startDate && endDate){
+    return await getOutletReportByDateRange(startDate,endDate)
   }
 };
 //

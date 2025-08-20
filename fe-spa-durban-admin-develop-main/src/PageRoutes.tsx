@@ -149,7 +149,7 @@ const PageRoutes = (props: Props) => {
         { path: '/outlets', element: <OutletListingWrapper /> },
         { path: '/outlet/add', element: <AddOutletFormWrapper /> },
         { path: '/outlet/edit/:id', element: <EditOutletFormWrapper /> },
-        { path: '/outlet/sales-report/:id', element: <SalesReportPage /> },
+        { path: '/outlet/sales-report', element: <SalesReportPage /> },
         { path: '/outlet/view-register/:id', element: <ViewOutletRegisterPage /> },
         {
           path: '/brand',

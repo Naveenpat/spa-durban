@@ -237,7 +237,7 @@ router.get(
   "/outlet/sales-report",
   parseBodyAndQuery,
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
-  validate(analyticsValidation.getOutletReport),
+  // validate(analyticsValidation.getOutletReport),
   analyticsController.getOutletReport
 );
 

@@ -60,9 +60,15 @@ const getTopOutlet: { query: ObjectSchema } = {
  */
 
 const getOutletReport: { query: ObjectSchema } = {
-  query: Joi.object().keys({
-    reportDuration: Joi.string().valid("MONTHLY", "WEEKLY", "DAILY").required(),
-  }),
-}
+  query: Joi.object()
+    .keys({
+      reportDuration: Joi.string().valid("MONTHLY", "WEEKLY", "DAILY"),
+      startDate: Joi.string().custom(dateFormat).allow(""),
+      endDate: Joi.string().custom(dateFormat).allow(""),
+    })
+    .xor("reportDuration", "startDate")
+    .with("startDate", "endDate") // startDate ho to endDate bhi compulsory
+};
+
 
 export { getTopItems, getTopCustomer, getTopOutlet, getOutletReport }

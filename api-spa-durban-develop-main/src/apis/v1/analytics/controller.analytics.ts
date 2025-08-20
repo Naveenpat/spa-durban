@@ -223,8 +223,10 @@ const getTopOutlet = catchAsync(
 const getOutletReport = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const reportDuration = req.query.reportDuration as string;
+    const startDate = req.query.startDate as string
+     const endDate = req.query.endDate as string
 
-    let result = await analyticsService.getOutletReportData(reportDuration);
+    let result = await analyticsService.getOutletReportData(reportDuration,startDate,endDate);
     //
 
     res.status(httpStatus.OK).send({

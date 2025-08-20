@@ -1,6 +1,7 @@
 import React, { useState, MouseEvent } from 'react';
 import { Menu, MenuItem } from '@mui/material';
 import { IconDotsVertical, IconPencil, IconPin, IconPinFilled } from '@tabler/icons-react';
+import { isAuthorized } from 'src/utils/authorization';
 
 interface Product {
     _id: string;
@@ -130,7 +131,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, categoryImageUrl, on
                             </>
                         )}
                     </MenuItem>
-                    <MenuItem onClick={handleEditServiceModalOpen} sx={{
+                    {isAuthorized("EDIT_SERVICE_ON_POS") && ( <MenuItem onClick={handleEditServiceModalOpen} sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1, // spacing between icon and text
@@ -140,7 +141,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, categoryImageUrl, on
                     }}> <>
                             <IconPencil size={16} />
                             <span style={{ fontSize: '0.875rem' }}>Edit</span>
-                        </></MenuItem>
+                        </></MenuItem>)}
+                   
                 </Menu>
             </div>
 

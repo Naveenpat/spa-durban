@@ -118,21 +118,21 @@ const OutletListingWrapper = (props: Props) => {
       headerName: 'Company Name',
       flex: 'flex-[1_0_0%]',
     },
-    {
-      fieldName: 'viewSalesReport',
-      headerName: 'Sales Report',
-      flex: 'flex-[0_0_150px]',
-      renderCell: (row: any) => (
-        <button
-          onClick={() => handleViewSalesReport(row)}
-          className="text-white px-3 py-1 rounded hover:opacity-90"
-          style={{ backgroundColor: '#006972' }}
-        >
-          View Report
-        </button>
+    // {
+    //   fieldName: 'viewSalesReport',
+    //   headerName: 'Sales Report',
+    //   flex: 'flex-[0_0_150px]',
+    //   renderCell: (row: any) => (
+    //     <button
+    //       onClick={() => handleViewSalesReport(row)}
+    //       className="text-white px-3 py-1 rounded hover:opacity-90"
+    //       style={{ backgroundColor: '#006972' }}
+    //     >
+    //       View Report
+    //     </button>
 
-      ),
-    },
+    //   ),
+    // },
     {
       fieldName: 'viewOutletRegister',
       headerName: 'View Register',

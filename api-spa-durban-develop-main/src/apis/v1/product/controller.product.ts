@@ -364,8 +364,9 @@ const skip = (page - 1) * limit;
     // Extract searchValue from req.query
     const productOptions = pick(req.query, ["searchValue"]);
     const serviceOptions = pick(req.query, ["searchValue"]);
-    const searchValue = req.query.searchValue as string;
+    const searchValue = (req.query.searchValue as string)?.trim();
 
+    
     const outletId = req.query.outletId as string;
     const filterBy = req.query.filterBy as any[];
 
