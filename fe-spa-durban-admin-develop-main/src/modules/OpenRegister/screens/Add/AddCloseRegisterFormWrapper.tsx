@@ -154,20 +154,23 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
 
       const updatedPaymentModes = (data as any)?.data.result?.map((entry: any) => {
         const date = entry.date;
-
+        const payoutKey = `payout_${date}`
         const updatedPayments = entry.payments?.map((item: { _id: string | number, totalAmount: number, paymentModeName: string }) => {
           const manualKey = `${item._id}_${date}`;
+
           return {
             paymentModeName: item.paymentModeName,
             totalAmount: item.totalAmount,
             manual: values.manual?.[manualKey] || item?.totalAmount,
-            reason: values.reasons?.[item._id] || ''
+            reason: values.reasons?.[item._id] || '',
+
           };
         });
 
         return {
           date,
-          payments: updatedPayments
+          payments: updatedPayments,
+          payout: values.manual?.[payoutKey]
         };
       });
 
@@ -194,7 +197,6 @@ const AddCloseRegisterFormWrapper = ({ onClose }: Props) => {
         // })) || [],
       };
       console.log('formattedValues=======', formattedValues);
-
       const res = await closeRegister(formattedValues).unwrap(); // Proper async handling
 
       if (res?.status) {

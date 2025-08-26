@@ -51,7 +51,7 @@ const SalseReportLayoutWrapper = ({
       title="Salse Report"
       onClose={onClose}
       isSubmitting={false}
-      size={'medium'}
+      size={'large'}
       isSubmitButtonHide={false}
     >
       <div style={{ textAlign: 'start' }}>

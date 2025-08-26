@@ -539,24 +539,167 @@ const getDailyOutletReport = async () => {
 
   return result;
 };
+
+// const getDailyOutletReportSingleDay = async (outletId: any) => {
+//   const todayStart = startOfDay(new Date());
+//   const todayEnd = endOfDay(new Date());
+//   const todayFormatted = format(new Date(), "yyyy-MM-dd");
+//   const daysInMonth = eachDayOfInterval({
+//     start: todayStart,
+//     end: todayEnd,
+//   }).map((date) => ({
+//     date,
+//     formatted: format(date, "yyyy-MM-dd"), // YYYY-MM-DD format
+//   }));
+
+//   const aggregateQuery = [
+//     {
+//       $match: {
+//         isDeleted: false,
+//         invoiceDate: { $gte: todayStart, $lte: todayEnd },
+//         // Conditionally adds outletId to match if it's a valid ObjectId
+//         ...(mongoose.Types.ObjectId.isValid(outletId)
+//           ? { outletId: new mongoose.Types.ObjectId(outletId) }
+//           : {}),
+//       },
+//     },
+//     {
+//       $lookup: {
+//         from: "outlets", // The collection to join with
+//         localField: "outletId", // Field from the input documents
+//         foreignField: "_id", // Field from the "outlets" collection
+//         as: "outlet", // Output array field for the joined documents
+//         pipeline: [
+//           { $match: { isDeleted: false, isActive: true } }, // Filters for active and non-deleted outlets
+//           { $project: { name: 1, phone: 1 } }, // Selects only 'name' and 'phone' fields
+//         ],
+//       },
+//     },
+//     { $unwind: "$outlet" }, // Deconstructs the 'outlet' array field to output a document for each element
+
+//     {
+//       $lookup: {
+//         from: "users", // The collection to join with (customers are users)
+//         localField: "customerId", // Field from the input documents
+//         foreignField: "_id", // Field from the "users" collection
+//         as: "customer", // Output array field for the joined documents
+//         pipeline: [{ $project: { name: 1, phone: 1 } }], // Selects only 'name' and 'phone' fields
+//       },
+//     },
+//     { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } }, // Deconstructs 'customer', keeping documents even if no customer is found
+
+//     // --- Handling Payment Modes ---
+//     // Unwind amountReceived to process each payment entry individually
+//     { $unwind: { path: "$amountReceived", preserveNullAndEmptyArrays: true } },
+
+//     // Lookup paymentMode details from 'paymentmodes' collection using amountReceived.paymentModeId
+//     {
+//       $lookup: {
+//         from: "paymentmodes", // The collection to join with
+//         localField: "amountReceived.paymentModeId", // Field from the 'amountReceived' sub-document
+//         foreignField: "_id", // Field from the "paymentmodes" collection
+//         as: "paymentMode", // Output array field for the joined documents
+//         pipeline: [{ $project: { modeName: 1 } }], // Selects only the 'name' of the payment mode
+//       },
+//     },
+//     { $unwind: { path: "$paymentMode", preserveNullAndEmptyArrays: true } }, // Deconstructs 'paymentMode', keeping documents even if no mode is found
+
+//     // --- Projecting Desired Fields ---
+//     {
+//       $project: {
+//         _id: 1, // Exclude the default _id field
+//         invoiceNumber: 1,
+//         status: 1, 
+//         invoiceDate: {
+//           $dateToString: { format: "%Y-%m-%d", date: "$invoiceDate" }, // Formats date to YYYY-MM-DD string
+//         },
+//         rawInvoiceDate: "$invoiceDate",
+//         totalAmount: 1,
+//         outletId: "$outlet._id",
+//         outletName: "$outlet.name",
+//         outletPhone: "$outlet.phone",
+//         customerName: "$customer.name",
+//         paymentStatus: {
+//           $cond: [{ $eq: ["$paymentStatus", "paid"] }, "Paid", "Unpaid"], // Transforms status to human-readable form
+//         },
+//         amount: "$amountReceived.amount", // The specific amount for this payment entry
+//         paymentMode: "$paymentMode.modeName", // The name of the payment mode
+//       },
+//     },
+// {
+//     $sort: { rawInvoiceDate: 1 },
+//   },
+//     // --- Grouping by Outlet ---
+//     // This stage re-groups the documents by outlet, consolidating all sales for an outlet
+//     {
+//       $group: {
+//         _id: "$outletId", // Group by the outlet's _id
+//         outletName: { $first: "$outletName" }, // Take the first outlet name encountered for the group
+//         outletPhone: { $first: "$outletPhone" }, // Take the first outlet phone encountered for the group
+//         sales: {
+//           $push: { // Push individual sale details into a 'sales' array
+//             _id: "$_id",
+//             date: "$invoiceDate",
+//             status:"$status",
+//             invoiceNumber: "$invoiceNumber",
+//             customerName: "$customerName",
+//             totalAmount: "$totalAmount",
+//             paymentStatus: "$paymentStatus",
+//             paymentMode: "$paymentMode", // This is the payment mode name for this specific payment
+//             amount: "$amount", // The amount received for this specific payment
+//           },
+//         },
+//        totalSales: {
+//   $sum: {
+//     $cond: [
+//       { $ne: ["$status", "refund"] },
+//       "$amount",
+//       0
+//     ]
+//   }
+// },
+// totalRefunds: {
+//   $sum: {
+//     $cond: [
+//       { $eq: ["$status", "refund"] },
+//       "$amount",
+//       0
+//     ]
+//   }
+// }
+
+// // Calculate total sales amount for the outlet
+//       },
+//     },
+//     {
+//       $project: {
+//         _id: 1, // Exclude the _id field from the final output
+//         outletId: "$_id", // Rename _id to outletId for clarity
+//         outletName: 1,
+//         outletPhone: 1,
+//         sales: 1, // Include the array of sales details
+//         totalSales: 1,
+//         totalRefunds:1
+//       },
+//     },
+//   ];
+
+//   // Execute the aggregation
+//   let result = await invoiceService.getInvoiceAggrigate(aggregateQuery);
+//   const outletSalesReport = result?.[0] || null;
+//   return outletSalesReport;
+// };
+//
+
 const getDailyOutletReportSingleDay = async (outletId: any) => {
   const todayStart = startOfDay(new Date());
   const todayEnd = endOfDay(new Date());
-  const todayFormatted = format(new Date(), "yyyy-MM-dd");
-  const daysInMonth = eachDayOfInterval({
-    start: todayStart,
-    end: todayEnd,
-  }).map((date) => ({
-    date,
-    formatted: format(date, "yyyy-MM-dd"), // YYYY-MM-DD format
-  }));
 
   const aggregateQuery = [
     {
       $match: {
         isDeleted: false,
         invoiceDate: { $gte: todayStart, $lte: todayEnd },
-        // Conditionally adds outletId to match if it's a valid ObjectId
         ...(mongoose.Types.ObjectId.isValid(outletId)
           ? { outletId: new mongoose.Types.ObjectId(outletId) }
           : {}),
@@ -564,131 +707,124 @@ const getDailyOutletReportSingleDay = async (outletId: any) => {
     },
     {
       $lookup: {
-        from: "outlets", // The collection to join with
-        localField: "outletId", // Field from the input documents
-        foreignField: "_id", // Field from the "outlets" collection
-        as: "outlet", // Output array field for the joined documents
+        from: "outlets",
+        localField: "outletId",
+        foreignField: "_id",
+        as: "outlet",
         pipeline: [
-          { $match: { isDeleted: false, isActive: true } }, // Filters for active and non-deleted outlets
-          { $project: { name: 1, phone: 1 } }, // Selects only 'name' and 'phone' fields
+          { $match: { isDeleted: false, isActive: true } },
+          { $project: { name: 1, phone: 1 } },
         ],
       },
     },
-    { $unwind: "$outlet" }, // Deconstructs the 'outlet' array field to output a document for each element
+    { $unwind: "$outlet" },
 
     {
       $lookup: {
-        from: "users", // The collection to join with (customers are users)
-        localField: "customerId", // Field from the input documents
-        foreignField: "_id", // Field from the "users" collection
-        as: "customer", // Output array field for the joined documents
-        pipeline: [{ $project: { name: 1, phone: 1 } }], // Selects only 'name' and 'phone' fields
+        from: "users",
+        localField: "customerId",
+        foreignField: "_id",
+        as: "customer",
+        pipeline: [{ $project: { name: 1, phone: 1 } }],
       },
     },
-    { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } }, // Deconstructs 'customer', keeping documents even if no customer is found
+    { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } },
 
-    // --- Handling Payment Modes ---
-    // Unwind amountReceived to process each payment entry individually
     { $unwind: { path: "$amountReceived", preserveNullAndEmptyArrays: true } },
 
-    // Lookup paymentMode details from 'paymentmodes' collection using amountReceived.paymentModeId
     {
       $lookup: {
-        from: "paymentmodes", // The collection to join with
-        localField: "amountReceived.paymentModeId", // Field from the 'amountReceived' sub-document
-        foreignField: "_id", // Field from the "paymentmodes" collection
-        as: "paymentMode", // Output array field for the joined documents
-        pipeline: [{ $project: { modeName: 1 } }], // Selects only the 'name' of the payment mode
+        from: "paymentmodes",
+        localField: "amountReceived.paymentModeId",
+        foreignField: "_id",
+        as: "paymentMode",
+        pipeline: [{ $project: { modeName: 1 } }],
       },
     },
-    { $unwind: { path: "$paymentMode", preserveNullAndEmptyArrays: true } }, // Deconstructs 'paymentMode', keeping documents even if no mode is found
+    { $unwind: { path: "$paymentMode", preserveNullAndEmptyArrays: true } },
 
-    // --- Projecting Desired Fields ---
-    {
-      $project: {
-        _id: 1, // Exclude the default _id field
-        invoiceNumber: 1,
-        status: 1, 
-        invoiceDate: {
-          $dateToString: { format: "%Y-%m-%d", date: "$invoiceDate" }, // Formats date to YYYY-MM-DD string
-        },
-        rawInvoiceDate: "$invoiceDate",
-        totalAmount: 1,
-        outletId: "$outlet._id",
-        outletName: "$outlet.name",
-        outletPhone: "$outlet.phone",
-        customerName: "$customer.name",
-        paymentStatus: {
-          $cond: [{ $eq: ["$paymentStatus", "paid"] }, "Paid", "Unpaid"], // Transforms status to human-readable form
-        },
-        amount: "$amountReceived.amount", // The specific amount for this payment entry
-        paymentMode: "$paymentMode.modeName", // The name of the payment mode
-      },
-    },
-{
-    $sort: { rawInvoiceDate: 1 },
-  },
-    // --- Grouping by Outlet ---
-    // This stage re-groups the documents by outlet, consolidating all sales for an outlet
+    // --- Group by Invoice ---
     {
       $group: {
-        _id: "$outletId", // Group by the outlet's _id
-        outletName: { $first: "$outletName" }, // Take the first outlet name encountered for the group
-        outletPhone: { $first: "$outletPhone" }, // Take the first outlet phone encountered for the group
-        sales: {
-          $push: { // Push individual sale details into a 'sales' array
-            _id: "$_id",
-            date: "$invoiceDate",
-            status:"$status",
-            invoiceNumber: "$invoiceNumber",
-            customerName: "$customerName",
-            totalAmount: "$totalAmount",
-            paymentStatus: "$paymentStatus",
-            paymentMode: "$paymentMode", // This is the payment mode name for this specific payment
-            amount: "$amount", // The amount received for this specific payment
-          },
+        _id: "$_id",
+        date: { $first: { $dateToString: { format: "%Y-%m-%d", date: "$invoiceDate" } } },
+        rawInvoiceDate: { $first: "$invoiceDate" },
+        status: { $first: "$status" },
+        invoiceNumber: { $first: "$invoiceNumber" },
+        customerName: { $first: "$customer.name" },
+        totalAmount: { $first: "$totalAmount" },
+        paymentStatus: { 
+          $first: { $cond: [{ $eq: ["$paymentStatus", "paid"] }, "Paid", "Unpaid"] }
         },
-       totalSales: {
-  $sum: {
-    $cond: [
-      { $ne: ["$status", "refund"] },
-      "$amount",
-      0
-    ]
-  }
-},
-totalRefunds: {
-  $sum: {
-    $cond: [
-      { $eq: ["$status", "refund"] },
-      "$amount",
-      0
-    ]
-  }
-}
-
-// Calculate total sales amount for the outlet
-      },
+        outletId: { $first: "$outlet._id" },
+        outletName: { $first: "$outlet.name" },
+        outletPhone: { $first: "$outlet.phone" },
+        payments: {
+          $push: {
+            paymentMode: "$paymentMode.modeName",
+            amount: "$amountReceived.amount"
+          }
+        }
+      }
     },
+
+    { $sort: { rawInvoiceDate: 1 } },
+
+    // --- Group by Outlet ---
+    {
+      $group: {
+        _id: "$outletId",
+        outletName: { $first: "$outletName" },
+        outletPhone: { $first: "$outletPhone" },
+        sales: { $push: "$$ROOT" },
+        totalSales: {
+          $sum: {
+            $cond: [
+              { $ne: ["$status", "refund"] },
+              "$totalAmount",
+              0
+            ]
+          }
+        },
+        totalRefunds: {
+          $sum: {
+            $cond: [
+              { $eq: ["$status", "refund"] },
+              "$totalAmount",
+              0
+            ]
+          }
+        }
+      }
+    },
+
     {
       $project: {
-        _id: 1, // Exclude the _id field from the final output
-        outletId: "$_id", // Rename _id to outletId for clarity
+        _id: 0,
+        outletId: "$_id",
         outletName: 1,
         outletPhone: 1,
-        sales: 1, // Include the array of sales details
+        sales: {
+          _id: 1,
+          date: 1,
+          status: 1,
+          invoiceNumber: 1,
+          customerName: 1,
+          totalAmount: 1,
+          paymentStatus: 1,
+          payments: 1
+        },
         totalSales: 1,
-        totalRefunds:1
-      },
-    },
+        totalRefunds: 1
+      }
+    }
   ];
 
-  // Execute the aggregation
   let result = await invoiceService.getInvoiceAggrigate(aggregateQuery);
-  const outletSalesReport = result?.[0] || null;
-  return outletSalesReport;
+  return result?.[0] || null;
 };
-//
+
+
 const getWeeklyOutletReport = async () => {
   const startMonth = startOfMonth(new Date());
   const endMonth = endOfMonth(new Date());

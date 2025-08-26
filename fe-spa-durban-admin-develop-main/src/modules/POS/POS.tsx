@@ -84,7 +84,9 @@ const POS = ({ formikProps }: Props) => {
         {/* Items List */}
         <div className="flex flex-col flex-1 h-full border-r">
           <ItemList
-            isDisabled={!!(closeRegisterData as any)?.data?.register?.isClosed}
+            // isDisabled={!!(closeRegisterData as any)?.data?.register?.isClosed}
+            isDisabled={!((closeRegisterData as any)?.data?.register && !(closeRegisterData as any)?.data?.register?.isClosed)}
+
             onItemClick={(item) => {
               if(!(closeRegisterData as any)?.data?.register?.isOpened){
                 showToast('error','First Open Register! For Starting Sale');

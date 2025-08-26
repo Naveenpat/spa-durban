@@ -87,13 +87,14 @@ export const outletApi = apiSlice.injectEndpoints({
       },
     }),
     GetSalesChartDataReportByOutlet: builder.query({
-      query: ({ outletId, startDate, endDate, page = 1, limit = 10 }) => {
+      query: ({ outletId, startDate, endDate, page = 1, limit = 10,reportDuration }) => {
         const params = new URLSearchParams({
           outletId,
           startDate,
           endDate,
           page: String(page),
-          limit: String(limit)
+          limit: String(limit),
+          reportDuration
         });
 
         return {
@@ -150,8 +151,8 @@ export const outletApi = apiSlice.injectEndpoints({
           outletId,
           startDate,
           endDate,
-          page: String(page),
-          limit: String(limit)
+          // page: String(page),
+          // limit: String(limit)
         });
 
         return {

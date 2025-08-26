@@ -52,7 +52,7 @@ const CloseRegisterFormLayout = ({
 
 
 
-  console.log('---------copningData', opningData)
+  console.log('---------values', values)
 
 
 
@@ -98,9 +98,23 @@ const CloseRegisterFormLayout = ({
   console.log('------updatedResult', updatedResult);
 
   // Total of all cash rows
-  const cashTotal = updatedResult
+  // const cashTotal = updatedResult
+  //   .filter((row: any) => row.paymentModeName?.toLowerCase() === 'cash')
+  //   .reduce((sum: number, row: any) => sum + (parseFloat(row.totalAmount) || 0), 0) + openingBalance;
+
+  // sales से cash total
+  const cashIn = updatedResult
     .filter((row: any) => row.paymentModeName?.toLowerCase() === 'cash')
-    .reduce((sum: number, row: any) => sum + (parseFloat(row.totalAmount) || 0), 0) + openingBalance;
+    .reduce((sum: number, row: any) => sum + (parseFloat(row.totalAmount) || 0), 0);
+
+  // payouts से cash usage निकालना (date-wise)
+  const payoutTotal = opningData?.register?.cashUsage
+    .reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0);
+
+  console.log('------payoutTotal', payoutTotal)
+  // final cash total
+  const cashTotal = cashIn + openingBalance - payoutTotal;
+
 
   // Last index where paymentMode is 'cash'
   const lastCashIndex = updatedResult
@@ -294,7 +308,7 @@ const CloseRegisterFormLayout = ({
                     )}
 
                     {/* Group by date */}
-                    {(Object.entries(groupedResult) as [string, any[]][]).map(([date, rows]) => (
+                    {(Object.entries(groupedResult) as [string, any[]][]).sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime()).map(([date, rows]) => (
                       <>
                         {/* Date Row */}
                         <tr className="bg-gray-100 text-sm text-blue-700">
@@ -383,22 +397,66 @@ const CloseRegisterFormLayout = ({
                                 </td>
                               </tr>
 
+                              {isCashRow && (
+                                <>
+                                  {Object.entries(cashUsageTotals).map(([d, total]: any) => {
+  if (d !== date) return null; // sirf current date ka payout show kare
+  const uniqueKey = `payout_${d}`;
+  return (
+    <tr key={uniqueKey}>
+      <td className="p-3 border">Payout</td>
+      <td className="p-3 border text-center"></td>
+      <td className="p-3 border text-blue-600 font-semibold text-center">
+        R {total}
+      </td>
+      <td className="p-3 border">
+        <ATMTextField
+          name={`manual.${uniqueKey}`}
+          value={values.manual?.[uniqueKey] || ''}
+          onChange={(e) =>
+            setFieldValue(`manual.${uniqueKey}`, e.target.value)
+          }
+          onBlur={handleBlur}
+          className="w-full p-2 border border-gray-300 rounded-md text-sm"
+          placeholder="Enter amount"
+        />
+
+        {values.manual?.[uniqueKey] && (
+          <div className="text-xs font-medium">
+            {parseFloat(values.manual[uniqueKey]) === total ? (
+              <span className="text-green-600">✅ Success</span>
+            ) : (
+              <span
+                onClick={() => {
+                  setActiveRowId(uniqueKey);
+                  setShowReasonModal(true);
+                  setReasonText(values.reasons?.[uniqueKey] || '');
+                }}
+                className={`cursor-pointer underline ${
+                  parseFloat(values.manual[uniqueKey]) > total
+                    ? 'text-red-600'
+                    : 'text-orange-600'
+                }`}
+              >
+                {parseFloat(values.manual[uniqueKey]) > total
+                  ? '⬆ Greater'
+                  : '⬇ Less'}{' '}
+                – Add Reason
+              </span>
+            )}
+          </div>
+        )}
+      </td>
+    </tr>
+  );
+})}
+
+                                </>
+                              )}
+
                               {/* Show Cash Total only after last cash row */}
                               {isLastCashRow && (
                                 <>
-                                  {Object.entries(cashUsageTotals).map(([date, total]: any) => {
-                                    const uniqueKey = `payout_${date}`;
-                                    return (
-                                      <tr key={uniqueKey}>
-                                        <td className="p-3 border">Payout</td>
-                                        <td className="p-3 border text-center"></td>
-                                        <td className="p-3 border text-blue-600 font-semibold text-center">
-                                          R {total}
-                                        </td>
-                                        <td></td>
-                                      </tr>
-                                    );
-                                  })}
                                   <tr>
                                     <td colSpan={5} className="p-3 border text-blue-800 text-sm font-semibold text-right">
                                       🧾 Total Cash: R {cashTotal.toFixed(2)}
@@ -563,7 +621,7 @@ const CloseRegisterFormLayout = ({
         <div ref={summaryRef} className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
           <div className="bg-white rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto space-y-6 shadow-lg">
 
-            <h2 className="text-xl font-bold text-center">Register Closure Summary</h2>
+            <h2 className="text-xl font-bold text-center mt-4">Register Closure Summary</h2>
 
             <div className="space-y-4 text-sm text-gray-800 overflow-auto">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -590,93 +648,137 @@ const CloseRegisterFormLayout = ({
                 })()}</p>
               </div>
 
-              {Object.keys(groupedResult).map((date) => (
-                <div key={date}>
-                  <h3 className="text-base font-semibold text-primary-60 mb-2">
-                    {new Date(date).toDateString()}
-                  </h3>
+              {Object.keys(groupedResult)
+                .sort((a, b) => new Date(a).getTime() - new Date(b).getTime()) // ✅ dates sorted
+                .map((date) => (
+                  <div key={date}>
+                    <h3 className="text-base font-semibold text-primary-60 mb-2">
+                      {new Date(date).toDateString()}
+                    </h3>
 
-                  <table className="w-full border text-sm mb-4">
-                    <thead className="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th className="p-2 border text-left">Payment Mode</th>
-                        <th className="p-2 border text-right">Auto Total</th>
-                        <th className="p-2 border text-right">Manual Entry</th>
-                        <th className="p-2 border text-left">Reason</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {groupedResult[date].map((row: any) => {
-                        const rowKey = `${row._id}_${date}`;
-                        const manual = formikProps.values.manual?.[rowKey];
-                        const reason = formikProps.values.reasons?.[rowKey];
-                        const expected = parseFloat(row.totalAmount || 0);
-                        const manualNum = parseFloat(manual || 0);
-                        const isMismatch = manual && manualNum !== expected;
+                    <table className="w-full border text-sm mb-4">
+                      <thead className="bg-gray-100 text-gray-700">
+                        <tr>
+                          <th className="p-2 border text-left">Payment Mode</th>
+                          <th className="p-2 border text-right">Expected</th>
+                          <th className="p-2 border text-right">Counted</th>
+                          <th className="p-2 border text-right">Difference</th>
+                          <th className="p-2 border text-left">Reason</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {groupedResult[date].map((row: any) => {
+                          const rowKey = `${row._id}_${date}`;
+                          const manual = formikProps.values.manual?.[rowKey];
+                          const reason = formikProps.values.reasons?.[rowKey];
 
-                        return (
-                          <tr key={rowKey} className={isMismatch ? 'bg-red-50' : ''}>
-                            <td className="p-2 border capitalize">{row.paymentModeName}</td>
-                            <td className="p-2 border text-right">R {expected.toFixed(2)}</td>
-                            <td className="p-2 border text-right">
-                              {manual ? `R ${manual}` : '-'}
-                            </td>
-                            <td className="p-2 border">
-                              {isMismatch && reason ? (
-                                <span className="text-orange-600">{reason}</span>
-                              ) : (
-                                '-'
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ))}
+                          // अगर cash row है तो expected को finalCashTotal से overwrite करो
+                          let expected = parseFloat(row.totalAmount || 0);
+                          if (row.paymentModeName?.toLowerCase() === "cash") {
+                            expected = cashTotal; // ✅ यहाँ final cash total डालो
+                          }
 
-              {/* {opningData?.register?.cashUsage?.length > 0 && (
-                <div className="mt-8 rounded-xl border border-red-300 bg-red-50 p-6 shadow-sm">
-                  <h3 className="text-lg font-bold text-red-700 flex items-center mb-4">
-                    ⚠️ <span className="ml-2">Cash Usage Entries</span>
-                  </h3>
+                          const manualNum = parseFloat(manual || '0');
+                          const isMismatch = manual && manualNum !== expected;
+                          const difference = manual ? manualNum - expected : 0;
 
-                  <div className="space-y-1">
-                    <h4 className="text-base font-semibold text-gray-800 underline underline-offset-4">
-                      Added Payouts:
-                    </h4>
-
-                    <ul className="space-y-2">
-                      {opningData?.register?.cashUsage?.map((usage: any, idx: number) => (
-                        <li
-                          key={idx}
-                          className="flex flex-col md:flex-row md:items-center md:justify-between bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
-                        >
-                          <span className="text-sm text-gray-700">
-                            <strong className="text-gray-900">{idx + 1}.</strong> {usage.reason} — R
-                            {usage.amount}
-                          </span>
-
-                          {usage.proofUrl && (
-                            <a
-                              href={`${process.env.REACT_APP_BASE_URL}/${usage.proofUrl}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-3 md:mt-0"
-                            >
-                              <ATMButton >
-                                📎 View Proof
-                              </ATMButton>
-                            </a>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
+                          return (
+                            <tr key={rowKey} className={isMismatch ? 'bg-red-50' : ''}>
+                              <td className="p-2 border capitalize">{row.paymentModeName}</td>
+                              <td className="p-2 border text-right">R {expected.toFixed(2)}</td>
+                              <td className="p-2 border text-right">
+                                {manual ? `R ${manual}` : '-'}
+                              </td>
+                              <td className="p-2 border text-right">
+                                {manual ? `R ${difference.toFixed(2)}` : '-'}
+                              </td>
+                              <td className="p-2 border">
+                                {isMismatch && reason ? (
+                                  <span className="text-orange-600">{reason}</span>
+                                ) : (
+                                  '-'
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
-                </div>
-              )} */}
+                ))}
+              <div>
+                <h4 className='my-2 text-bold'><strong>Cash Movement</strong></h4>
+                <table className="w-full border text-sm mb-4">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="p-2 border text-left">Type</th>
+                      <th className="p-2 border text-left">Date and Time</th>
+                      <th className="p-2 border text-left">User</th>
+                      <th className="p-2 border text-left">Note</th>
+                      <th className="p-2 border text-left">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="">
+                      <td className="p-2 border text-left">Closing Float</td>
+                      <td className="p-2 border text-left">
+                        {new Date(opningData?.register?.createdAt).toLocaleDateString()}{" "}
+                        {new Date(opningData?.register?.createdAt).toLocaleTimeString()}
+                      </td>
+                      <td className="p-2 border text-left">
+                        {opningData?.register?.userName || "-"}
+                      </td>
+                      <td className="p-2 border text-left">-</td>
+                      <td className="p-2 border text-left">
+                        R {opningData?.register?.openingBalance?.toFixed(2)}
+                      </td>
+                    </tr>
 
+                    {(opningData as any)?.register?.cashUsage?.map((item: any, index: any) => (
+                      <tr key={index}>
+                        {/* Type */}
+                        <td className="p-2 border text-left">Cash Out</td>
+
+                        {/* Date and Time */}
+                        <td className="p-2 border text-left">
+                          {new Date(item.createdAt).toLocaleDateString()}{" "}
+                          {new Date(item.createdAt).toLocaleTimeString()}
+                        </td>
+
+                        {/* User */}
+                        <td className="p-2 border text-left">
+                          {item.customerName || "-"}
+                        </td>
+
+                        {/* Note */}
+                        <td className="p-2 border text-left">
+                          {item.reason || "-"}
+                        </td>
+
+                        {/* Amount */}
+                        <td className="p-2 border text-left">
+                          R {item.amount?.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="">
+                      <td className="p-2 border text-left">Opening Float</td>
+                      <td className="p-2 border text-left">
+                        {new Date().toLocaleDateString()}{" "}
+                        {new Date().toLocaleTimeString()}
+                      </td>
+                      <td className="p-2 border text-left">
+                        {opningData?.register?.closedBy || "-"}
+                      </td>
+                      <td className="p-2 border text-left">-</td>
+                      <td className={`p-2 border text-left ${(cashTotal - (parseFloat(values.bankDeposit) || 0)) < 0 ? "text-red-500" : ""}`}>
+                        R {Math.max(cashTotal - (parseFloat(values.bankDeposit) || 0), 0).toFixed(2)}
+                      </td>
+
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
 
             </div>

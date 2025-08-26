@@ -46,116 +46,115 @@ export const generatePDFBuffer = async (html: string): Promise<Buffer> => {
   return Buffer.from(pdf); // ✅ Compatible with nodemailer
 };
 
-const generateCloseRegisterHTML = (
-  closeRegister: any,
-  bankDeposit: any,
-  carryForwardBalance: any,
-  outletData: any,
-  openingBalance: any,
-  cashUsage: any = []
-) => {
-  const registerRows = closeRegister
-    .map(
-      (item: any) => `
-        <tr>
-          <td>${item.paymentModeName}</td>
-          <td>R ${item.totalAmount}</td>
-          <td>R ${item.manual || '-'}</td>
-        </tr>
-      `
-    )
-    .join('');
+// const generateCloseRegisterHTML = (
+//   closeRegister: any,
+//   bankDeposit: any,
+//   carryForwardBalance: any,
+//   outletData: any,
+//   openingBalance: any,
+//   cashUsage: any = []
+// ) => {
+//   const registerRows = closeRegister
+//     .map(
+//       (item: any) => `
+//         <tr>
+//           <td>${item.paymentModeName}</td>
+//           <td>R ${item.totalAmount}</td>
+//           <td>R ${item.manual || '-'}</td>
+//         </tr>
+//       `
+//     )
+//     .join('');
 
-  const usageRows = cashUsage.length
-    ? cashUsage
-        .map(
-          (usage: any, idx: number) => `
-          <tr>
-            <td>${idx + 1}</td>
-            <td>${usage.reason}</td>
-            <td>R ${usage.amount}</td>
-            <td>${
-              usage.proofUrl
-                ? `<a href="${process.env.REACT_APP_BASE_URL}/${usage.proofUrl}" target="_blank">View Proof</a>`
-                : '-'
-            }</td>
-          </tr>
-        `
-        )
-        .join('')
-    : `<tr><td colspan="4">No cash usage entries available.</td></tr>`;
+//   const usageRows = cashUsage.length
+//     ? cashUsage
+//       .map(
+//         (usage: any, idx: number) => `
+//           <tr>
+//             <td>${idx + 1}</td>
+//             <td>${usage.reason}</td>
+//             <td>R ${usage.amount}</td>
+//             <td>${usage.proofUrl
+//             ? `<a href="${process.env.REACT_APP_BASE_URL}/${usage.proofUrl}" target="_blank">View Proof</a>`
+//             : '-'
+//           }</td>
+//           </tr>
+//         `
+//       )
+//       .join('')
+//     : `<tr><td colspan="4">No cash usage entries available.</td></tr>`;
 
-  return `
-    <html>
-      <head>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            color: #333;
-          }
-          h2, h3 {
-            margin-bottom: 10px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 14px;
-          }
-          th, td {
-            border: 1px solid #999;
-            padding: 8px;
-            text-align: left;
-          }
-          th {
-            background-color: #f9f9f9;
-          }
-          a {
-            color: #1a0dab;
-          }
-        </style>
-      </head>
-      <body>
-        <h2>Close Register Summary</h2>
-        <h3>Outlet Name: ${outletData?.name}</h3>
+//   return `
+//     <html>
+//       <head>
+//         <style>
+//           body {
+//             font-family: Arial, sans-serif;
+//             padding: 30px;
+//             color: #333;
+//           }
+//           h2, h3 {
+//             margin-bottom: 10px;
+//           }
+//           table {
+//             width: 100%;
+//             border-collapse: collapse;
+//             margin-top: 20px;
+//             font-size: 14px;
+//           }
+//           th, td {
+//             border: 1px solid #999;
+//             padding: 8px;
+//             text-align: left;
+//           }
+//           th {
+//             background-color: #f9f9f9;
+//           }
+//           a {
+//             color: #1a0dab;
+//           }
+//         </style>
+//       </head>
+//       <body>
+//         <h2>Close Register Summary</h2>
+//         <h3>Outlet Name: ${outletData?.name}</h3>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Payment Mode</th>
-              <th>Total Amount</th>
-              <th>Manual Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${registerRows}
-          </tbody>
-        </table>
+//         <table>
+//           <thead>
+//             <tr>
+//               <th>Payment Mode</th>
+//               <th>Total Amount</th>
+//               <th>Manual Amount</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             ${registerRows}
+//           </tbody>
+//         </table>
 
-        <p><strong>Opening Balance:</strong> R ${openingBalance}</p>
-        <p><strong>Bank Deposit:</strong> R ${bankDeposit}</p>
-        <p><strong>Carry Forward Balance:</strong> R ${carryForwardBalance}</p>
+//         <p><strong>Opening Balance:</strong> R ${openingBalance}</p>
+//         <p><strong>Bank Deposit:</strong> R ${bankDeposit}</p>
+//         <p><strong>Carry Forward Balance:</strong> R ${carryForwardBalance}</p>
 
-        <h3 style="margin-top:40px;">Cash Usage Entries</h3>
+//         <h3 style="margin-top:40px;">Cash Usage Entries</h3>
 
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Reason</th>
-              <th>Amount</th>
-              <th>Proof</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${usageRows}
-          </tbody>
-        </table>
-      </body>
-    </html>
-  `;
-};
+//         <table>
+//           <thead>
+//             <tr>
+//               <th>#</th>
+//               <th>Reason</th>
+//               <th>Amount</th>
+//               <th>Proof</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             ${usageRows}
+//           </tbody>
+//         </table>
+//       </body>
+//     </html>
+//   `;
+// };
 
 
 
@@ -341,6 +340,118 @@ const generateCloseRegisterHTML = (
 //     });
 //   }
 // );
+const generateCloseRegisterHTML = (
+  flattenedPayments: any[],
+  deposit: number,
+  carryForwardBalance: number,
+  outletData: any,
+  openingBalance: number,
+  cashUsage: any[],
+  registerInfo: any
+) => {
+  // group payments by date
+  const paymentsByDate: Record<string, any[]> = {};
+  flattenedPayments.forEach((p) => {
+    const d = new Date(p.date).toDateString();
+    if (!paymentsByDate[d]) paymentsByDate[d] = [];
+    paymentsByDate[d].push(p);
+  });
+
+  return `
+  <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        h2,h3 { text-align: center; margin: 8px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+        th { background: #f5f5f5; }
+        .right { text-align: right; }
+        .red { color: red; }
+      </style>
+    </head>
+    <body>
+      <h2>Register Summary</h2>
+      <h3>Register Closure Summary</h3>
+      <p><strong>Sequence No:</strong> ${registerInfo?._id}</p>
+      <p><strong>Open Date:</strong> ${new Date(registerInfo?.createdAt).toLocaleDateString()}</p>
+      <p><strong>Close Date:</strong> ${new Date(registerInfo?.closedAt).toLocaleDateString()}</p>
+      <p><strong>Outlet:</strong> ${outletData?.name || outletData?._id}</p>
+      <p><strong>Opening Balance:</strong> R ${openingBalance.toFixed(2)}</p>
+      <p><strong>Bank Deposit:</strong> R ${deposit.toFixed(2)}</p>
+      <p><strong>Carry Forward:</strong> R ${carryForwardBalance.toFixed(2)}</p>
+
+      ${Object.keys(paymentsByDate).map(date => `
+        <h4>${date}</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Payment Mode</th>
+              <th>Expected</th>
+              <th>Counted</th>
+              <th>Difference</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${paymentsByDate[date].map(p => {
+    const expected = parseFloat(p.totalAmount || 0);
+    const manual = parseFloat(p.manual || 0);
+    const diff = manual - expected;
+    return `
+                <tr>
+                  <td>${p.paymentModeName}</td>
+                  <td class="right">R ${expected.toFixed(2)}</td>
+                  <td class="right">R ${manual.toFixed(2)}</td>
+                  <td class="right ${diff !== 0 ? 'red' : ''}">R ${diff.toFixed(2)}</td>
+                  <td>${p.reason || '-'}</td>
+                </tr>
+              `;
+  }).join("")}
+          </tbody>
+        </table>
+      `).join("")}
+
+      <h3>Cash Movement</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Date and Time</th>
+            <th>User</th>
+            <th>Note</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Closing Float</td>
+            <td>${new Date(registerInfo?.createdAt).toLocaleString()}</td>
+            <td>-</td>
+            <td>-</td>
+            <td>R ${openingBalance.toFixed(2)}</td>
+          </tr>
+          ${cashUsage?.map((c: any) => `
+            <tr>
+              <td>Cash Out</td>
+              <td>${new Date(c.createdAt).toLocaleString()}</td>
+              <td>-</td>
+              <td>${c.reason || '-'}</td>
+              <td class="red">R ${parseFloat(c.amount).toFixed(2)}</td>
+            </tr>
+          `).join("")}
+          <tr>
+            <td>Opening Float</td>
+            <td>${new Date(registerInfo?.closedAt).toLocaleString()}</td>
+            <td>-</td>
+            <td>-</td>
+            <td>R ${carryForwardBalance.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </body>
+  </html>`;
+};
 
 
 const createRegister = catchAsync(
@@ -364,18 +475,18 @@ const createRegister = catchAsync(
     const endOfDay = new Date(inputDate);
     endOfDay.setHours(23, 59, 59, 999);
 
-    // Check if any register exists today (open or closed)
-    const existingRegister = await SalesRegister.findOne({
+    const existingOpenRegister = await SalesRegister.findOne({
       outletId,
       createdBy: userId,
-      openedAt: { $gte: startOfDay, $lte: endOfDay },
+      isOpened: true,
+      isClosed: false,
       isDeleted: false,
     });
 
-    if (existingRegister) {
+    if (existingOpenRegister) {
       throw new ApiError(
         httpStatus.CONFLICT,
-        'Register entry already exists for today'
+        'You already have an open register. Close it before opening a new one.'
       );
     }
 
@@ -386,7 +497,7 @@ const createRegister = catchAsync(
       openingBalance,
       isOpened: true,
       isClosed: false,
-      openedAt: inputDate,
+      // openedAt: inputDate,
       createdAt: new Date(),
     });
 
@@ -524,7 +635,7 @@ const createCloseRegister = catchAsync(async (req: AuthenticatedRequest, res: Re
   }
 
   const userId = req.userData.Id;
-  const { outletId, closeRegister, bankDeposit = 0, cashUsageProofUrl, cashUsageReason,cashUsageAmount } = req.body;
+  const { outletId, closeRegister, bankDeposit = 0, cashUsageProofUrl, cashUsageReason, cashUsageAmount } = req.body;
 
   if (!Array.isArray(closeRegister) || closeRegister.length === 0) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid closeRegister format');
@@ -547,11 +658,12 @@ const createCloseRegister = catchAsync(async (req: AuthenticatedRequest, res: Re
 
   // Flatten and validate all payment entries
   const flattenedPayments = closeRegister.flatMap((entry: any) => {
-    const { date, payments } = entry;
+    const { date, payments,payout } = entry;
     if (!date || !Array.isArray(payments)) return [];
 
     return payments.map((p: any) => ({
       ...p,
+      payout,
       date: new Date(date),
       manual: p.manual || '',
       reason: p.reason || '',
@@ -600,7 +712,8 @@ const createCloseRegister = catchAsync(async (req: AuthenticatedRequest, res: Re
     carryForwardBalance,
     outletData,
     openingBalance,
-    existingRegister?.cashUsage
+    existingRegister?.cashUsage,
+    existingRegister
   );
 
   const pdfBuffer = await generatePDFBuffer(htmlContent);
@@ -984,17 +1097,28 @@ const getRegisterCurentDate = catchAsync(
     const userId = req.userData.Id;
 
     // Step 1: Get last closed register
+    // const lastClosedRegister = await SalesRegister.findOne({
+    //   outletId,
+    //   createdBy: userId,
+    //   isOpened: true,
+    //   // isDeleted: false,
+    // })
+    //   .sort({ openedAt: -1 })
+    //   .lean();
+
     const lastClosedRegister = await SalesRegister.findOne({
       outletId,
       createdBy: userId,
-      isOpened: true,
-      // isDeleted: false,
+      // isClosed: true,      // ✅ last closed chahiye
+      // isDeleted: false,  // agar deleted skip karna ho
     })
-      .sort({ openedAt: -1 })
+      .sort({ createdAt: -1 }) // ✅ latest closed date ke hisaab se sort
       .lean();
 
-    const startDate = lastClosedRegister?.openedAt
-      ? new Date(lastClosedRegister.openedAt.getTime() + 1)
+    const dddd = lastClosedRegister?.closedAt ? lastClosedRegister?.closedAt : lastClosedRegister?.openedAt
+
+    const startDate = dddd
+      ? new Date(dddd.getTime() + 1)
       : new Date(new Date().setHours(0, 0, 0, 0));
 
     const endDate = new Date();
@@ -1068,6 +1192,8 @@ const getRegisterCurentDate = catchAsync(
       { $sort: { invoiceDate: 1 } },
     ];
 
+
+
     const result = await Invoice.aggregate(pipeline);
 
     // Step 3: Get current register (open or closed today)
@@ -1075,6 +1201,7 @@ const getRegisterCurentDate = catchAsync(
       outletId,
       createdBy: userId,
       isDeleted: false,
+      isOpened: true,
     }).sort({ createdAt: -1 });
 
     return res.status(httpStatus.OK).send({
@@ -1098,32 +1225,25 @@ const getRegisterPreviousDate = catchAsync(
     const outletId = req.params.outletId;
     const userId = req.userData.Id;
 
-
-    // ✅ Automatically calculate yesterday's date
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(0, 0, 0, 0);
-
-    const startOfDay = new Date(yesterday);
-    const endOfDay = new Date(yesterday);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    // ✅ Query CloseRegister for yesterday
-    const existingRegister = await registerService.findCloseRegister({
-      createdBy: userId,
+    // ✅ Find the most recent closed register before now
+    const lastClosedRegister = await SalesRegister.findOne({
       outletId,
-      startOfDay,
-      endOfDay,
-    });
+      createdBy: userId,
+      isClosed: true,
+      isDeleted: false,
+    })
+      .sort({ closedAt: -1 }); // sort by closing date descending to get the latest
+
     return res.status(httpStatus.OK).send({
       message: "Successful.",
-      data: existingRegister,
+      data: lastClosedRegister,
       status: true,
       code: "OK",
       issue: null,
     });
   }
 );
+
 
 const getGivenChangeSum = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {

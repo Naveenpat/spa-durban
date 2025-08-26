@@ -286,13 +286,13 @@ const ATMAppHeader = ({
       return;
     }
 
-    if(!tempCashUsage?.reason){
-      showToast('error','Please enter any reason');
+    if (!tempCashUsage?.reason) {
+      showToast('error', 'Please enter any reason');
       return
     }
 
-     if(!tempCashUsage?.amount){
-      showToast('error','Please enter amount');
+    if (!tempCashUsage?.amount) {
+      showToast('error', 'Please enter amount');
       return
     }
 
@@ -354,9 +354,22 @@ const ATMAppHeader = ({
     {
       fieldName: 'paymentMode',
       headerName: 'Mode',
-      flex: 'flex-[2_1_0%]',
-      renderCell: (row: any) => toTitleCase(row.paymentMode),
+      flex: 'flex-[3_1_0%]',
+      renderCell: (row: any) => {
+        if (!row.payments || row.payments.length === 0) return '-';
+
+        return (
+          <div className="flex flex-col">
+            {row.payments.map((p: any, idx: number) => (
+              <span key={idx}>
+                {toTitleCase(p.paymentMode)} - {p.amount}
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
+
     {
       fieldName: 'totalAmount',
       headerName: 'Total',

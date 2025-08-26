@@ -38,12 +38,12 @@ const ViewOutletRegisterPage = () => {
   const { id } = useParams(); // outletId from URL
 
 
-  const { searchQuery, limit, page, dateFilter, orderBy, orderValue } =
-    useFilterPagination(['outletId', 'customerId']);
+  const { searchQuery, limit, page, dateFilter, orderBy, orderValue, appliedFilters } =
+    useFilterPagination(['outletsId', 'customerId']);
   const [searchParams, setSearchParams] = useSearchParams();
   const { outlets } = useSelector((state: RootState) => state.auth);
   const { data, isLoading, error } = useGetRegisterDataQuery({
-    outletId: id,
+    outletId: appliedFilters?.[0]?.value,
     startDate: dateFilter?.start_date,
     endDate: dateFilter?.end_date,
     page: page,
@@ -53,7 +53,7 @@ const ViewOutletRegisterPage = () => {
   });
 
   const { data: chartData } = useGetRegisterChartDataQuery({
-    outletId: id,
+    outletId: appliedFilters?.[0]?.value,
     startDate: dateFilter?.start_date,
     endDate: dateFilter?.end_date
   });
@@ -87,7 +87,7 @@ const ViewOutletRegisterPage = () => {
   const tableHeaders: TableHeader<RegisterValue>[] = [
     {
       fieldName: 'openedAt',
-      headerName: 'Date',
+      headerName: 'Open Date',
       flex: 'flex-[1_1_0%]',
       sortable: true,
       sortKey: 'openedAt',
@@ -99,23 +99,51 @@ const ViewOutletRegisterPage = () => {
       }
     },
     {
+      fieldName: 'closedAt',
+      headerName: 'Close Date',
+      flex: 'flex-[1_1_0%]',
+      sortable: true,
+      sortKey: 'closedAt',
+      extraClasses: () => '',
+      stopPropagation: true,
+      render: (row: any) => {
+        const date = row.closedAt ? new Date(row.closedAt) : null;
+        return date ? formatZonedDate(date) : '-';
+      }
+    },
+    {
       fieldName: 'openingBalance',
       headerName: 'Opening Balance',
       flex: 'flex-[1_1_0%]',
+      // render:(row:any)=>{
+      //   return `${row?.openingBalance} (+${row?.carryForwardBalance})`
+      // }
     },
     {
-      fieldName: 'carryForwardBalance',
-      headerName: 'C/F Balance',
+      fieldName: 'totalManualAmount',
+      headerName: 'Total Manual Cash',
       flex: 'flex-[1_1_0%]',
     },
     {
       fieldName: 'bankDeposit',
       headerName: 'Bank Deposite',
       flex: 'flex-[1_1_0%]',
+      render: (row: any) => {
+        return `-${row?.bankDeposit}`
+      }
     },
     {
-      fieldName: 'cashAmount',
-      headerName: 'Total Cash',
+      fieldName: 'totalPayouts',
+      headerName: 'Total Payout',
+      flex: 'flex-[1_1_0%]',
+       render: (row: any) => {
+        return `-${row?.totalPayouts}`
+      }
+    },
+    
+    {
+      fieldName: 'carryForwardBalance',
+      headerName: 'C/F Balance',
       flex: 'flex-[1_1_0%]',
     },
     // {
@@ -200,6 +228,22 @@ const ViewOutletRegisterPage = () => {
 
 
   const filters: FilterType[] = [
+    {
+      filterType: 'single-select',
+      label: 'Outlet',
+      fieldName: 'outletsId',
+      options:
+        outlets?.map((el: any) => {
+          return {
+            label: el?.name,
+            value: el?._id,
+          };
+        }) || [],
+      renderOption: (option) => option.label,
+      isOptionEqualToSearchValue: (option, value) => {
+        return option?.label.includes(value);
+      },
+    },
     {
       filterType: 'date',
       fieldName: 'createdAt',

@@ -35,9 +35,9 @@ const salesData = [
 
 const SalesReportPage = () => {
   const { searchQuery, limit, page, dateFilter, orderBy, orderValue, appliedFilters } =
-    useFilterPagination(['outletIds', 'customerId']);
+    useFilterPagination(['outletIds', 'customerId','reportDuration']);
   const [searchParams, setSearchParams] = useSearchParams();
-
+   console.log('------appliedFilters',appliedFilters)
   const { outlets } = useSelector((state: RootState) => state.auth);
   const { data, isLoading, error } = useGetSalesReportByOutletQuery({
     outletId: appliedFilters?.[0]?.value,
@@ -47,12 +47,14 @@ const SalesReportPage = () => {
     limit: limit,
     sortBy: orderBy || 'createdAt',
     sortOrder: orderValue || 'desc',
+    reportDuration:appliedFilters?.[2]?.value
   });
 
   const { data: chartData } = useGetSalesChartDataReportByOutletQuery({
     outletId: appliedFilters?.[0]?.value,
     startDate: dateFilter?.start_date,
-    endDate: dateFilter?.end_date
+    endDate: dateFilter?.end_date,
+    reportDuration:appliedFilters?.[2]?.value
   });
 
 
@@ -156,6 +158,16 @@ const SalesReportPage = () => {
         return option?.label.includes(value);
       },
     },
+    {
+      filterType: 'single-select',
+      label: 'Select',
+      fieldName: 'reportDuration',
+      options: salesData || [],
+      renderOption: (option) => option.label,
+      isOptionEqualToSearchValue: (option, value) => {
+        return option?.label.includes(value);
+      },
+    },
   ];
 
   const invoices = data?.data?.invoices || [];
@@ -214,6 +226,70 @@ const SalesReportPage = () => {
           {/* Table Toolbar */}
           <MOLFilterBar hideSearch={true} filters={filters} />
           <div className="flex flex-col overflow-auto border rounded border-slate-300 p-1">
+
+            <div>{salesByDate.length > 0 && (
+              <div className="col-span">
+                <ATMChart
+                  type="line"
+                  data={{
+                    labels: [
+                      '01', '02', '03', '04', '05',
+                      '06', '07'
+                    ],
+                    datasets: [
+                      {
+                        label: 'Last Month Sales',
+                        data: [
+                          120, 90, 100, 150, 130, 170, 160,
+                        ],
+                        borderColor: '#6b645fff',
+                        backgroundColor: '#6b645fff',
+                        fill: false,
+                        tension: 0.4, // smoother curve (0 to 1, higher = more curve)
+                        pointRadius: 3, // small circle at each point
+                        pointHoverRadius: 6, // enlarges on hover
+                      },
+                      {
+                        label: 'Current Month Sales',
+                        data: [
+                          400, 80, 420, 140, 150, 160, 170, 180, 190, 200,
+                          210, 190, 180, 175, 185, 195, 205, 215, 225, 235,
+                          245, 255, 260, 270, 265, 250, 240, 230, 220, 210,
+                        ],
+                        borderColor: '#3b82f6',
+                        backgroundColor: '#3b82f6',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: { position: 'top' },
+                      title: {
+                        display: true,
+                        text: 'Last Month vs Current Month Sales (EOD)',
+                      },
+                      tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                      },
+                    },
+                    interaction: {
+                      mode: 'nearest',
+                      axis: 'x',
+                      intersect: false,
+                    },
+                    maintainAspectRatio: false,
+                  }}
+                />
+              </div>
+
+            )}
+            </div>
             <div className="grid grid-cols-3 gap-4">
               {/* Chart 1: Sales by Date (Bar) */}
               {salesByDate.length > 0 && (

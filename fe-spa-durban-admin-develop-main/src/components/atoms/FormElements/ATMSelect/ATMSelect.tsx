@@ -27,6 +27,7 @@ type Props = {
   formatValue?: (value: any) => ReactNode;
   isOptionDisabled?: (option: any) => boolean;
   isClearable?: boolean;
+  isSearchable?: boolean;
   closeMenuOnSelect?: boolean;
   minMenuHeight?: number;
   maxMenuHeight?: number;
@@ -71,6 +72,7 @@ const ATMSelect = ({
   formatValue,
   isOptionDisabled,
   isClearable = true,
+  isSearchable = true,
   closeMenuOnSelect = true,
   minMenuHeight = 300,
   maxMenuHeight = 300,
@@ -150,6 +152,7 @@ const ATMSelect = ({
           }}
           options={options}
           isClearable={isClearable}
+          isSearchable={isSearchable}
           closeMenuOnSelect={closeMenuOnSelect}
           getOptionLabel={getOptionLabel}
           getOptionValue={(option) => option?.[valueAccessKey]}

@@ -429,10 +429,30 @@ const navigation: (params?: {
     {
       groupLable: 'Reports',
       items:[
+        {
+          title: 'Sales',
+          icon: IconReceiptTax,
+          path: 'outlet/sales-report',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'NAV_CASHBACK_RULES',
+        },
          {
           title: 'Outlets',
           icon: IconReceiptTax,
           path: 'outlet/sales-report',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'NAV_CASHBACK_RULES',
+        },
+        {
+          title: 'Closue Summary',
+          icon: IconReceiptTax,
+          path: 'outlet/view-register',
           searchParams: {
             page: '1',
             limit: '10',

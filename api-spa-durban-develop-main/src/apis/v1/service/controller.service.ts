@@ -449,68 +449,136 @@ const getService = catchAsync(
   }
 );
 
+// const updateService = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     let { categoryId, subCategoryId, outletIds, products, taxId } = req.body;
+
+//     // category exists check
+//     let categoryExists = await categoryService.getCategoryById(categoryId);
+//     if (!categoryExists) {
+//       //throw new ApiError(httpStatus.BAD_REQUEST, "Invalid category!");
+//     }
+
+//     // sub category exists check
+//     if (subCategoryId) {
+//       let subCategoryExists = await subCategoryService.getSubCategoryById(
+//         subCategoryId
+//       );
+//       if (!subCategoryExists) {
+//         //throw new ApiError(httpStatus.BAD_REQUEST, "Invalid sub category!");
+//       }
+//     }
+//     /*
+//      * check outlet exist
+//      */
+
+//     // Fetch all outlets by their IDs
+//     const outlets = await Promise.all(
+//       outletIds.map((id: any) => outletService.getOutletById(id))
+//     );
+
+//     // Check if any outlet is not found
+//     const notFoundOutlets = outlets.filter((outlet) => !outlet);
+
+//     if (notFoundOutlets.length > 0) {
+//       //throw new ApiError(httpStatus.NOT_FOUND, "Invalid outlets");
+//     }
+
+//     // check product exists
+
+//     // Fetch all product by their IDs
+//     if (products.length) {
+//       const allProducts = await Promise.all(
+//         products.map((ele: any) =>
+//           productService.getProductById(ele?.productId)
+//         )
+//       );
+
+//       // Check if any product is not found
+//       const notFoundproducts = allProducts.filter((product) => !product);
+
+//       if (notFoundproducts.length > 0) {
+//         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid products");
+//       }
+//     }
+
+//     if (taxId) {
+//       // Fetch all outlets by their IDs
+//       const tax = await taxService.getTaxById(taxId);
+
+//       if (!tax) {
+//         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid tax.");
+//       }
+//     }
+
+//     const service = await serviceService.updateServiceById(
+//       req.params.serviceId,
+//       req.body
+//     );
+
+//     return res.status(httpStatus.OK).send({
+//       message: "Updated successfully!",
+//       data: service,
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     });
+//   }
+// );
+
 const updateService = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     let { categoryId, subCategoryId, outletIds, products, taxId } = req.body;
 
-    // category exists check
-    let categoryExists = await categoryService.getCategoryById(categoryId);
-    if (!categoryExists) {
-      //throw new ApiError(httpStatus.BAD_REQUEST, "Invalid category!");
-    }
-
-    // sub category exists check
-    if (subCategoryId) {
-      let subCategoryExists = await subCategoryService.getSubCategoryById(
-        subCategoryId
-      );
-      if (!subCategoryExists) {
-        //throw new ApiError(httpStatus.BAD_REQUEST, "Invalid sub category!");
+    // category exists check (only if provided)
+    if (categoryId) {
+      let categoryExists = await categoryService.getCategoryById(categoryId);
+      if (!categoryExists) {
+        // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid category!");
       }
     }
-    /*
-     * check outlet exist
-     */
 
-    // Fetch all outlets by their IDs
-    const outlets = await Promise.all(
-      outletIds.map((id: any) => outletService.getOutletById(id))
-    );
-
-    // Check if any outlet is not found
-    const notFoundOutlets = outlets.filter((outlet) => !outlet);
-
-    if (notFoundOutlets.length > 0) {
-      //throw new ApiError(httpStatus.NOT_FOUND, "Invalid outlets");
+    // sub category exists check (only if provided)
+    if (subCategoryId) {
+      let subCategoryExists = await subCategoryService.getSubCategoryById(subCategoryId);
+      if (!subCategoryExists) {
+        // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid sub category!");
+      }
     }
 
-    // check product exists
-
-    // Fetch all product by their IDs
-    if (products.length) {
-      const allProducts = await Promise.all(
-        products.map((ele: any) =>
-          productService.getProductById(ele?.productId)
-        )
+    // check outlet exist (only if provided)
+    if (Array.isArray(outletIds) && outletIds.length > 0) {
+      const outlets = await Promise.all(
+        outletIds.map((id: any) => outletService.getOutletById(id))
       );
 
-      // Check if any product is not found
-      const notFoundproducts = allProducts.filter((product) => !product);
+      const notFoundOutlets = outlets.filter((outlet) => !outlet);
+      if (notFoundOutlets.length > 0) {
+        // throw new ApiError(httpStatus.NOT_FOUND, "Invalid outlets");
+      }
+    }
 
+    // check products exist (only if provided)
+    if (Array.isArray(products) && products.length > 0) {
+      const allProducts = await Promise.all(
+        products.map((ele: any) => productService.getProductById(ele?.productId))
+      );
+
+      const notFoundproducts = allProducts.filter((product) => !product);
       if (notFoundproducts.length > 0) {
         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid products");
       }
     }
 
+    // check taxId exist (only if provided)
     if (taxId) {
-      // Fetch all outlets by their IDs
       const tax = await taxService.getTaxById(taxId);
-
       if (!tax) {
         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid tax.");
       }
     }
 
+    // finally update
     const service = await serviceService.updateServiceById(
       req.params.serviceId,
       req.body
@@ -525,6 +593,8 @@ const updateService = catchAsync(
     });
   }
 );
+
+
 const addServiceToTop = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { type } = req.body;

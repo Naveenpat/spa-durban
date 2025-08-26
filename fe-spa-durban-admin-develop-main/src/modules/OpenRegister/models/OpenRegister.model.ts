@@ -26,12 +26,15 @@ export type PaymentMode = {
 
 export type RegisterValue = {
   openedAt: Date;
+  closedAt:Date;
   _id: string;
   openingBalance: number;
   carryForwardBalance: number;
   closeRegister: any;
   registerStatus: string;
   bankDeposit: number;
+  totalPayouts:number;
+  totalManualAmount:number;
   cashAmount: number;
   cashUsageProofUrl:string;
   cashUsageReason:string;

@@ -15,7 +15,7 @@ import { RootState } from 'src/store';
 import { CURRENCY } from 'src/utils/constants';
 import ItemLoadingCard, { CategoryLoading } from './ItemLoadingCard';
 import NoItemFound from './NoItemFound';
-import { useUpdateServiceToTopMutation } from '../../Service/service/ServiceServices';
+import { useUpdateServiceMutation, useUpdateServiceToTopMutation } from '../../Service/service/ServiceServices';
 import { useSearchParams } from 'react-router-dom';
 import { showToast } from 'src/utils/showToaster';
 import { IconPlusEqual } from '@tabler/icons-react';
@@ -43,7 +43,7 @@ interface SelectedService {
 
 const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
   const [updateService] = useUpdateServiceToTopMutation();
-
+  const [updateServiceOne] = useUpdateServiceMutation()
   const [searchParams, setSearchParams] = useSearchParams();
   const treatments = searchParams.getAll('treatments');
   const prevTreatmentsRef = useRef<string[]>([]);
@@ -230,11 +230,11 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
 
   const handleEditServicess = () => {
     const formattedValues = {
-    name: serviceName,
-    price: sellingPrice
+    serviceName: serviceName,
+    sellingPrice: sellingPrice
   }
 
-  updateService({ serviceId, body: formattedValues })
+  updateServiceOne({ serviceId, body: formattedValues })
   .then((res:any)=>{
     setEditServiceModal(false);
     if (res?.error) {
@@ -299,6 +299,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
             getOptionLabel={(option: any) => option?.categoryName}
             placeholder="Please Select Category"
             isClearable={false}
+            isSearchable={true}
           />
         </div>
         {/* <div>

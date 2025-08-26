@@ -629,12 +629,13 @@ const getSalesReportByCustomer = catchAsync(async (req: AuthenticatedRequest, re
 
 const getSalesChartDataReportByOutlet = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    const { outletId, startDate, endDate } = req.query;
+    const { outletId, startDate, endDate, reportDuration } = req.query;
 
     if (!mongoose.Types.ObjectId.isValid(outletId as string)) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid outletId');
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid outletId");
     }
 
+    // 📌 Build invoiceDate filter
     const invoiceDateFilter: Record<string, any> = {};
     if (startDate) {
       invoiceDateFilter.$gte = new Date(startDate as string);
@@ -651,13 +652,21 @@ const getSalesChartDataReportByOutlet = catchAsync(
       ...(Object.keys(invoiceDateFilter).length ? { invoiceDate: invoiceDateFilter } : {}),
     };
 
-    // 1. 🟢 Sales Over Time (Date-wise)
+    // 📌 Report Duration Formatting
+    let groupFormat = "%Y-%m-%d"; // default daily
+    if (reportDuration === "WEEKLY") {
+      groupFormat = "%Y-%U"; // year-week (week number)
+    } else if (reportDuration === "MONTHLY") {
+      groupFormat = "%Y-%m"; // year-month
+    }
+
+    // 1. 🟢 Sales Over Time (Date / Week / Month)
     const salesByDate = await Invoice.aggregate([
       { $match: matchFilter },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$invoiceDate' } },
-          total: { $sum: '$totalAmount' },
+          _id: { $dateToString: { format: groupFormat, date: "$invoiceDate" } },
+          total: { $sum: "$totalAmount" },
         },
       },
       { $sort: { _id: 1 } },
@@ -666,26 +675,24 @@ const getSalesChartDataReportByOutlet = catchAsync(
     // 2. 🔵 Sales by Payment Mode
     const salesByPaymentMode = await Invoice.aggregate([
       { $match: matchFilter },
-      { $unwind: '$amountReceived' },
+      { $unwind: "$amountReceived" },
       {
         $lookup: {
-          from: 'paymentmodes',
-          localField: 'amountReceived.paymentModeId',
-          foreignField: '_id',
-          as: 'paymentMode',
+          from: "paymentmodes",
+          localField: "amountReceived.paymentModeId",
+          foreignField: "_id",
+          as: "paymentMode",
         },
       },
       {
         $addFields: {
-          modeName: {
-            $arrayElemAt: ['$paymentMode.modeName', 0],
-          },
+          modeName: { $arrayElemAt: ["$paymentMode.modeName", 0] },
         },
       },
       {
         $group: {
-          _id: '$modeName',
-          total: { $sum: '$amountReceived.amount' },
+          _id: "$modeName",
+          total: { $sum: "$amountReceived.amount" },
         },
       },
       { $sort: { total: -1 } },
@@ -696,21 +703,21 @@ const getSalesChartDataReportByOutlet = catchAsync(
       { $match: matchFilter },
       {
         $group: {
-          _id: '$customerId',
-          total: { $sum: '$totalAmount' },
+          _id: "$customerId",
+          total: { $sum: "$totalAmount" },
         },
       },
       {
         $lookup: {
-          from: 'customers',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'customer',
+          from: "customers",
+          localField: "_id",
+          foreignField: "_id",
+          as: "customer",
         },
       },
       {
         $project: {
-          customerName: { $arrayElemAt: ['$customer.customerName', 0] },
+          customerName: { $arrayElemAt: ["$customer.customerName", 0] },
           total: 1,
         },
       },
@@ -719,18 +726,19 @@ const getSalesChartDataReportByOutlet = catchAsync(
     ]);
 
     return res.status(httpStatus.OK).send({
-      message: 'Sales chart data fetched successfully.',
+      message: "Sales chart data fetched successfully.",
       data: {
         salesByDate,
         salesByPaymentMode,
         topCustomers,
       },
       status: true,
-      code: 'OK',
+      code: "OK",
       issue: null,
     });
   }
 );
+
 
 const getSalesChartDataReportByCustomer = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { customerId, startDate, endDate } = req.query;
@@ -1059,7 +1067,6 @@ const getRegisterChartDataByOutlet = catchAsync(async (req: Request, res: Respon
 
 
 
-
 const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { outletId, startDate, endDate } = req.query;
 
@@ -1067,107 +1074,211 @@ const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res
   const limit = parseInt(req.query.limit as string) || 10;
   const skip = (page - 1) * limit;
 
-
-  const match: any = {
-    isDeleted: false,
-  };
+  const match: any = { isDeleted: false };
   if (outletId) match.outletId = new mongoose.Types.ObjectId(outletId as string);
 
   if (startDate && endDate) {
     const start = new Date(startDate as string);
     start.setHours(0, 0, 0, 0);
-
     const end = new Date(endDate as string);
     end.setHours(23, 59, 59, 999);
-
-    match.openedAt = {
-      $gte: start,
-      $lte: end,
-    };
+    match.openedAt = { $gte: start, $lte: end };
   }
 
+    const existingOpenRegister = await SalesRegister.findOne({
+        outletId,
+        isOpened: true,
+        isClosed: false,
+        isDeleted: false,
+      });
+
   const pipeline: PipelineStage[] = [
+    { $match: match },
+
+    // 1) Flatten payments (allPayments) and compute quick sums: totalPayouts, cashUsageSum
     {
-      $match: match
+      $addFields: {
+        allPayments: {
+          $reduce: {
+            input: { $ifNull: ["$closeRegister", []] },
+            initialValue: [],
+            in: { $concatArrays: ["$$value", { $ifNull: ["$$this.payments", []] }] }
+          }
+        },
+        totalPayouts: {
+          $sum: {
+            $map: {
+              input: { $ifNull: ["$closeRegister", []] },
+              as: "cr",
+              in: { $ifNull: ["$$cr.payout", 0] }
+            }
+          }
+        },
+        cashUsageSum: {
+          $sum: {
+            $map: {
+              input: { $ifNull: ["$cashUsage", []] },
+              as: "cu",
+              in: { $ifNull: ["$$cu.amount", 0] }
+            }
+          }
+        }
+      }
+    },
+
+    // 2) Compute totals from allPayments (total, manual, by-mode)
+    {
+      $addFields: {
+        totalPaymentAmount: {
+          $sum: {
+            $map: { input: { $ifNull: ["$allPayments", []] }, as: "p", in: { $ifNull: ["$$p.totalAmount", 0] } }
+          }
+        },
+        totalManualAmount: {
+          $sum: {
+            $map: { input: { $ifNull: ["$allPayments", []] }, as: "p", in: { $toDouble: { $ifNull: ["$$p.manual", "0"] } } }
+          }
+        },
+        totalCashPayments: {
+          $sum: {
+            $map: {
+              input: {
+                $filter: {
+                  input: { $ifNull: ["$allPayments", []] },
+                  as: "p",
+                  cond: { $eq: [{ $toLower: "$$p.paymentModeName" }, "cash"] }
+                }
+              },
+              as: "p",
+              in: { $ifNull: ["$$p.totalAmount", 0] }
+            }
+          }
+        },
+        totalCardPayments: {
+          $sum: {
+            $map: {
+              input: {
+                $filter: {
+                  input: { $ifNull: ["$allPayments", []] },
+                  as: "p",
+                  cond: {
+                    $in: [
+                      { $toLower: "$$p.paymentModeName" },
+                      ["card", "credit", "debit", "debit card", "credit card", "card swipe"]
+                    ]
+                  }
+                }
+              },
+              as: "p",
+              in: { $ifNull: ["$$p.totalAmount", 0] }
+            }
+          }
+        }
+      }
+    },
+
+    // 3) Compute expected cash and variance
+    {
+      $addFields: {
+        openingBalanceSafe: { $ifNull: ["$openingBalance", 0] },
+        bankDepositSafe: { $ifNull: ["$bankDeposit", 0] },
+        totalPayoutsSafe: { $ifNull: ["$totalPayouts", 0] },
+        cashUsageSumSafe: { $ifNull: ["$cashUsageSum", 0] },
+        totalCashPaymentsSafe: { $ifNull: ["$totalCashPayments", 0] },
+      }
+    },
+    {
+      $addFields: {
+        expectedPhysicalCash: {
+          $subtract: [
+            { $add: ["$openingBalanceSafe", "$totalCashPaymentsSafe"] },
+            { $add: ["$totalPayoutsSafe", "$bankDepositSafe", "$cashUsageSumSafe"] }
+          ]
+        },
+        variance: { $subtract: [{ $ifNull: ["$cashAmount", 0] }, { $ifNull: ["$expectedPhysicalCash", 0] }] }
+      }
+    },
+{
+  $lookup: {
+    from: "salesregisters", // collection ka naam
+    let: { outlet: "$outletId", openedAt: "$openedAt" },
+    pipeline: [
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: ["$outletId", "$$outlet"] },
+              { $lt: ["$closedAt", "$$openedAt"] }, // only before current
+              { $eq: ["$isClosed", true] },
+              { $eq: ["$isDeleted", false] }
+            ]
+          }
+        }
+      },
+      { $sort: { closedAt: -1 } }, // latest closed before current
+      { $limit: 1 },
+      { $project: { carryForwardBalance: 1, closedAt: 1 } }
+    ],
+    as: "previousRegister"
+  }
+},
+{
+  $addFields: {
+    previousCarryForwardBalance: {
+      $ifNull: [{ $arrayElemAt: ["$previousRegister.carryForwardBalance", 0] }, 0]
+    },
+    previousClosedAt: {
+      $ifNull: [{ $arrayElemAt: ["$previousRegister.closedAt", 0] }, null]
     }
-    // { $unwind: { path: "$closeRegister", preserveNullAndEmptyArrays: true } },
-    // { $unwind: { path: "$closeRegister.payments", preserveNullAndEmptyArrays: true } },
-    // {
-    //   $group: {
-    //     _id: "$_id",
-    //     date: { $first: "$date" },
-    //     openingBalance: { $first: "$openingBalance" },
-    //     bankDeposit: { $first: "$bankDeposit" },
-    //     carryForwardBalance: { $first: "$carryForwardBalance" },
+  }
+},
+{
+  $project: {
+    previousRegister: 0 // cleanup
+  }
+}
+,
+    // 4) Pick projection (keep everything useful)
+    {
+      $project: {
+        outletId: 1,
+        createdBy: 1,
+        isOpened: 1,
+        isClosed: 1,
+        openedAt: 1,
+        closedAt: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        openingBalance: 1,
+        cashAmount: 1,
+        totalCashAmount: 1,
+        bankDeposit: 1,
+        carryForwardBalance: 1,
 
-    //     totalCash: {
-    //       $sum: {
-    //         $cond: [
-    //           { $eq: [{ $toLower: "$closeRegister.payments.paymentModeName" }, "cash"] },
-    //           { $toDouble: "$closeRegister.payments.totalAmount" },
-    //           0,
-    //         ],
-    //       },
-    //     },
-    //     totalUPI: {
-    //       $sum: {
-    //         $cond: [
-    //           { $eq: [{ $toLower: "$closeRegister.payments.paymentModeName" }, "upi"] },
-    //           { $toDouble: "$closeRegister.payments.totalAmount" },
-    //           0,
-    //         ],
-    //       },
-    //     },
-    //     totalCard: {
-    //       $sum: {
-    //         $cond: [
-    //           { $eq: [{ $toLower: "$closeRegister.payments.paymentModeName" }, "credit card"] },
-    //           { $toDouble: "$closeRegister.payments.totalAmount" },
-    //           0,
-    //         ],
-    //       },
-    //     },
-    //   },
-    // },
-    // {
-    //   $addFields: {
-    //     finalCash: {
-    //       $add: [
-    //         { $ifNull: ["$openingBalance", 0] },
-    //         { $ifNull: ["$totalCash", 0] },
-    //       ],
-    //     },
-    //   },
-    // },
-    // {
-    //   $project: {
-    //     _id: 0,
-    //     openedAt: 1,
-    //     openingBalance: 1,
-    //     bankDeposit: 1,
-    //     carryForwardBalance: 1,
-    //     closeRegister:1,
-    //     cashUsageReason:1,
-    //     cashUsageProofUrl:1,
-    //     totalCash: 1,
-    //     totalUPI: 1,
-    //     totalCard: 1,
-    //     finalCash: 1,
-    //     totalCashAmount:1,
-    //     isOpened:1,
-    //     isClosed:1
-    //   },
-    // }
-  ];
+        // computed
+        totalPayouts: 1,
+        totalPaymentAmount: 1,
+        totalManualAmount: 1,
+        totalCashPayments: 1,
+        totalCardPayments: 1,
+        cashUsageSum: 1,
+        expectedPhysicalCash: 1,
+        variance: 1,
 
-  pipeline.push(
+        // details for drilldown
+        allPayments: 1,
+        closeRegister: 1,
+        cashUsage: 1
+      }
+    },
+
+    // 5) Sort / paginate
     { $sort: { openedAt: -1 } },
     { $skip: skip },
     { $limit: limit }
-  );
+  ];
 
-  const registerData = await SalesRegister.aggregate(pipeline)
-
+  const registerData = await SalesRegister.aggregate(pipeline);
   const totalCount = await SalesRegister.countDocuments(match);
 
   res.status(200).json({
@@ -1181,6 +1292,62 @@ const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res
     }
   });
 });
+
+
+
+// const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+//   const { outletId, startDate, endDate } = req.query;
+
+//   const page = parseInt(req.query.page as string) || 1;
+//   const limit = parseInt(req.query.limit as string) || 10;
+//   const skip = (page - 1) * limit;
+
+
+//   const match: any = {
+//     isDeleted: false,
+//   };
+//   if (outletId) match.outletId = new mongoose.Types.ObjectId(outletId as string);
+
+//   if (startDate && endDate) {
+//     const start = new Date(startDate as string);
+//     start.setHours(0, 0, 0, 0);
+
+//     const end = new Date(endDate as string);
+//     end.setHours(23, 59, 59, 999);
+
+//     match.openedAt = {
+//       $gte: start,
+//       $lte: end,
+//     };
+//   }
+
+//   const pipeline: PipelineStage[] = [
+//     {
+//       $match: match
+//     }
+//   ];
+
+//   pipeline.push(
+//     { $sort: { openedAt: -1 } },
+//     { $skip: skip },
+//     { $limit: limit }
+//   );
+
+//   const registerData = await SalesRegister.aggregate(pipeline)
+
+//   const totalCount = await SalesRegister.countDocuments(match);
+
+//   res.status(200).json({
+//     success: true,
+//     data: registerData,
+//     pagination: {
+//       total: totalCount,
+//       page: Number(page),
+//       limit: Number(limit),
+//       pages: Math.ceil(totalCount / Number(limit)),
+//     }
+//   });
+// });
 
 
 

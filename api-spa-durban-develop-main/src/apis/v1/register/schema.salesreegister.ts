@@ -77,6 +77,7 @@ const CloseDaySchema = new mongoose.Schema(
   {
     date: { type: Date, required: true },
     payments: { type: [PaymentSchema], required: true },
+    payout:{ type: Number, required: false }
   },
   { _id: false }
 );

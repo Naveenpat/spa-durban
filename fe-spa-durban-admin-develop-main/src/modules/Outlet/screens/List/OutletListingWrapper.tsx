@@ -133,21 +133,21 @@ const OutletListingWrapper = (props: Props) => {
 
     //   ),
     // },
-    {
-      fieldName: 'viewOutletRegister',
-      headerName: 'View Register',
-      flex: 'flex-[0_0_150px]',
-      renderCell: (row: any) => (
-        <button
-          onClick={() => handleViewRegister(row)}
-          className="text-white px-3 py-1 rounded hover:opacity-90"
-          style={{ backgroundColor: '#006972' }}
-        >
-         View Register
-        </button>
+    // {
+    //   fieldName: 'viewOutletRegister',
+    //   headerName: 'View Register',
+    //   flex: 'flex-[0_0_150px]',
+    //   renderCell: (row: any) => (
+    //     <button
+    //       onClick={() => handleViewRegister(row)}
+    //       className="text-white px-3 py-1 rounded hover:opacity-90"
+    //       style={{ backgroundColor: '#006972' }}
+    //     >
+    //      View Register
+    //     </button>
 
-      ),
-    },
+    //   ),
+    // },
     {
       fieldName: 'createdAt',
       headerName: 'Date',
