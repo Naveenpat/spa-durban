@@ -358,8 +358,8 @@ const searchInProductAndService = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
 
     const page = parseInt(req.query.page as string) || 1;
-const limit = parseInt(req.query.limit as string) || 15;
-const skip = (page - 1) * limit;
+    const limit = parseInt(req.query.limit as string) || 15;
+    const skip = (page - 1) * limit;
 
     // Extract searchValue from req.query
     const productOptions = pick(req.query, ["searchValue"]);
@@ -441,6 +441,8 @@ const skip = (page - 1) * limit;
         serviceMatchQuery.$and.push({ $and: filterQuery });
       }
     }
+
+   console.log("Match Query:", JSON.stringify(serviceMatchQuery, null, 2));
 
     const dataToSend: Array<{
       _id: mongoose.Schema.Types.ObjectId | null;

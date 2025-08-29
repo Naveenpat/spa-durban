@@ -104,6 +104,7 @@ export const productAndService: { query: ObjectSchema } = {
   query: Joi.object().keys({
     params: Joi.array().items(Joi.string().required()),
     outletId: Joi.string().custom(objectId).allow(""),
+    categoryId:Joi.string().custom(objectId).allow(""),
     searchValue: Joi.string().allow(""),
     dateFilter: Joi.object()
       .keys({

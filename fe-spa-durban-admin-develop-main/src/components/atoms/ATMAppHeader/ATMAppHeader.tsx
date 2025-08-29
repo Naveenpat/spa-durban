@@ -187,6 +187,13 @@ const ATMAppHeader = ({
     }
   }, [storeOutletId, isSearch, isOpenSalseReportDialog]);
 
+  function capitalizeWords(str: string) {
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
 
 
 
@@ -608,7 +615,10 @@ const ATMAppHeader = ({
               }}
               options={outlets}
               valueAccessKey="_id"
-              getOptionLabel={(option) => option?.name}
+              // getOptionLabel={(option) => option?.name}
+              getOptionLabel={(option) =>
+                option?.name ? capitalizeWords(option.name) : ""
+              }
               placeholder="Please Select Type"
               isClearable={false}
             />

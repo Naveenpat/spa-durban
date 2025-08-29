@@ -61,7 +61,8 @@ const SalesReportPage = () => {
   const salesByDate = chartData?.data?.salesByDate || [];
   const salesByPaymentMode = chartData?.data?.salesByPaymentMode || [];
   const topCustomers = chartData?.data?.topCustomers || [];
-
+  const datasets = chartData?.data?.datasets || [];
+  const dataLabel = chartData?.data?.labels || [];
   // console.log('----chartData', chartData)
 
 
@@ -227,43 +228,13 @@ const SalesReportPage = () => {
           <MOLFilterBar hideSearch={true} filters={filters} />
           <div className="flex flex-col overflow-auto border rounded border-slate-300 p-1">
 
-            <div>{salesByDate.length > 0 && (
+            <div>{datasets.length > 0 && (
               <div className="col-span">
                 <ATMChart
                   type="line"
                   data={{
-                    labels: [
-                      '01', '02', '03', '04', '05',
-                      '06', '07'
-                    ],
-                    datasets: [
-                      {
-                        label: 'Last Month Sales',
-                        data: [
-                          120, 90, 100, 150, 130, 170, 160,
-                        ],
-                        borderColor: '#6b645fff',
-                        backgroundColor: '#6b645fff',
-                        fill: false,
-                        tension: 0.4, // smoother curve (0 to 1, higher = more curve)
-                        pointRadius: 3, // small circle at each point
-                        pointHoverRadius: 6, // enlarges on hover
-                      },
-                      {
-                        label: 'Current Month Sales',
-                        data: [
-                          400, 80, 420, 140, 150, 160, 170, 180, 190, 200,
-                          210, 190, 180, 175, 185, 195, 205, 215, 225, 235,
-                          245, 255, 260, 270, 265, 250, 240, 230, 220, 210,
-                        ],
-                        borderColor: '#3b82f6',
-                        backgroundColor: '#3b82f6',
-                        fill: false,
-                        tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
-                      },
-                    ],
+                    labels: dataLabel,
+                    datasets: datasets
                   }}
                   options={{
                     responsive: true,

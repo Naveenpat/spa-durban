@@ -202,21 +202,40 @@ export const getFilterQuery = (
           let fieldName = filterBy[each].fieldName
           let filterValue = filterBy[each].value
 
-          if (
+          // ✅ Special case: categoryIds
+          if (fieldName === "categoryIds") {
+            if (Array.isArray(filterValue)) {
+              const objectIds = filterValue.map(
+                (val: string) => new mongoose.Types.ObjectId(val)
+              )
+              queryArray.push({
+                categoryIds: { $in: objectIds },
+              })
+            } else {
+              queryArray.push({
+                categoryIds: { $in: [new mongoose.Types.ObjectId(filterValue)] },
+              })
+            }
+          }
+
+          // ✅ Without regex fields
+          else if (
             withoutRegexFields.includes(fieldName) &&
             filterValue !== "" &&
             filterValue !== null &&
             filterValue !== undefined
           ) {
             let orQuery: any[] = []
-
             filterValue.forEach((val: any) => {
               orQuery.push({
                 [fieldName]: val,
               })
             })
             queryArray.push(...orQuery)
-          } else if (
+          }
+
+          // ✅ Array value fields (non objectId)
+          else if (
             Array.isArray(filterValue) &&
             filterValue.length &&
             !booleanFields.includes(fieldName) &&
@@ -233,7 +252,10 @@ export const getFilterQuery = (
               })
             })
             queryArray.push({ $or: orQuery })
-          } else if (filterValue !== "") {
+          }
+
+          // ✅ Single string values
+          else if (filterValue !== "") {
             if (
               typeof filterValue === "string" &&
               !booleanFields.includes(fieldName) &&
@@ -246,11 +268,10 @@ export const getFilterQuery = (
                   $options: "i",
                 },
               })
-            } else if (
-              numberFields.includes(fieldName) &&
-              !isNaN(parseInt(filterValue))
-            ) {
-              let filterValue = filterBy[each].value
+            }
+
+            // ✅ Numbers
+            else if (numberFields.includes(fieldName) && !isNaN(parseInt(filterValue))) {
               if (Array.isArray(filterValue) && filterValue.length) {
                 let orQuery: any[] = []
                 filterValue.forEach((val: any) => {
@@ -264,28 +285,30 @@ export const getFilterQuery = (
                   [fieldName]: parseInt(filterValue),
                 })
               }
-            } else if (objectIdFields.includes(fieldName)) {
-              let filterValue = filterBy[each].value
+            }
+
+            // ✅ ObjectIds
+            else if (objectIdFields.includes(fieldName)) {
               if (filterValue) {
                 filterValue = JSON.parse(JSON.stringify(filterValue))
-
                 if (Array.isArray(filterValue) && filterValue.length) {
-                  if (filterValue.length) {
-                    let orQuery: any[] = []
-                    filterValue.forEach((val: any) => {
-                      orQuery.push({
-                        [fieldName]: new mongoose.Types.ObjectId(val),
-                      })
+                  let orQuery: any[] = []
+                  filterValue.forEach((val: any) => {
+                    orQuery.push({
+                      [fieldName]: new mongoose.Types.ObjectId(val),
                     })
-                    queryArray.push({ $or: orQuery })
-                  }
+                  })
+                  queryArray.push({ $or: orQuery })
                 } else if (typeof filterValue === "string") {
                   queryArray.push({
                     [fieldName]: new mongoose.Types.ObjectId(filterValue),
                   })
                 }
               }
-            } else if (
+            }
+
+            // ✅ Boolean
+            else if (
               typeof filterValue === "boolean" ||
               booleanFields.includes(fieldName)
             ) {
@@ -302,6 +325,140 @@ export const getFilterQuery = (
 
   return queryArray.length ? queryArray : null
 }
+
+
+// export const getFilterQuery = (
+//   filterBy: Filter[] | undefined,
+//   booleanFields: string[],
+//   numberFields: string[],
+//   objectIdFields: string[],
+//   withoutRegexFields: string[]
+// ): { message?: string; status?: boolean; data?: null } | any[] | null => {
+//   let queryArray: any[] = []
+//   objectIdFields =
+//     objectIdFields && Array.isArray(objectIdFields) ? objectIdFields : []
+//   withoutRegexFields =
+//     withoutRegexFields && Array.isArray(withoutRegexFields)
+//       ? withoutRegexFields
+//       : []
+
+//   let invalidData = ["null", null, undefined, "undefined", ""]
+
+//   if (filterBy !== undefined) {
+//     if (!Array.isArray(filterBy)) {
+//       return {
+//         message: `filterBy must be an array.`,
+//         status: true,
+//         data: null,
+//       }
+//     }
+
+//     if (filterBy.length > 0) {
+//       for (let each in filterBy) {
+//         if (!invalidData.includes(filterBy[each].fieldName)) {
+//           let fieldName = filterBy[each].fieldName
+//           let filterValue = filterBy[each].value
+
+//           if (
+//             withoutRegexFields.includes(fieldName) &&
+//             filterValue !== "" &&
+//             filterValue !== null &&
+//             filterValue !== undefined
+//           ) {
+//             let orQuery: any[] = []
+
+//             filterValue.forEach((val: any) => {
+//               orQuery.push({
+//                 [fieldName]: val,
+//               })
+//             })
+//             queryArray.push(...orQuery)
+//           } else if (
+//             Array.isArray(filterValue) &&
+//             filterValue.length &&
+//             !booleanFields.includes(fieldName) &&
+//             !numberFields.includes(fieldName) &&
+//             !objectIdFields.includes(fieldName)
+//           ) {
+//             let orQuery: any[] = []
+//             filterValue.forEach((val: any) => {
+//               orQuery.push({
+//                 [fieldName]: {
+//                   $regex: `.*${val}.*`,
+//                   $options: "i",
+//                 },
+//               })
+//             })
+//             queryArray.push({ $or: orQuery })
+//           } else if (filterValue !== "") {
+//             if (
+//               typeof filterValue === "string" &&
+//               !booleanFields.includes(fieldName) &&
+//               !numberFields.includes(fieldName) &&
+//               !objectIdFields.includes(fieldName)
+//             ) {
+//               queryArray.push({
+//                 [fieldName]: {
+//                   $regex: `.*${filterValue}.*`,
+//                   $options: "i",
+//                 },
+//               })
+//             } else if (
+//               numberFields.includes(fieldName) &&
+//               !isNaN(parseInt(filterValue))
+//             ) {
+//               let filterValue = filterBy[each].value
+//               if (Array.isArray(filterValue) && filterValue.length) {
+//                 let orQuery: any[] = []
+//                 filterValue.forEach((val: any) => {
+//                   orQuery.push({
+//                     [fieldName]: parseInt(val),
+//                   })
+//                 })
+//                 queryArray.push({ $or: orQuery })
+//               } else {
+//                 queryArray.push({
+//                   [fieldName]: parseInt(filterValue),
+//                 })
+//               }
+//             } else if (objectIdFields.includes(fieldName)) {
+//               let filterValue = filterBy[each].value
+//               if (filterValue) {
+//                 filterValue = JSON.parse(JSON.stringify(filterValue))
+
+//                 if (Array.isArray(filterValue) && filterValue.length) {
+//                   if (filterValue.length) {
+//                     let orQuery: any[] = []
+//                     filterValue.forEach((val: any) => {
+//                       orQuery.push({
+//                         [fieldName]: new mongoose.Types.ObjectId(val),
+//                       })
+//                     })
+//                     queryArray.push({ $or: orQuery })
+//                   }
+//                 } else if (typeof filterValue === "string") {
+//                   queryArray.push({
+//                     [fieldName]: new mongoose.Types.ObjectId(filterValue),
+//                   })
+//                 }
+//               }
+//             } else if (
+//               typeof filterValue === "boolean" ||
+//               booleanFields.includes(fieldName)
+//             ) {
+//               queryArray.push({
+//                 [fieldName]:
+//                   filterValue === true || filterValue === "true" ? true : false,
+//               })
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+
+//   return queryArray.length ? queryArray : null
+// }
 
 export const getRangeQuery = (
   rangeFilterBy: RangeFilter | null

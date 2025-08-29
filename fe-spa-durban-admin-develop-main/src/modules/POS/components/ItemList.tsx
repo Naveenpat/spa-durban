@@ -108,7 +108,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
 
         if (selectedCategories?.length > 0) {
           filters.push({
-            fieldName: "categoryId",
+            fieldName: "categoryIds",
             value: selectedCategories,
           });
         }
@@ -225,27 +225,33 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
 
   const categoryOptions = [
     { _id: "", categoryName: "Select Category" },
-    ...(categoryData ?? [])
+    ...(categoryData ?? []).map(item => ({
+      ...item,
+      categoryName: item.categoryName
+        ? item.categoryName.charAt(0).toUpperCase() + item.categoryName.slice(1)
+        : ""
+    }))
   ];
+
 
   const handleEditServicess = () => {
     const formattedValues = {
-    serviceName: serviceName,
-    sellingPrice: sellingPrice
-  }
-
-  updateServiceOne({ serviceId, body: formattedValues })
-  .then((res:any)=>{
-    setEditServiceModal(false);
-    if (res?.error) {
-
-    }else{
-      if (res?.data?.status) {
-        refetch();
-        
-      }
+      serviceName: serviceName,
+      sellingPrice: sellingPrice
     }
-  })
+
+    updateServiceOne({ serviceId, body: formattedValues })
+      .then((res: any) => {
+        setEditServiceModal(false);
+        if (res?.error) {
+
+        } else {
+          if (res?.data?.status) {
+            refetch();
+
+          }
+        }
+      })
   };
 
 

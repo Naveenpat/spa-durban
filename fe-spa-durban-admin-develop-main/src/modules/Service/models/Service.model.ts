@@ -15,8 +15,8 @@ export type Service = {
 
 export type ServiceFormValues = {
   serviceName: string;
-  category: any[];
-  subCategory: any[];
+  categoryIds: any[];
+  subCategoryIds: any[];
   serviceCode: string;
   sellingPrice: string;
   tax: any;

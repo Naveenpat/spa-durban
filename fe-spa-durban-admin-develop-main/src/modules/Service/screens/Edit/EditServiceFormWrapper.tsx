@@ -21,8 +21,8 @@ const EditServiceFormWrapper = () => {
   });
   const initialValues: ServiceFormValues = {
     serviceName: data?.serviceName,
-    category:data?.categoryIds?.map((outletId: string) => ({ _id: outletId })),
-    subCategory:data?.subCategoryIds?.map((outletId: string) => ({ _id: outletId })),
+    categoryIds:data?.categoryIds?.map((outletId: string) => ({ _id: outletId })),
+    subCategoryIds:data?.subCategoryIds?.map((outletId: string) => ({ _id: outletId })),
     tax: { _id: data?.taxId },
     outlets: data?.outletIds?.map((outletId: string) => ({ _id: outletId })),
     sellingPrice: String(data?.sellingPrice),
@@ -62,8 +62,8 @@ const EditServiceFormWrapper = () => {
   ) => {
     const formattedValues = {
       serviceName: values?.serviceName,
-      categoryIds: values?.category?.map((outlet) => outlet?._id),
-      subCategoryIds: values?.subCategory?.map((outlet) => outlet?._id) || null,
+      categoryIds: values?.categoryIds?.map((outlet) => outlet?._id),
+      subCategoryIds: values?.subCategoryIds?.map((outlet) => outlet?._id) || null,
       serviceCode: values?.serviceCode,
       sellingPrice: Number(values?.sellingPrice),
       taxId: values?.tax?._id || null,

@@ -224,9 +224,9 @@ const getOutletReport = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const reportDuration = req.query.reportDuration as string;
     const startDate = req.query.startDate as string
-     const endDate = req.query.endDate as string
+    const endDate = req.query.endDate as string
 
-    let result = await analyticsService.getOutletReportData(reportDuration,startDate,endDate);
+    let result = await analyticsService.getOutletReportData(reportDuration, startDate, endDate);
     //
 
     res.status(httpStatus.OK).send({
@@ -625,8 +625,6 @@ const getSalesReportByCustomer = catchAsync(async (req: AuthenticatedRequest, re
   });
 });
 
-
-
 const getSalesChartDataReportByOutlet = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { outletId, startDate, endDate, reportDuration } = req.query;
@@ -649,23 +647,30 @@ const getSalesChartDataReportByOutlet = catchAsync(
     const matchFilter = {
       outletId: new mongoose.Types.ObjectId(outletId as string),
       isDeleted: false,
-      ...(Object.keys(invoiceDateFilter).length ? { invoiceDate: invoiceDateFilter } : {}),
+      ...(Object.keys(invoiceDateFilter).length
+        ? { invoiceDate: invoiceDateFilter }
+        : {}),
     };
 
     // 📌 Report Duration Formatting
-    let groupFormat = "%Y-%m-%d"; // default daily
-    if (reportDuration === "WEEKLY") {
-      groupFormat = "%Y-%U"; // year-week (week number)
+    let groupId: any = {
+      $dateToString: { format: "%Y-%m-%d", date: "$invoiceDate" },
+    }; // default daily
+
+    if (reportDuration === "DAILY") {
+      groupId = { $hour: "$invoiceDate" }; // ⏰ hourly
+    } else if (reportDuration === "WEEKLY") {
+      groupId = { $dayOfWeek: "$invoiceDate" }; // 1=Sunday, 7=Saturday
     } else if (reportDuration === "MONTHLY") {
-      groupFormat = "%Y-%m"; // year-month
+      groupId = { $dayOfMonth: "$invoiceDate" }; // 1–31
     }
 
-    // 1. 🟢 Sales Over Time (Date / Week / Month)
+    // 1. 🟢 Sales Over Time (generic, for filtering)
     const salesByDate = await Invoice.aggregate([
       { $match: matchFilter },
       {
         $group: {
-          _id: { $dateToString: { format: groupFormat, date: "$invoiceDate" } },
+          _id: groupId,
           total: { $sum: "$totalAmount" },
         },
       },
@@ -698,7 +703,7 @@ const getSalesChartDataReportByOutlet = catchAsync(
       { $sort: { total: -1 } },
     ]);
 
-    // 3. 🟣 Top Customers by Sales
+    // 3. 🟣 Top Customers
     const topCustomers = await Invoice.aggregate([
       { $match: matchFilter },
       {
@@ -725,12 +730,135 @@ const getSalesChartDataReportByOutlet = catchAsync(
       { $limit: 5 },
     ]);
 
+    // 4. 📊 Labels Banane Ka Logic
+    let labels: string[] = [];
+
+    if (reportDuration === "DAILY") {
+      labels = Array.from({ length: 24 }, (_, i) =>
+        i.toString().padStart(2, "0") + ":00"
+      );
+    } else if (reportDuration === "WEEKLY") {
+      labels = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+    } else if (reportDuration === "MONTHLY") {
+      const now = new Date();
+      const daysInMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0
+      ).getDate();
+      labels = Array.from({ length: daysInMonth }, (_, i) =>
+        (i + 1).toString().padStart(2, "0")
+      );
+    }
+
+    // 🟡 Last Month & Current Month Date Range
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const currentMonthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59
+    );
+
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      0,
+      23,
+      59,
+      59
+    );
+
+    // 🟢 Pipeline Builder for Month Data
+    const monthPipeline = (start: Date, end: Date): PipelineStage[] => [
+  {
+    $match: {
+      ...matchFilter,
+      invoiceDate: { $gte: start, $lte: end },
+    },
+  },
+  {
+    $group: {
+      _id:
+        reportDuration === "DAILY"
+          ? { $hour: "$invoiceDate" }
+          : reportDuration === "WEEKLY"
+          ? { $dayOfWeek: "$invoiceDate" }
+          : { $dayOfMonth: "$invoiceDate" },
+      total: { $sum: "$totalAmount" },
+    },
+  },
+  {
+    $sort: { _id: 1 as 1 }, // ✅ explicitly cast as `1`
+  },
+];
+    // 🟢 Fetch Last & Current Month Sales
+    const [lastMonthSales, currentMonthSales] = await Promise.all([
+      Invoice.aggregate(monthPipeline(lastMonthStart, lastMonthEnd)),
+      Invoice.aggregate(monthPipeline(currentMonthStart, currentMonthEnd)),
+    ]);
+
+    // 🟢 Convert to arrays aligned with labels
+    const formatData = (data: any[]) =>
+      labels.map((label, idx) => {
+        let keyVal;
+        if (reportDuration === "DAILY") keyVal = idx; // 0–23
+        else if (reportDuration === "WEEKLY") keyVal = idx + 1; // 1–7
+        else if (reportDuration === "MONTHLY") keyVal = idx + 1; // 1–31
+        else keyVal = label;
+
+        const found = data.find((d) => d._id === keyVal || d._id === label);
+        return found ? found.total : 0;
+      });
+
+    const lastMonthData = formatData(lastMonthSales);
+    const currentMonthData = formatData(currentMonthSales);
+
+    // 🟢 Final Datasets
+    const datasets = [
+      {
+        label: "Last Month Sales",
+        data: lastMonthData,
+        borderColor: "#6b645fff",
+        backgroundColor: "#6b645fff",
+        fill: false,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      },
+      {
+        label: "Current Month Sales",
+        data: currentMonthData,
+        borderColor: "#3b82f6",
+        backgroundColor: "#3b82f6",
+        fill: false,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      },
+    ];
+
+    // 🟢 Send Response
     return res.status(httpStatus.OK).send({
       message: "Sales chart data fetched successfully.",
       data: {
         salesByDate,
         salesByPaymentMode,
         topCustomers,
+        datasets,
+        labels,
       },
       status: true,
       code: "OK",
@@ -738,6 +866,322 @@ const getSalesChartDataReportByOutlet = catchAsync(
     });
   }
 );
+
+
+// const getSalesChartDataReportByOutlet = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     const { outletId, startDate, endDate, reportDuration } = req.query;
+
+//     if (!mongoose.Types.ObjectId.isValid(outletId as string)) {
+//       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid outletId");
+//     }
+
+//     // 📌 Build invoiceDate filter
+//     const invoiceDateFilter: Record<string, any> = {};
+//     if (startDate) {
+//       invoiceDateFilter.$gte = new Date(startDate as string);
+//     }
+//     if (endDate) {
+//       const end = new Date(endDate as string);
+//       end.setHours(23, 59, 59, 999);
+//       invoiceDateFilter.$lte = end;
+//     }
+
+//     const matchFilter = {
+//       outletId: new mongoose.Types.ObjectId(outletId as string),
+//       isDeleted: false,
+//       ...(Object.keys(invoiceDateFilter).length ? { invoiceDate: invoiceDateFilter } : {}),
+//     };
+
+//     // 📌 Report Duration Formatting
+//     let groupFormat = "%Y-%m-%d"; // default daily
+//     if (reportDuration === "WEEKLY") {
+//       groupFormat = "%Y-%U"; // year-week
+//     } else if (reportDuration === "MONTHLY") {
+//       groupFormat = "%Y-%m"; // year-month
+//     }
+
+//     // 1. 🟢 Sales Over Time
+//     const salesByDate = await Invoice.aggregate([
+//       { $match: matchFilter },
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: groupFormat, date: "$invoiceDate" } },
+//           total: { $sum: "$totalAmount" },
+//         },
+//       },
+//       { $sort: { _id: 1 } },
+//     ]);
+
+//     // 2. 🔵 Sales by Payment Mode
+//     const salesByPaymentMode = await Invoice.aggregate([
+//       { $match: matchFilter },
+//       { $unwind: "$amountReceived" },
+//       {
+//         $lookup: {
+//           from: "paymentmodes",
+//           localField: "amountReceived.paymentModeId",
+//           foreignField: "_id",
+//           as: "paymentMode",
+//         },
+//       },
+//       {
+//         $addFields: {
+//           modeName: { $arrayElemAt: ["$paymentMode.modeName", 0] },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$modeName",
+//           total: { $sum: "$amountReceived.amount" },
+//         },
+//       },
+//       { $sort: { total: -1 } },
+//     ]);
+
+//     // 3. 🟣 Top Customers
+//     const topCustomers = await Invoice.aggregate([
+//       { $match: matchFilter },
+//       {
+//         $group: {
+//           _id: "$customerId",
+//           total: { $sum: "$totalAmount" },
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "customers",
+//           localField: "_id",
+//           foreignField: "_id",
+//           as: "customer",
+//         },
+//       },
+//       {
+//         $project: {
+//           customerName: { $arrayElemAt: ["$customer.customerName", 0] },
+//           total: 1,
+//         },
+//       },
+//       { $sort: { total: -1 } },
+//       { $limit: 5 },
+//     ]);
+
+//     // 4. 📊 Last Month vs Current Month Sales
+//     const now = new Date();
+
+//     // Current Month Range
+//     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+//     const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+//     // Last Month Range
+//     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+//     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+
+//     const [lastMonthSales, currentMonthSales] = await Promise.all([
+//       Invoice.aggregate([
+//         {
+//           $match: {
+//             ...matchFilter,
+//             invoiceDate: { $gte: lastMonthStart, $lte: lastMonthEnd },
+//           },
+//         },
+//         {
+//           $group: {
+//             _id: { $dayOfMonth: "$invoiceDate" },
+//             total: { $sum: "$totalAmount" },
+//           },
+//         },
+//         { $sort: { _id: 1 } },
+//       ]),
+//       Invoice.aggregate([
+//         {
+//           $match: {
+//             ...matchFilter,
+//             invoiceDate: { $gte: currentMonthStart, $lte: currentMonthEnd },
+//           },
+//         },
+//         {
+//           $group: {
+//             _id: { $dayOfMonth: "$invoiceDate" },
+//             total: { $sum: "$totalAmount" },
+//           },
+//         },
+//         { $sort: { _id: 1 } },
+//       ]),
+//     ]);
+
+//     // Convert to datasets for chart.js
+//     const lastMonthDays = new Date(lastMonthEnd).getDate();
+//     const currentMonthDays = new Date(currentMonthEnd).getDate();
+//     const maxDays = Math.max(lastMonthDays, currentMonthDays);
+//   const labels = Array.from({ length: maxDays }, (_, i) =>
+//   (i + 1).toString().padStart(2, "0")
+// );
+
+// // Fill data (missing days = 0)
+// const lastMonthData = labels.map((label, idx) => {
+//   const day = idx + 1;
+//   const found = lastMonthSales.find((d) => d._id === day);
+//   return found ? found.total : 0;
+// });
+
+// const currentMonthData = labels.map((label, idx) => {
+//   const day = idx + 1;
+//   const found = currentMonthSales.find((d) => d._id === day);
+//   return found ? found.total : 0;
+// });
+
+//     const datasets = [
+//       {
+//         label: "Last Month Sales",
+//         data: lastMonthData,
+//         borderColor: "#6b645fff",
+//         backgroundColor: "#6b645fff",
+//         fill: false,
+//         tension: 0.4,
+//         pointRadius: 3,
+//         pointHoverRadius: 6,
+//       },
+//       {
+//         label: "Current Month Sales",
+//         data: currentMonthData,
+//         borderColor: "#3b82f6",
+//         backgroundColor: "#3b82f6",
+//         fill: false,
+//         tension: 0.4,
+//         pointRadius: 3,
+//         pointHoverRadius: 6,
+//       },
+//     ];
+
+//     return res.status(httpStatus.OK).send({
+//       message: "Sales chart data fetched successfully.",
+//       data: {
+//         salesByDate,
+//         salesByPaymentMode,
+//         topCustomers,
+//         datasets,
+//         labels // ⬅️ extra field added
+//       },
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     });
+//   }
+// );
+
+
+// const getSalesChartDataReportByOutlet = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     const { outletId, startDate, endDate, reportDuration } = req.query;
+
+//     if (!mongoose.Types.ObjectId.isValid(outletId as string)) {
+//       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid outletId");
+//     }
+
+//     // 📌 Build invoiceDate filter
+//     const invoiceDateFilter: Record<string, any> = {};
+//     if (startDate) {
+//       invoiceDateFilter.$gte = new Date(startDate as string);
+//     }
+//     if (endDate) {
+//       const end = new Date(endDate as string);
+//       end.setHours(23, 59, 59, 999);
+//       invoiceDateFilter.$lte = end;
+//     }
+
+//     const matchFilter = {
+//       outletId: new mongoose.Types.ObjectId(outletId as string),
+//       isDeleted: false,
+//       ...(Object.keys(invoiceDateFilter).length ? { invoiceDate: invoiceDateFilter } : {}),
+//     };
+
+//     // 📌 Report Duration Formatting
+//     let groupFormat = "%Y-%m-%d"; // default daily
+//     if (reportDuration === "WEEKLY") {
+//       groupFormat = "%Y-%U"; // year-week (week number)
+//     } else if (reportDuration === "MONTHLY") {
+//       groupFormat = "%Y-%m"; // year-month
+//     }
+
+//     // 1. 🟢 Sales Over Time (Date / Week / Month)
+//     const salesByDate = await Invoice.aggregate([
+//       { $match: matchFilter },
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: groupFormat, date: "$invoiceDate" } },
+//           total: { $sum: "$totalAmount" },
+//         },
+//       },
+//       { $sort: { _id: 1 } },
+//     ]);
+
+//     // 2. 🔵 Sales by Payment Mode
+//     const salesByPaymentMode = await Invoice.aggregate([
+//       { $match: matchFilter },
+//       { $unwind: "$amountReceived" },
+//       {
+//         $lookup: {
+//           from: "paymentmodes",
+//           localField: "amountReceived.paymentModeId",
+//           foreignField: "_id",
+//           as: "paymentMode",
+//         },
+//       },
+//       {
+//         $addFields: {
+//           modeName: { $arrayElemAt: ["$paymentMode.modeName", 0] },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$modeName",
+//           total: { $sum: "$amountReceived.amount" },
+//         },
+//       },
+//       { $sort: { total: -1 } },
+//     ]);
+
+//     // 3. 🟣 Top Customers by Sales
+//     const topCustomers = await Invoice.aggregate([
+//       { $match: matchFilter },
+//       {
+//         $group: {
+//           _id: "$customerId",
+//           total: { $sum: "$totalAmount" },
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "customers",
+//           localField: "_id",
+//           foreignField: "_id",
+//           as: "customer",
+//         },
+//       },
+//       {
+//         $project: {
+//           customerName: { $arrayElemAt: ["$customer.customerName", 0] },
+//           total: 1,
+//         },
+//       },
+//       { $sort: { total: -1 } },
+//       { $limit: 5 },
+//     ]);
+
+//     return res.status(httpStatus.OK).send({
+//       message: "Sales chart data fetched successfully.",
+//       data: {
+//         salesByDate,
+//         salesByPaymentMode,
+//         topCustomers,
+//       },
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     });
+//   }
+// );
 
 
 const getSalesChartDataReportByCustomer = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
@@ -1002,18 +1446,18 @@ const getRegisterChartDataByOutlet = catchAsync(async (req: Request, res: Respon
   }));
 
   // --- Format 2: Final Cash vs Opening ---
- const finalCashVsOpening = rawData.map((item) => {
-  const payoutCash = Array.isArray(item.cashUsage)
-    ? item.cashUsage.reduce((sum:any, entry:any) => sum + (parseFloat(entry.amount) || 0), 0)
-    : 0;
+  const finalCashVsOpening = rawData.map((item) => {
+    const payoutCash = Array.isArray(item.cashUsage)
+      ? item.cashUsage.reduce((sum: any, entry: any) => sum + (parseFloat(entry.amount) || 0), 0)
+      : 0;
 
-  return {
-    date: item.openedAt?.toISOString().split("T")[0],
-    openingBalance: item.openingBalance || 0,
-    finalCash: item.cashAmount || 0,
-    payoutCash, // ✅ new field
-  };
-});
+    return {
+      date: item.openedAt?.toISOString().split("T")[0],
+      openingBalance: item.openingBalance || 0,
+      finalCash: item.cashAmount || 0,
+      payoutCash, // ✅ new field
+    };
+  });
 
 
   // --- Format 3: Payment Mode Breakdown ---
@@ -1085,12 +1529,12 @@ const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res
     match.openedAt = { $gte: start, $lte: end };
   }
 
-    const existingOpenRegister = await SalesRegister.findOne({
-        outletId,
-        isOpened: true,
-        isClosed: false,
-        isDeleted: false,
-      });
+  const existingOpenRegister = await SalesRegister.findOne({
+    outletId,
+    isOpened: true,
+    isClosed: false,
+    isDeleted: false,
+  });
 
   const pipeline: PipelineStage[] = [
     { $match: match },
@@ -1198,46 +1642,46 @@ const getRegisterDataByOutlet = catchAsync(async (req: AuthenticatedRequest, res
         variance: { $subtract: [{ $ifNull: ["$cashAmount", 0] }, { $ifNull: ["$expectedPhysicalCash", 0] }] }
       }
     },
-{
-  $lookup: {
-    from: "salesregisters", // collection ka naam
-    let: { outlet: "$outletId", openedAt: "$openedAt" },
-    pipeline: [
-      {
-        $match: {
-          $expr: {
-            $and: [
-              { $eq: ["$outletId", "$$outlet"] },
-              { $lt: ["$closedAt", "$$openedAt"] }, // only before current
-              { $eq: ["$isClosed", true] },
-              { $eq: ["$isDeleted", false] }
-            ]
-          }
-        }
-      },
-      { $sort: { closedAt: -1 } }, // latest closed before current
-      { $limit: 1 },
-      { $project: { carryForwardBalance: 1, closedAt: 1 } }
-    ],
-    as: "previousRegister"
-  }
-},
-{
-  $addFields: {
-    previousCarryForwardBalance: {
-      $ifNull: [{ $arrayElemAt: ["$previousRegister.carryForwardBalance", 0] }, 0]
+    {
+      $lookup: {
+        from: "salesregisters", // collection ka naam
+        let: { outlet: "$outletId", openedAt: "$openedAt" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$outletId", "$$outlet"] },
+                  { $lt: ["$closedAt", "$$openedAt"] }, // only before current
+                  { $eq: ["$isClosed", true] },
+                  { $eq: ["$isDeleted", false] }
+                ]
+              }
+            }
+          },
+          { $sort: { closedAt: -1 } }, // latest closed before current
+          { $limit: 1 },
+          { $project: { carryForwardBalance: 1, closedAt: 1 } }
+        ],
+        as: "previousRegister"
+      }
     },
-    previousClosedAt: {
-      $ifNull: [{ $arrayElemAt: ["$previousRegister.closedAt", 0] }, null]
+    {
+      $addFields: {
+        previousCarryForwardBalance: {
+          $ifNull: [{ $arrayElemAt: ["$previousRegister.carryForwardBalance", 0] }, 0]
+        },
+        previousClosedAt: {
+          $ifNull: [{ $arrayElemAt: ["$previousRegister.closedAt", 0] }, null]
+        }
+      }
+    },
+    {
+      $project: {
+        previousRegister: 0 // cleanup
+      }
     }
-  }
-},
-{
-  $project: {
-    previousRegister: 0 // cleanup
-  }
-}
-,
+    ,
     // 4) Pick projection (keep everything useful)
     {
       $project: {

@@ -60,7 +60,7 @@ const ServiceFormLayout = ({
           },
           {
             fieldName: 'categoryId',
-            value: values?.category?.map(cat => cat._id) || [],
+            value: values?.categoryIds?.map(cat => cat._id) || [],
           }
         ]),
       },
@@ -187,14 +187,14 @@ const ServiceFormLayout = ({
                 isLoading={isCategoriesLoading}
               /> */}
               <ATMMultiSelect
-                name="category"
-                value={values.category}
-                onChange={(newValue) => setFieldValue('category', newValue)}
+                name="categoryIds"
+                value={values.categoryIds}
+                onChange={(newValue) => setFieldValue('categoryIds', newValue)}
                 label="Category"
                 placeholder="Select Category"
                 options={categories}
                 onBlur={handleBlur}
-                isValid={!errors?.category}
+                isValid={!errors?.categoryIds}
                 getOptionLabel={(option: any) => option?.categoryName}
                 valueAccessKey="_id"
                 isLoading={isCategoriesLoading}
@@ -216,14 +216,14 @@ const ServiceFormLayout = ({
                 isLoading={isSubCategoriesLoading}
               /> */}
               <ATMMultiSelect
-                name="subCategory"
-                value={values.subCategory}
-                onChange={(newValue) => setFieldValue('subCategory', newValue)}
+                name="subCategoryIds"
+                value={values.subCategoryIds}
+                onChange={(newValue) => setFieldValue('subCategoryIds', newValue)}
                 label="Sub Category"
                 placeholder="Select Sub Category"
                 options={subCategories}
                 onBlur={handleBlur}
-                isValid={!errors?.subCategory}
+                isValid={!errors?.subCategoryIds}
                 getOptionLabel={(option: any) => option?.subCategoryName}
                 valueAccessKey="_id"
                 isLoading={isSubCategoriesLoading}
