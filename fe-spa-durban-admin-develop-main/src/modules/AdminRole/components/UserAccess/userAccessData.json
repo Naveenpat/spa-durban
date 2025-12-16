@@ -957,6 +957,45 @@
         "CUSTOMER_GROUP"
       ],
       "fields": []
+    },
+    {
+      "moduleName": "Reports",
+      "moduleId": "REPORTS",
+      "features": [
+        {
+          "featureId": "REPORT_SALES_BY_OUTLET",
+          "featureName": "See Sales By Outlet Report",
+          "relatedFieldColumn": "REPORT_SALES_BY_OUTLET"
+        },
+        {
+          "featureId": "REPORT_OUTLET",
+          "featureName": "See Outlet Report",
+          "relatedFieldColumn": "REPORT_OUTLET"
+        },
+        {
+          "featureId": "REPORT_GIFT_CARD",
+          "featureName": "See Gift Card Report",
+          "relatedFieldColumn": "REPORT_GIFT_CARD"
+        },
+        {
+          "featureId": "REPORT_RETAIL_DASHBOARD",
+          "featureName": "See Retail Dashboard",
+          "relatedFieldColumn": "REPORT_RETAIL_DASHBOARD"
+        },
+        {
+          "featureId": "CLOSURE_SUMMARY",
+          "featureName": "See Closure Summary",
+          "relatedFieldColumn": "CLOSURE_SUMMARY"
+        }
+      ],
+      "dependencies": [
+        "SALES_BY_OUTLET",
+        "REPORT_OUTLET",
+        "REPORT_GIFT_CARD",
+        "REPORT_RETAIL_DASHBOARD",
+        "CLOSURE_SUMMARY"
+      ],
+      "fields": []
     }
   ]
 }

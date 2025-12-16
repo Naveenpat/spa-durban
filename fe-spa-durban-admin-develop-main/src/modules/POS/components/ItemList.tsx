@@ -28,6 +28,7 @@ import ATMDialog from 'src/components/atoms/ATMDialog/ATMDialog';
 import ATMTextField from 'src/components/atoms/FormElements/ATMTextField/ATMTextField';
 import ATMNumberField from 'src/components/atoms/FormElements/ATMNumberField/ATMNumberField';
 import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
+import ATMMultiSelect from 'src/components/atoms/FormElements/ATMMultiSelect/ATMMultiSelect';
 
 type Props = {
   onItemClick: (item: any) => void;
@@ -109,7 +110,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
         if (selectedCategories?.length > 0) {
           filters.push({
             fieldName: "categoryIds",
-            value: selectedCategories,
+            value: selectedCategories.map((cat:any) => cat._id),
           });
         }
 
@@ -258,12 +259,13 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
   return (
     <div className={`flex flex-col w-full h-full gap-2 p-4 overflow-auto ${isDisabled ? 'pointer-events-none opacity-30' : ''}`}>
       {/* Search Box */}
-      {isDisabled && (
-        <div className="absolute inset-0 bg-white bg-opacity-70 z-10 flex items-center justify-center text-red-600 font-bold text-lg">
+     
+      <div className="flex flex-col md:flex-row gap-2">
+         {isDisabled && (
+        <div className="absolute mt-10 inset-0 bg-white bg-opacity-70 z-10 flex items-center justify-center text-red-600 font-bold text-lg">
           Register Closed
         </div>
       )}
-      <div className="flex flex-col md:flex-row gap-2">
         <div className="w-full md:w-1/2">
           <ATMSearchBox
             value={searchValue}
@@ -289,7 +291,7 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
           />
         </div>
         <div className="w-full md:w-1/2">
-          <ATMSelect
+          {/* <ATMSelect
             options={categoryOptions}
             value={selectedCategories}
             onChange={(newValue) => {
@@ -306,7 +308,26 @@ const ItemList = ({ onItemClick, onAllItemsProcessed, isDisabled }: Props) => {
             placeholder="Please Select Category"
             isClearable={false}
             isSearchable={true}
+            filterEnabled={true}
+          /> */}
+
+          <ATMMultiSelect
+            name="categoryIds"
+            value={selectedCategories} // should be an array of selected objects
+            onChange={(newValues) => {
+              if (!newValues) {
+                setSelectedCategories([]); // nothing selected
+              } else {
+                setSelectedCategories(newValues); // array of selected objects
+              }
+            }}
+            label=""
+            placeholder="Select Category"
+            options={categoryOptions}
+            getOptionLabel={(option: any) => option?.categoryName}
+            valueAccessKey="_id"
           />
+
         </div>
         {/* <div>
           <div

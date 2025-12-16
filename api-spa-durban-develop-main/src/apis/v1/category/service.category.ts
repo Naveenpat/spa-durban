@@ -177,6 +177,12 @@ async function getOneByMultiField(filter: FilterObject): Promise<boolean> {
   return false;
 }
 
+// category.service.ts
+const getCategoryByBookingProductTypeId = async (productTypeId: string) => {
+  return Category.findOne({ bookingProductType: productTypeId, isDeleted: false });
+};
+
+
 export {
   createCategory,
   queryCategorys,
@@ -184,4 +190,5 @@ export {
   updateCategoryById,
   deleteCategoryById,
   isExists,
+  getCategoryByBookingProductTypeId
 };

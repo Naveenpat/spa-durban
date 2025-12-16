@@ -124,7 +124,7 @@ const POS = ({ formikProps }: Props) => {
             }
             onQuantityChange={handleChangeQuantity}
             formikProps={formikProps}
-            isDisabled={!!(closeRegisterData as any)?.data?.register?.isClosed}
+            isDisabled={!((closeRegisterData as any)?.data?.register && !(closeRegisterData as any)?.data?.register?.isClosed)}
           />
         </div>
       </div>

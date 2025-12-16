@@ -22,7 +22,8 @@ const AddCustomerFormWrapper = () => {
     taxNo: '',
     dateOfBirth: null,
     gender: '',
-    customerGroup: ''
+    customerGroup: '',
+    outlets: []
   };
 
   const validationSchema = object().shape({
@@ -46,6 +47,7 @@ const AddCustomerFormWrapper = () => {
       gender: values?.gender?.value,
       customerGroup:values?.customerGroup?.value,
       country: values?.country?.label,
+      outlets: values?.outlets?.map((outlet) => outlet?._id),
     };
 
     addCustomer(formattedValues).then((res: any) => {

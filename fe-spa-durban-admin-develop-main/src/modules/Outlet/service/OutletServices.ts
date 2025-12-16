@@ -177,6 +177,73 @@ export const outletApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    GetOutletsChartData: builder.query({
+      query: ({ outletIds, startDate, endDate, page = 1, limit = 10,reportDuration }) => {
+        const params = new URLSearchParams({
+          outletIds,
+          startDate,
+          endDate,
+          page: String(page),
+          limit: String(limit),
+          reportDuration
+        });
+
+        return {
+          url: `/analytics/new/outlets-chart-data?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
+    GetGiftCardReportChartData: builder.query({
+      query: ({ outletIds, startDate, endDate, page = 1, limit = 10,reportDuration }) => {
+        const params = new URLSearchParams({
+          outletIds,
+          startDate,
+          endDate,
+          page: String(page),
+          limit: String(limit),
+          reportDuration
+        });
+
+        return {
+          url: `/analytics/new/gift-card-chart-data?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
+     GetGiftCardReportByOutlet: builder.query({
+      query: ({ outletId, startDate, endDate, page = 1, limit = 10, sortBy, sortOrder }) => {
+        const params = new URLSearchParams({
+          outletId,
+          startDate,
+          endDate,
+          page: String(page),
+          limit: String(limit),
+          sortBy,
+          sortOrder
+        });
+
+        return {
+          url: `/analytics/new/gift-card-report?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
+    GetRetailDashboardData: builder.query({
+      query: ({ outletIds, startDate, endDate,reportDuration }) => {
+        const params = new URLSearchParams({
+          outletIds,
+          startDate,
+          endDate,
+          reportDuration
+        });
+
+        return {
+          url: `/analytics/new/retail-dashboard?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+    }),
   }),
 });
 
@@ -194,5 +261,9 @@ export const {
   useGetSalesChartDataReportByCustomerQuery,
   useGetSalesByOutletCsvDataQuery,
   useGetRegisterChartDataQuery,
-  useGetRegisterDataQuery
+  useGetRegisterDataQuery,
+  useGetOutletsChartDataQuery,
+  useGetGiftCardReportChartDataQuery,
+  useGetGiftCardReportByOutletQuery,
+  useGetRetailDashboardDataQuery
 } = outletApi;

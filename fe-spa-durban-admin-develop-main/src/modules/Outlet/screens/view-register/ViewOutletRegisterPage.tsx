@@ -270,6 +270,7 @@ const ViewOutletRegisterPage = () => {
       const newSearchParams = new URLSearchParams(searchParams); // Clone existing searchParams
       newSearchParams.set('startDate', format(oneMonthAgo, 'yyyy-MM-dd') || '');
       newSearchParams.set('endDate', format(new Date(), 'yyyy-MM-dd') || '');
+      newSearchParams.set('outletsId', outlets?.[0]._id);
       newSearchParams.set('reportDuration', 'MONTHLY');
       setSearchParams(newSearchParams)
     }
@@ -305,7 +306,7 @@ const ViewOutletRegisterPage = () => {
       <div className="flex flex-col h-full gap-2 p-4">
         <ATMPageHeader
           heading="Outlet Register Details"
-          // hideButton={true}
+          hideButton={true}
           buttonProps={{
             label: 'Back',
             onClick: () => navigate('/outlets'), // Navigate to previous page
@@ -384,7 +385,7 @@ const ViewOutletRegisterPage = () => {
 
             </div>
 
-            <div className="flex-1 overflow-auto mt-3">
+            <div className="flex-1 mt-3">
               <MOLTable<RegisterValue>
                 tableHeaders={tableHeaders}
                 data={invoices || []}

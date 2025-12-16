@@ -431,6 +431,7 @@ const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
   return (
     <div className={`flex flex-col w-full h-full gap-2 py-4 ${isDisabled ? 'pointer-events-none opacity-30' : ''}`}>
       <div className="flex flex-col gap-4 px-4">
+        
         {/* select outlet  */}
         {/* {userData?.userType === 'ADMIN' && (
           <div className="">
@@ -493,6 +494,7 @@ const fetchOptions = async (inputValue: string): Promise<SelectOption[]> => {
               placeholder="Search..."
               isLoading={loading}
               isClearable
+              isDisabled={isDisabled}
             />
           </div>
 

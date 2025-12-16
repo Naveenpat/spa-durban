@@ -17,7 +17,8 @@ export const create: { body: ObjectSchema } = {
     description: Joi.string().lowercase().allow(""),
     colorCode: Joi.string().lowercase().allow(""),
     categoryImageUrl: Joi.string().lowercase().allow(""),
-    termsAndConditions:Joi.string().lowercase().allow("")
+    termsAndConditions:Joi.string().lowercase().allow(""),
+    outlets: Joi.array().items(Joi.string().required().custom(objectId)),
   }),
 };
 
@@ -33,7 +34,8 @@ export const update: { params: ObjectSchema; body: ObjectSchema } = {
     description: Joi.string().lowercase().allow(""),
     colorCode: Joi.string().lowercase().allow(""),
     categoryImageUrl: Joi.string().lowercase().allow(""),
-    termsAndConditions: Joi.string().lowercase().allow("")
+    termsAndConditions: Joi.string().lowercase().allow(""),
+    outlets: Joi.array().items(Joi.string().required().custom(objectId)),
   }), 
 };
 

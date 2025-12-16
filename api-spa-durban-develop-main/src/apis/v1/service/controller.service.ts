@@ -126,6 +126,130 @@ const createService = catchAsync(
   }
 );
 
+// const createBookingSyncService = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     let { categoryId, subCategoryId, outletIds, products, taxId } = req.body;
+
+//     // category exists check
+//     let categoryExists = await categoryService.getCategoryById(categoryId);
+//     if (!categoryExists) {
+//       // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid category!")
+//     }
+
+//     // sub category exists check
+//     if (subCategoryId) {
+//       let subCategoryExists = await subCategoryService.getSubCategoryById(subCategoryId);
+//       if (!subCategoryExists) {
+//         // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid sub category!")
+//       }
+//     }
+
+//     // product check
+//     if (products?.length) {
+//       const allProducts = await Promise.all(
+//         products.map((ele: any) => productService.getProductById(ele?.productId))
+//       );
+
+//       const notFoundproducts = allProducts.filter((product) => !product);
+//       if (notFoundproducts.length > 0) {
+//         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid products");
+//       }
+//     }
+
+//     // tax check
+//     if (taxId) {
+//       const tax = await taxService.getTaxById(taxId);
+//       if (!tax) {
+//         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid tax.");
+//       }
+//     }
+
+//     // 🔹 Booking API integration removed
+//     // (Now only POS MongoDB me service create hogi)
+
+//     const service = await serviceService.createService(req.body);
+
+//     return res.status(httpStatus.CREATED).send({
+//       message: "Added successfully!",
+//       data: service,
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     });
+//   }
+// );
+
+
+const createBookingSyncService = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    let { categoryId, subCategoryId, outletIds, products, taxId, productTypeId } = req.body;
+
+    // 🔹 Agar bookingProductTypeId se category nikalni hai
+    let bookingCategory: any = null;
+    if (productTypeId) {
+      bookingCategory = await categoryService.getCategoryByBookingProductTypeId(productTypeId);
+    }
+
+    // category exists check
+    let categoryExists = null;
+    if (categoryId) {
+      categoryExists = await categoryService.getCategoryById(categoryId);
+      if (!categoryExists) {
+        // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid category!");
+      }
+    }
+
+    // sub category exists check
+    if (subCategoryId) {
+      let subCategoryExists = await subCategoryService.getSubCategoryById(subCategoryId);
+      if (!subCategoryExists) {
+        // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid sub category!");
+      }
+    }
+
+    // product check
+    if (products?.length) {
+      const allProducts = await Promise.all(
+        products.map((ele: any) => productService.getProductById(ele?.productId))
+      );
+
+      const notFoundproducts = allProducts.filter((product) => !product);
+      if (notFoundproducts.length > 0) {
+        // throw new ApiError(httpStatus.NOT_FOUND, "Invalid products");
+      }
+    }
+
+    // tax check
+    if (taxId) {
+      const tax = await taxService.getTaxById(taxId);
+      if (!tax) {
+        // throw new ApiError(httpStatus.NOT_FOUND, "Invalid tax.");
+      }
+    }
+
+    // 🔹 Prepare final payload for Mongo service creation
+    const payload: any = {
+      ...req.body,
+    };
+
+    // agar booking se category mili hai to usko categoryIds me daal do
+    if (bookingCategory?._id) {
+      payload.categoryIds = [bookingCategory._id];
+    }
+
+    const service = await serviceService.createService(payload);
+
+    return res.status(httpStatus.CREATED).send({
+      message: "Added successfully!",
+      data: service,
+      status: true,
+      code: "OK",
+      issue: null,
+    });
+  }
+);
+
+
 const getServices = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const filter = pick(req.query, []);
@@ -577,12 +701,177 @@ const updateService = catchAsync(
         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid tax.");
       }
     }
+    
 
     // finally update
     const service = await serviceService.updateServiceById(
       req.params.serviceId,
       req.body
     );
+
+    return res.status(httpStatus.OK).send({
+      message: "Updated successfully!",
+      data: service,
+      status: true,
+      code: "OK",
+      issue: null,
+    });
+  }
+);
+
+// const updateBookingSyncService = catchAsync(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     let { categoryId, subCategoryId, outletIds, products, taxId } = req.body;
+
+//     // category exists check (only if provided)
+//     if (categoryId) {
+//       let categoryExists = await categoryService.getCategoryById(categoryId);
+//       if (!categoryExists) {
+//         // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid category!");
+//       }
+//     }
+
+//     // sub category exists check (only if provided)
+//     if (subCategoryId) {
+//       let subCategoryExists = await subCategoryService.getSubCategoryById(subCategoryId);
+//       if (!subCategoryExists) {
+//         // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid sub category!");
+//       }
+//     }
+
+//     // check outlet exist (only if provided)
+//     if (Array.isArray(outletIds) && outletIds.length > 0) {
+//       const outlets = await Promise.all(
+//         outletIds.map((id: any) => outletService.getOutletById(id))
+//       );
+
+//       const notFoundOutlets = outlets.filter((outlet) => !outlet);
+//       if (notFoundOutlets.length > 0) {
+//         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid outlets");
+//       }
+//     }
+
+//     // check products exist (only if provided)
+//     if (Array.isArray(products) && products.length > 0) {
+//       const allProducts = await Promise.all(
+//         products.map((ele: any) => productService.getProductById(ele?.productId))
+//       );
+
+//       const notFoundproducts = allProducts.filter((product) => !product);
+//       if (notFoundproducts.length > 0) {
+//         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid products");
+//       }
+//     }
+
+//     // check taxId exist (only if provided)
+//     if (taxId) {
+//       const tax = await taxService.getTaxById(taxId);
+//       if (!tax) {
+//         // throw new ApiError(httpStatus.NOT_FOUND, "Invalid tax.");
+//       }
+//     }
+
+//     // 🔹 finally update by bookingTreatmentsId
+//     const service = await serviceService.updateServiceByFilter(
+//       { bookingTreatmentsId: req.params.bookingTreatmentsId }, // filter
+//       req.body
+//     );
+
+//     if (!service) {
+//       return res.status(httpStatus.NOT_FOUND).send({
+//         message: "Service not found with given bookingTreatmentsId",
+//         data: null,
+//         status: false,
+//         code: "NOT_FOUND",
+//         issue: null,
+//       });
+//     }
+
+//     return res.status(httpStatus.OK).send({
+//       message: "Updated successfully!",
+//       data: service,
+//       status: true,
+//       code: "OK",
+//       issue: null,
+//     });
+//   }
+// );
+
+const updateBookingSyncService = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    let { categoryId, subCategoryId, outletIds, products, taxId, productTypeId } = req.body;
+
+    // category exists check (only if provided)
+    if (categoryId) {
+      let categoryExists = await categoryService.getCategoryById(categoryId);
+      if (!categoryExists) {
+        // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid category!");
+      }
+    }
+
+    // sub category exists check (only if provided)
+    if (subCategoryId) {
+      let subCategoryExists = await subCategoryService.getSubCategoryById(subCategoryId);
+      if (!subCategoryExists) {
+        // throw new ApiError(httpStatus.BAD_REQUEST, "Invalid sub category!");
+      }
+    }
+
+    // check outlet exist (only if provided)
+    if (Array.isArray(outletIds) && outletIds.length > 0) {
+      const outlets = await Promise.all(
+        outletIds.map((id: any) => outletService.getOutletById(id))
+      );
+
+      const notFoundOutlets = outlets.filter((outlet) => !outlet);
+      if (notFoundOutlets.length > 0) {
+        // throw new ApiError(httpStatus.NOT_FOUND, "Invalid outlets");
+      }
+    }
+
+    // check products exist (only if provided)
+    if (Array.isArray(products) && products.length > 0) {
+      const allProducts = await Promise.all(
+        products.map((ele: any) => productService.getProductById(ele?.productId))
+      );
+
+      const notFoundproducts = allProducts.filter((product) => !product);
+      if (notFoundproducts.length > 0) {
+        // throw new ApiError(httpStatus.NOT_FOUND, "Invalid products");
+      }
+    }
+
+    // check taxId exist (only if provided)
+    if (taxId) {
+      const tax = await taxService.getTaxById(taxId);
+      if (!tax) {
+        // throw new ApiError(httpStatus.NOT_FOUND, "Invalid tax.");
+      }
+    }
+
+    // 🔹 bookingProductTypeId → category mapping
+    if (productTypeId) {
+      const bookingCategory = await categoryService.getCategoryByBookingProductTypeId(productTypeId);
+      if (bookingCategory?._id) {
+        req.body.categoryIds = [bookingCategory._id];
+      }
+    }
+
+    // 🔹 finally update by bookingTreatmentsId
+    const service = await serviceService.updateServiceByFilter(
+      { bookingTreatmentsId: req.params.bookingTreatmentsId }, // filter
+      req.body
+    );
+
+    if (!service) {
+      return res.status(httpStatus.NOT_FOUND).send({
+        message: "Service not found with given bookingTreatmentsId",
+        data: null,
+        status: false,
+        code: "NOT_FOUND",
+        issue: null,
+      });
+    }
 
     return res.status(httpStatus.OK).send({
       message: "Updated successfully!",
@@ -627,6 +916,29 @@ const deleteService = catchAsync(
     });
   }
 );
+
+const deleteServiceByBookingId = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { bookingTreatmentsId } = req.params;
+
+    // 1. Apne booking DB se delete/update mark karo
+    await serviceService.deleteServiceByBookingTreatmentsId(bookingTreatmentsId);
+
+    // 2. POS me bhi delete sync karna
+    // await axios.delete(
+    //   `${process.env.POS_API_BASE_URL}/service/booking-sync/delete/${bookingTreatmentsId}`
+    // );
+
+    return res.status(httpStatus.OK).send({
+      message: "Service deleted successfully",
+      data: null,
+      status: true,
+      code: "OK",
+      issue: null,
+    });
+  }
+);
+
 
 const toggleServiceStatus = catchAsync(async (req: Request, res: Response) => {
   const updatedService = await serviceService.toggleServiceStatusById(
@@ -756,5 +1068,8 @@ export {
   deleteService,
   toggleServiceStatus,
   addServiceToTop,
-  getAllBookings
+  getAllBookings,
+  createBookingSyncService,
+  updateBookingSyncService,
+  deleteServiceByBookingId
 };

@@ -23,6 +23,7 @@ export const create: { body: ObjectSchema } = {
     taxNo: Joi.string().allow(""),
     dateOfBirth: Joi.string().required(),
     gender: Joi.string().required(),
+    outlets: Joi.array().items(Joi.string().required().custom(objectId)),
   }),
 }
 
@@ -44,6 +45,7 @@ export const update: { params: ObjectSchema; body: ObjectSchema } = {
     taxNo: Joi.string().allow(""),
     dateOfBirth: Joi.string().required(),
     gender: Joi.string().required(),
+    outlets: Joi.array().items(Joi.string().required().custom(objectId)),
   }),
 }
 

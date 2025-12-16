@@ -80,6 +80,9 @@ import ViewOutletRegisterPage from './modules/Outlet/screens/view-register/ViewO
 import EditPurchaseOrderFormWrapper from './modules/PurchaseOrder/screens/Edit/EditPurchaseOrderFormWrapper';
 import InventoryEditFormWrapper from './modules/PurchaseOrder/components/InventoryForm/InventoryEditFormWrapper';
 import TestQueryPage from './modules/Service/components/TestQueryPage';
+import OutletReportPage from './modules/Outlet/screens/sales-report/OutletReportPage';
+import ViewOutletGiftCardReportPage from './modules/Outlet/screens/sales-report/ViewOutletGiftCardReportPage';
+import ViewReatailDashboardPage from './modules/Outlet/screens/sales-report/ViewReatailDashboardPage';
 
 type Props = {};
 
@@ -150,7 +153,10 @@ const PageRoutes = (props: Props) => {
         { path: '/outlet/add', element: <AddOutletFormWrapper /> },
         { path: '/outlet/edit/:id', element: <EditOutletFormWrapper /> },
         { path: '/outlet/sales-report', element: <SalesReportPage /> },
+        { path: '/outlet/outlet-report', element: <OutletReportPage /> },
         { path: '/outlet/view-register', element: <ViewOutletRegisterPage /> },
+        { path: '/outlet/gift-card-report', element: <ViewOutletGiftCardReportPage /> },
+        { path: '/outlet/retail-dashbaord', element: <ViewReatailDashboardPage /> },
         {
           path: '/brand',
           element: (

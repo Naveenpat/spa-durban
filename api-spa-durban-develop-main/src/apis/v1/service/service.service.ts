@@ -63,6 +63,10 @@ const updateServiceById = async (
   return service;
 };
 
+const updateServiceByFilter = async (filter: any, updateBody: any) => {
+  return Service.findOneAndUpdate(filter, updateBody, { new: true });
+};
+
 /**
  * Toggle service status by id
  * @param {string | number} serviceId
@@ -260,6 +264,12 @@ const removeServiceFromTopData = async (
   return service;
 };
 
+// serviceService.ts
+const deleteServiceByBookingTreatmentsId = async (bookingTreatmentsId: string) => {
+  return Service.deleteOne({bookingTreatmentsId:bookingTreatmentsId});
+};
+
+
 export {
   createService,
   queryServices,
@@ -272,4 +282,6 @@ export {
   toggleServiceStatusById,
   addServiceToTopData,
   removeServiceFromTopData,
+  updateServiceByFilter,
+  deleteServiceByBookingTreatmentsId
 };

@@ -55,7 +55,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, categoryImageUrl, on
     return (
         <div
             key={product._id}
-            className="w-[163px] h-[219px] rounded-lg overflow-hidden border hover:shadow-md transition cursor-pointer relative bg-white"
+            className="w-[170px] h-[219px] rounded-lg overflow-hidden border hover:shadow-md transition cursor-pointer relative bg-white"
             onClick={() => {
                 const price = product?.sellingPrice ?? 0;
                 if (price > 0) {

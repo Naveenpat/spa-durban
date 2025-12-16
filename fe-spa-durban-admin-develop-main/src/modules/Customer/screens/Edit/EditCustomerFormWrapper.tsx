@@ -30,7 +30,8 @@ const EditCustomerFormWrapper = () => {
     taxNo: (data as any)?.data?.taxNo,
     dateOfBirth: (data as any)?.data?.dateOfBirth || null,
     gender: { value: (data as any)?.data?.gender },
-    customerGroup: (data as any)?.data?.customerGroup || ''
+    customerGroup: (data as any)?.data?.customerGroup || '',
+    outlets: (data as any)?.outlets,
   };
 
   const validationSchema = object().shape({

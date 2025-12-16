@@ -291,6 +291,32 @@ router.get(
   analyticsController.getRegisterDataByOutlet
 );
 
+router.get(
+  '/new/outlets-chart-data',
+  // parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getSalesChartDataReportByOutlets
+);
 
+router.get(
+  '/new/gift-card-chart-data',
+  // parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getGiftCardChartDataReportByOutlets
+);
+
+router.get(
+  '/new/gift-card-report',
+  // parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getGiftCardDataReportByOutlets
+);
+
+router.get(
+  '/new/retail-dashboard',
+  // parseBodyAndQuery,
+  authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
+  analyticsController.getRetailDashboardData
+);
 
 export default router;

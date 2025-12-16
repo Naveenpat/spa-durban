@@ -7,6 +7,9 @@ import {
   deleteService,
   toggleServiceStatus,
   addServiceToTop,
+  createBookingSyncService,
+  updateBookingSyncService,
+  deleteServiceByBookingId,
 } from "./controller.service";
 import validate from "../../../middleware/validate";
 import {
@@ -114,6 +117,13 @@ router.post(
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
   // validate(create),
   createService
+);
+
+router.post(
+  "/booking-sync/add",
+  // no authenticate middleware here
+  // validate(create),   // optional agar validation chahiye
+  createBookingSyncService
 );
 
 /**
@@ -273,6 +283,14 @@ router.put(
   // validate(update),
   updateService
 );
+
+router.put(
+  "/booking-sync/update/:bookingTreatmentsId",
+  // no authenticate middleware here
+  // validate(create),   // optional agar validation chahiye
+  updateBookingSyncService
+);
+
 router.put(
   "/ToTop/:serviceId",
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
@@ -306,6 +324,13 @@ router.delete(
   authenticate([UserEnum.Admin, UserEnum.Employee], TokenEnum.Access),
   validate(deleteDocument),
   deleteService
+);
+
+router.delete(
+  "/booking-sync/delete/:bookingTreatmentsId",
+  // no authenticate middleware here
+  // validate(create),   // optional agar validation chahiye
+  deleteServiceByBookingId
 );
 
 /**

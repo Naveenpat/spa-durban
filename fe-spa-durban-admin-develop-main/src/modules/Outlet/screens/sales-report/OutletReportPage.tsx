@@ -11,7 +11,7 @@ import { useFilterPagination } from 'src/hooks/useFilterPagination';
 import { SalesReport } from 'src/modules/Invoices/models/Invoices.model';
 import { RootState } from 'src/store';
 import { isAuthorized } from 'src/utils/authorization';
-import { useGetSalesChartDataReportByOutletQuery, useGetSalesReportByOutletQuery } from '../../service/OutletServices';
+import { useGetOutletsChartDataQuery, useGetSalesChartDataReportByOutletQuery, useGetSalesReportByOutletQuery } from '../../service/OutletServices';
 import ATMChart from 'src/components/atoms/ATMChart/ATMChart';
 import { ATMButton } from 'src/components/atoms/ATMButton/ATMButton';
 import { formatZonedDate } from 'src/utils/formatZonedDate';
@@ -33,14 +33,15 @@ const salesData = [
   },
 ];
 
-const SalesReportPage = () => {
+const OutletReportPage = () => {
   const { searchQuery, limit, page, dateFilter, orderBy, orderValue, appliedFilters } =
     useFilterPagination(['outletIds', 'customerId','reportDuration']);
   const [searchParams, setSearchParams] = useSearchParams();
    console.log('------appliedFilters',appliedFilters)
+   const outletIdss = appliedFilters?.map(f => f.value); 
   const { outlets } = useSelector((state: RootState) => state.auth);
   const { data, isLoading, error } = useGetSalesReportByOutletQuery({
-    outletId: appliedFilters?.[0]?.value,
+    outletId: outletIdss,
     startDate: dateFilter?.start_date,
     endDate: dateFilter?.end_date,
     page: page,
@@ -50,35 +51,12 @@ const SalesReportPage = () => {
     reportDuration:appliedFilters?.[2]?.value
   });
 
- const outletId = appliedFilters?.[0]?.value || "";
-const reportDuration = appliedFilters?.[2]?.value || "";
-const startDate = dateFilter?.start_date || "";
-const endDate = dateFilter?.end_date || "";
-
-const { data: chartData, isFetching, refetch } = useGetSalesChartDataReportByOutletQuery(
-  {
-    outletId,
-    startDate,
-    endDate,
-    reportDuration,
-  },
-  {
-    skip: !outletId || !startDate || !endDate || !reportDuration, // ✅ Jab tak sab values na ho query skip karo
-    refetchOnMountOrArgChange: true, // ✅ har arg change par refetch karega
-  }
-);
-
-
-const filterValue = appliedFilters?.[2]?.value; // string[] | undefined
-
-const periodLabel =
-  filterValue?.includes("MONTHLY")
-    ? "Month"
-    : filterValue?.includes("WEEKLY")
-    ? "Week"
-    : filterValue?.includes("DAILY")
-    ? "Day"
-    : "";
+  const { data: chartData } = useGetOutletsChartDataQuery({
+    outletIds: appliedFilters?.[0]?.value,
+    startDate: dateFilter?.start_date,
+    endDate: dateFilter?.end_date,
+    reportDuration:appliedFilters?.[2]?.value
+  });
 
 
   const salesByDate = chartData?.data?.salesByDate || [];
@@ -167,7 +145,7 @@ const periodLabel =
       ],
     },
     {
-      filterType: 'single-select',
+      filterType: 'multi-select',
       label: 'Outlets',
       fieldName: 'outletIds',
       options:
@@ -196,8 +174,6 @@ const periodLabel =
 
   const invoices = data?.data?.invoices || [];
   const totalAmount = data?.data?.totalSalesData[0]?.totalSalesAmount || [];
-
-  
   const today = new Date();
   const oneMonthAgo = subMonths(today, 1);
 
@@ -211,67 +187,60 @@ const periodLabel =
   //     setSearchParams(newSearchParams)
   //   }
   // }, [dateFilter, outlets]);
-
-useEffect(() => {
-  const reportDuration = (appliedFilters?.[2]?.value?.[0] as string) || "DAILY";
-
-  if (!outlets?.length) return;
-
-  let startDate: string;
-  let endDate: string;
-
-  switch (reportDuration) {
-    case "MONTHLY":
-      startDate = format(subMonths(new Date(), 1), "yyyy-MM-dd");
-      endDate = format(new Date(), "yyyy-MM-dd");
-      break;
-    case "WEEKLY":
-      startDate = format(subWeeks(new Date(), 1), "yyyy-MM-dd");
-      endDate = format(new Date(), "yyyy-MM-dd");
-      break;
-    case "DAILY":
-    default:
-      startDate = format(startOfDay(new Date()), "yyyy-MM-dd");
-      endDate = format(endOfDay(new Date()), "yyyy-MM-dd");
-      break;
-  }
-
-  const currentStart = searchParams.get("startDate");
-  const currentEnd = searchParams.get("endDate");
-  const currentDuration = searchParams.get("reportDuration");
-  const currentOutlet = searchParams.get("outletIds"); // 👈 already selected outlet
-
-  // ✅ Agar sab already same hai to kuch mat karo
-  if (
-    currentStart === startDate &&
-    currentEnd === endDate &&
-    currentDuration === reportDuration &&
-    currentOutlet // 👈 agar outlet already set hai, तो skip
-  ) {
-    return;
-  }
-
-  const newSearchParams = new URLSearchParams(searchParams.toString());
-  newSearchParams.set("startDate", startDate);
-  newSearchParams.set("endDate", endDate);
-
-  // ✅ Sirf tabhi default outlet set karo jab user ne abhi tak outlet select nahi किया
-  if (!currentOutlet) {
-    newSearchParams.set("outletIds", outlets?.[0]?._id || "");
-  }
-
-  newSearchParams.set("reportDuration", reportDuration);
-
-  if (newSearchParams.toString() !== searchParams.toString()) {
-    setSearchParams(newSearchParams);
-  }
-}, [appliedFilters, outlets, setSearchParams]);
-
-
-
-
-
-
+  useEffect(() => {
+    const reportDuration = (appliedFilters?.[2]?.value?.[0] as string) || "DAILY";
+  
+    if (!outlets?.length) return;
+  
+    let startDate: string;
+    let endDate: string;
+  
+    switch (reportDuration) {
+      case "MONTHLY":
+        startDate = format(subMonths(new Date(), 1), "yyyy-MM-dd");
+        endDate = format(new Date(), "yyyy-MM-dd");
+        break;
+      case "WEEKLY":
+        startDate = format(subWeeks(new Date(), 1), "yyyy-MM-dd");
+        endDate = format(new Date(), "yyyy-MM-dd");
+        break;
+      case "DAILY":
+      default:
+        startDate = format(startOfDay(new Date()), "yyyy-MM-dd");
+        endDate = format(endOfDay(new Date()), "yyyy-MM-dd");
+        break;
+    }
+  
+    const currentStart = searchParams.get("startDate");
+    const currentEnd = searchParams.get("endDate");
+    const currentDuration = searchParams.get("reportDuration");
+    const currentOutlet = searchParams.get("outletIds"); // 👈 already selected outlet
+  
+    // ✅ Agar sab already same hai to kuch mat karo
+    if (
+      currentStart === startDate &&
+      currentEnd === endDate &&
+      currentDuration === reportDuration &&
+      currentOutlet // 👈 agar outlet already set hai, तो skip
+    ) {
+      return;
+    }
+  
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    newSearchParams.set("startDate", startDate);
+    newSearchParams.set("endDate", endDate);
+  
+    // ✅ Sirf tabhi default outlet set karo jab user ne abhi tak outlet select nahi किया
+    if (!currentOutlet) {
+      newSearchParams.set("outletIds", outlets?.[0]?._id || "");
+    }
+  
+    newSearchParams.set("reportDuration", reportDuration);
+  
+    if (newSearchParams.toString() !== searchParams.toString()) {
+      setSearchParams(newSearchParams);
+    }
+  }, [appliedFilters, outlets, setSearchParams]);
 
   const navigate = useNavigate();
 
@@ -302,7 +271,7 @@ useEffect(() => {
     <>
       <div className="flex flex-col h-full gap-2 p-4">
         <ATMPageHeader
-          heading="Outlet Sales Report"
+          heading="Outlets Report"
           hideButton={true}
           buttonProps={{
             label: 'Back',
@@ -329,7 +298,7 @@ useEffect(() => {
                       legend: { position: 'top' },
                       title: {
                         display: true,
-                        text: `Last ${periodLabel} vs Current ${periodLabel} Sales (EOD)`,
+                        text: 'Outlets Sales Chart',
                       },
                       tooltip: {
                         mode: 'index',
@@ -350,7 +319,7 @@ useEffect(() => {
             </div>
             <div className="grid grid-cols-3 gap-4">
               {/* Chart 1: Sales by Date (Bar) */}
-              {salesByDate.length > 0 && (
+              {/* {salesByDate.length > 0 && (
                 <div className="col-span">
                   <ATMChart
                     type="bar"
@@ -371,10 +340,10 @@ useEffect(() => {
                     }}
                   />
                 </div>
-              )}
+              )} */}
 
               {/* Chart 2: Sales by Payment Mode (Pie) */}
-              {salesByPaymentMode.length > 0 && (
+              {/* {salesByPaymentMode.length > 0 && (
                 <div className="col-span">
                   <ATMChart
                     type="pie"
@@ -395,10 +364,10 @@ useEffect(() => {
                     }}
                   />
                 </div>
-              )}
+              )} */}
 
               {/* Chart 3: Top Customers (Doughnut) */}
-              {topCustomers.length > 0 && (
+              {/* {topCustomers.length > 0 && (
                 <div className="col-span">
                   <ATMChart
                     type="doughnut"
@@ -419,12 +388,12 @@ useEffect(() => {
                     }}
                   />
                 </div>
-              )}
+              )} */}
             </div>
 
 
 
-            <div className="flex-1 mt-3">
+            {/* <div className="flex-1 mt-3">
               <MOLTable<SalesReport>
                 tableHeaders={tableHeaders}
                 data={invoices || []}
@@ -433,24 +402,24 @@ useEffect(() => {
                 onDelete={undefined}
                 isLoading={false}
               />
-            </div>
+            </div> */}
 
             {/* Pagination */}
-            <ATMPagination
+            {/* <ATMPagination
               totalPages={1}
               rowCount={1}
               rows={invoices || []}
-            />
+            /> */}
           </div>
         </Authorization>
-        {invoices.length > 0 && (
+        {/* {invoices.length > 0 && (
           <div className="flex items-center justify-between px-4 py-3 text-lg font-semibold">
             <span>Total Sales Amount: R {totalAmount?.toFixed(2)}</span>
             <ATMButton onClick={() => handleExportCSV()}>
               Export CSV
             </ATMButton>
           </div>
-        )}
+        )} */}
 
 
       </div>
@@ -458,4 +427,4 @@ useEffect(() => {
   )
 };
 
-export default SalesReportPage;
+export default OutletReportPage;

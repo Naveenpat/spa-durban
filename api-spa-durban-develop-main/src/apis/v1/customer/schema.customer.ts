@@ -28,6 +28,7 @@ export interface CustomerDocument extends Document {
   bookingCustomerId: string;
   cashBackAmount: number;
   customerGroup:string;
+  outlets:Object
 }
 
 export interface CustomerModel extends mongoose.Model<CustomerDocument> {
@@ -140,7 +141,12 @@ const CustomerSchema = new mongoose.Schema<CustomerDocument>(
       default: CustomerTypeEnum.regular,
       trim: true,
     },
-
+ outlets: {
+      type: [mongoose.Types.ObjectId],
+      ref: "Outlet",
+      required: false,
+      trim: true,
+    },
     isDeleted: {
       type: Boolean,
       default: false,

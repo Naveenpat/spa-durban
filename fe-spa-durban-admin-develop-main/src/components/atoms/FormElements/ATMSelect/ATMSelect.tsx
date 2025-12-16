@@ -89,7 +89,7 @@ const ATMSelect = ({
   filterEnabled = false,
   isTouched = false,
   isValid = true,
-  searchKeys = ['label'],
+  searchKeys = ['label','categoryName'],
 }: Props) => {
   const selectRef = useRef<any>(null);
 

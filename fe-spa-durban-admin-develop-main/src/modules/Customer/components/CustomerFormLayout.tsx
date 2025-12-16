@@ -6,6 +6,9 @@ import ATMNumberField from 'src/components/atoms/FormElements/ATMNumberField/ATM
 import ATMSelect from 'src/components/atoms/FormElements/ATMSelect/ATMSelect';
 import ATMTextField from 'src/components/atoms/FormElements/ATMTextField/ATMTextField';
 import { CustomerFormValues } from '../models/Customer.model';
+import ATMMultiSelect from 'src/components/atoms/FormElements/ATMMultiSelect/ATMMultiSelect';
+import { useFetchData } from 'src/hooks/useFetchData';
+import { useGetOutletsQuery } from 'src/modules/Outlet/service/OutletServices';
 
 export const countries = [
   { label: 'afghanistan', value: 'AFG' },
@@ -208,7 +211,7 @@ const customerGroupOptions = [
   {
     value: 'golden member',
     label: 'Golden Member'
-}
+  }
 ]
 
 type Props = {
@@ -236,6 +239,21 @@ const CustomerFormLayout = ({
 }: Props) => {
   const { values, setFieldValue, isSubmitting, handleBlur, touched, errors } =
     formikProps;
+
+  const { data: outlets, isLoading: isOutletsLoading } = useFetchData(
+    useGetOutletsQuery,
+    {
+      body: {
+        isPaginationRequired: false,
+        filterBy: JSON.stringify([
+          {
+            fieldName: 'isActive',
+            value: true,
+          },
+        ]),
+      },
+    },
+  );
 
   return (
     <>
@@ -409,7 +427,7 @@ const CustomerFormLayout = ({
                 onBlur={handleBlur}
               />
             </div>
-             <div className="">
+            <div className="">
               <ATMSelect
                 required
                 name="customerGroup"
@@ -420,6 +438,21 @@ const CustomerFormLayout = ({
                 options={customerGroupOptions}
                 valueAccessKey="value"
                 onBlur={handleBlur}
+              />
+            </div>
+            <div className="">
+              <ATMMultiSelect
+                name="outlets"
+                value={values.outlets}
+                onChange={(newValue) => setFieldValue('outlets', newValue)}
+                label="Outlets"
+                placeholder="Select Outlets"
+                options={outlets}
+                onBlur={handleBlur}
+                isValid={!errors?.outlets}
+                getOptionLabel={(option: any) => option?.name}
+                valueAccessKey="_id"
+                isLoading={isOutletsLoading}
               />
             </div>
           </div>

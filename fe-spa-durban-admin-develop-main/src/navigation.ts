@@ -430,34 +430,54 @@ const navigation: (params?: {
       groupLable: 'Reports',
       items:[
         {
-          title: 'Sales',
+          title: 'Sales By Outlet',
           icon: IconReceiptTax,
           path: 'outlet/sales-report',
           searchParams: {
             page: '1',
             limit: '10',
           },
-          permission: 'NAV_CASHBACK_RULES',
+          permission: 'REPORT_SALES_BY_OUTLET',
         },
          {
           title: 'Outlets',
           icon: IconReceiptTax,
-          path: 'outlet/sales-report',
+          path: 'outlet/outlet-report',
           searchParams: {
             page: '1',
             limit: '10',
           },
-          permission: 'NAV_CASHBACK_RULES',
+          permission: 'REPORT_OUTLET',
         },
         {
-          title: 'Closue Summary',
+          title: 'Gift Card Reports',
+          icon: IconReceiptTax,
+          path: 'outlet/gift-card-report',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'REPORT_GIFT_CARD',
+        },
+         {
+          title: 'Retail Dashbaord',
+          icon: IconReceiptTax,
+          path: 'outlet/retail-dashbaord',
+          searchParams: {
+            page: '1',
+            limit: '10',
+          },
+          permission: 'REPORT_RETAIL_DASHBOARD',
+        },
+        {
+          title: 'Closure Summary',
           icon: IconReceiptTax,
           path: 'outlet/view-register',
           searchParams: {
             page: '1',
             limit: '10',
           },
-          permission: 'NAV_CASHBACK_RULES',
+          permission: 'CLOSURE_SUMMARY',
         },
       ]
     }
